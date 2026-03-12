@@ -1,0 +1,26 @@
+{
+  "round": "hardmode_8v_8p",
+  "model": "Claude Opus 4.6 (Thinking)",
+  "answers": {
+    "HARD-01": {
+      "valid": false,
+      "reasoning": "Prem 1: A=T. Prem 3,5: G=T. Prem 7: ¬(B∧(A∨B)). A=T so A∨B=T. So ¬(B∧T) = ¬B. So B=F. Prem 8: H∨G∨C=T (G=T). Prem 4: H→((H∧B)→(D∨C)). B=F so H∧B=F, so (F→anything)=T. So prem 4 is T regardless. Prem 6: ((G→H)∧F)→(¬F∨(F→G)). F→G: if F=T then G=T=T. ¬F∨T=T. So RHS=T. Whole thing T regardless. Prem 2: (F→(D∧F))∨E. Conclusion: ¬D. Is D forced? D is unconstrained by premises that don't contradict. Let me check: can D=T? Prem 2: (F→(T∧F))∨E = (F→F)∨E. If F=T: (T→T)∨E=T. If F=F: T∨E=T. Either way ok. No premise forces D=F. So D can be T, making ¬D false. INVALID."
+    },
+    "HARD-02": {
+      "valid": false,
+      "reasoning": "Prems give G (prem 2: G∨G=G), H, F, B, A, E∨F=T. Prem 8: (C∨(B∧D))→(C→G). G=T so C→G=T. So RHS=T, whole thing T regardless. Conclusion: (E∧B)∧(G∧(D→G)). D→G: G=T so T regardless. G=T. B=T. Need E. E∨F=T, F=T, but this doesn't force E. E is unconstrained. If E=F: E∧B=F. Conclusion false. All premises satisfied. INVALID."
+    },
+    "HARD-03": {
+      "valid": false,
+      "reasoning": "Prems: C=T, F=T, A=T, H=T, ¬E (E=F). Prem 7: ((A∨B)∨(H→E))∧(D∧(A↔H)). A↔H=T↔T=T. D must be T (from D∧T). H→E=T→F=F. (A∨B)∨F=(A∨B). A=T so T. And D=T. So prem 7 gives D=T. Prem 4: ((D∧F)∧(C∨B))→((H∨H)↔A). D=T,F=T,C=T so LHS=T. H∨H=T. A=T. T↔T=T. Ok. Conclusion: B. Is B forced? Let me check B=F: Prem 7: ((T∨F)∨F)∧(T∧T) = (T)∧T = T. Ok. Prem 4: ((T∧T)∧(T∨F))→(T↔T) = T→T=T. Ok. All other prems don't reference B except prem 7's A∨B (satisfied by A=T). B is not forced to be true. INVALID."
+    },
+    "HARD-04": {
+      "valid": true,
+      "reasoning": "Prem 1: ¬(B↔C) ∧ (B→C). ¬(B↔C) means B≠C. B→C: if B=T then C=T, so B=C=T. But B≠C! So B must be F (then B→C=T vacuously, and B≠C needs C=T, which matches prem 2: C=T). So B=F, C=T. Prem 3: ¬¬D ∧ ¬(F↔A). So D=T, F≠A. Prem 7: ¬(C→G) ∨ (C↔(B∨C)). C=T, B∨C=T. C↔T=T. So second disjunct is T. Ok. Prem 4: E→((E↔F)∧(A↔D)). D=T. A↔D=A↔T=A. E↔F. Prem 5: ((B∧D)∨(D↔F))→(¬D→G). B=F,D=T. B∧D=F. D↔F=T↔F=F. LHS=F∨F=F. F→anything=T. Ok. Conclusion: (G∨G)∨E = G∨E. Need G or E to be true. Prem 7: ¬(C→G)∨(C↔(B∨C)). We already know second disjunct is T, so this is satisfied. But does anything force G or E? Let me try G=F, E=F: Prem 4: E=F so F→anything=T. Ok. Prem 5: satisfied (shown above). Prem 7: T (shown). Prem 6: H∨C=T (C=T). Prem 8: H=T. What about F and A? F≠A (prem 3). If A=T,F=F or A=F,F=T. All premises seem satisfiable with G=F, E=F. So conclusion G∨E could be false. Hmm, INVALID? Let me double check prem 7: ¬(C→G) ∨ (C↔(B∨C)). C→G = T→F = F. ¬F=T. First disjunct T. Ok still holds. So G=F,E=F is consistent. INVALID."
+    },
+    "HARD-05": {
+      "valid": true,
+      "reasoning": "Prem 5: H=T. Prem 6: A=T. Prem 8: G=T. Prem 1: ((G→E)∨H)→((A∨H)→(B↔H)). G=T,H=T,A=T. G→E: if E=T then T, if E=F then F. (G→E)∨H: even if G→E=F, H=T makes this T. So LHS of outer →: T. A∨H=T. So we need B↔H=B↔T=B. So B must be true. Conclusion: B. VALID."
+    }
+  }
+}

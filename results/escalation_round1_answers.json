@@ -1,0 +1,26 @@
+{
+  "round": "round1",
+  "model": "Claude Opus 4.6 (Thinking)",
+  "answers": {
+    "ESC-1-01": {
+      "valid": true,
+      "reasoning": "Premise 7: (C↔F)∧(E∧D)∧A. This gives us C↔F, E, D, and A. Premise 5: C. So from C↔F and C: F=T. From D, C both true: D→C is true. So (D→C)∨(B→F) is true. And D∧C is true (both D and C given). So the conjunction is true. VALID — but wait, this is only valid if premises 7 holds. Premise 7 requires C↔F and E∧D and A. We have C (prem 5), E (prem 4), but we need to check if A is given independently — premise 7 ASSERTS A. And D is part of premise 7. So from premise 7 alone we get A, D, E, C↔F. With C from prem 5, F=T. Conclusion: (D→C)∨(B→F) is T (both D→C=T and B→F=T since F=T). D∧C is T. Conjunction T. VALID."
+    },
+    "ESC-1-02": {
+      "valid": true,
+      "reasoning": "Premise 3: A. Premise 6: ¬A. CONTRADICTION. Ex falso quodlibet — from contradictory premises, anything follows. VALID."
+    },
+    "ESC-1-03": {
+      "valid": true,
+      "reasoning": "Premise 1: D∧F∧¬A. So ¬A. Premise 5: A. CONTRADICTION (¬A and A). Ex falso quodlibet — VALID."
+    },
+    "ESC-1-04": {
+      "valid": false,
+      "reasoning": "Premises give B, C, E, D. Premise 6: D↔((F→B)→(D↔C)). D=T, C=T, B=T. F→B: if F=T then B=T (ok), if F=F then T. Either way F→B=T. D↔C = T↔T = T. So (F→B)→(D↔C) = T→T = T. D↔T = T. Consistent. Premise 1: A↔(B∨A). B=T so B∨A=T regardless of A. So A↔T means A=T. Now conclusion: ((E∧C)∨(F↔E))∧F. E∧C = T. So left disjunct is T. Need F to be true. Is F determined? Premise 6 is satisfied regardless of F (we showed). No premise forces F. Counterexample: F=F. Then conclusion = (T∨(F↔E))∧F = T∧F = F. All premises still hold with F=F. INVALID."
+    },
+    "ESC-1-05": {
+      "valid": false,
+      "reasoning": "Premise 2: E∧(A↔(D∨E)). So E=T. A↔(D∨E). Since E=T, D∨E=T. So A↔T means A=T. Premise 7: A=T (consistent). Premise 1: D∨(B∧C∧D). Premise 3: ¬(¬E↔(E∧A)). ¬E=F, E∧A=T. F↔T=F. ¬F=T. Ok, tautological given E and A. Conclusion: F∧(B→F). Needs F=T. Nothing forces F to be true. If F=F: B→F = B→F, so if B=F then B→F=T. Check all premises with D=T, B=F, F=F, C=anything: Prem 1: D∨(F∧...)=T(D=T). Prem 4: (B↔(E∨C))→((E↔D)→E). E∨C depends on C but (E↔D)→E: E=T, D=T, E↔D=T, T→T=T. So RHS=T, whole thing=T. Prem 5: (¬E∨¬A)∨((A→C)→(F↔D)). ¬E=F, ¬A=F. (A→C)→(F↔D). A→C=T→C. F↔D=F↔T=F. If C=T: T→F=F. If C=F: F→F=T. With C=F prem 5 is satisfied. All premises ok with F=F. INVALID."
+    }
+  }
+}

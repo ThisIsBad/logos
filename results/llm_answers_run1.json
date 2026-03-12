@@ -1,0 +1,111 @@
+{
+  "model": "Claude Opus 4.6 (Thinking)",
+  "timestamp": "2026-03-11T21:58:00+01:00",
+  "note": "Genuine answers from the LLM, reasoning through each problem without looking at expected results.",
+  "answers": {
+    "L1-01": {
+      "valid": true,
+      "reasoning": "Classic Modus Ponens. P→Q and P are given, so Q must follow."
+    },
+    "L1-02": {
+      "valid": true,
+      "reasoning": "Modus Tollens. If P implies Q and Q is false, then P must be false."
+    },
+    "L1-03": {
+      "valid": false,
+      "reasoning": "This is Affirming the Consequent — a well-known fallacy. Just because P→Q and Q is true doesn't mean P caused it. The ground could be wet from a sprinkler."
+    },
+    "L1-04": {
+      "valid": false,
+      "reasoning": "Denying the Antecedent. P→Q and ¬P does NOT give us ¬Q. I might go for a walk even if it's not sunny."
+    },
+    "L1-05": {
+      "valid": true,
+      "reasoning": "Disjunctive Syllogism. If P∨Q and ¬P, then Q must be true."
+    },
+    "L1-06": {
+      "valid": true,
+      "reasoning": "Conjunction Introduction. If both P and Q are true, then P∧Q is true."
+    },
+    "L1-07": {
+      "valid": true,
+      "reasoning": "Conjunction Elimination (Simplification). If P∧Q is true, then P is true."
+    },
+    "L1-08": {
+      "valid": true,
+      "reasoning": "Contraposition. P→Q is logically equivalent to ¬Q→¬P."
+    },
+    "L1-09": {
+      "valid": true,
+      "reasoning": "Double Negation Elimination. ¬¬P simplifies to P."
+    },
+    "L1-10": {
+      "valid": true,
+      "reasoning": "Disjunction Introduction (Addition). If P is true, then P∨Q is true regardless of Q."
+    },
+    "L2-01": {
+      "valid": true,
+      "reasoning": "Hypothetical Syllogism (Transitivity). P→Q and Q→R gives us P→R."
+    },
+    "L2-02": {
+      "valid": true,
+      "reasoning": "Chain of three implications. A→B→C→D with A true, so we can derive B, then C, then D."
+    },
+    "L2-03": {
+      "valid": true,
+      "reasoning": "Constructive Dilemma. (P→Q), (R→S), (P∨R) gives us (Q∨S). Whichever disjunct is true, its consequent follows."
+    },
+    "L2-04": {
+      "valid": true,
+      "reasoning": "(A∧B)→C and ¬C. By Modus Tollens: ¬(A∧B), which by De Morgan is ¬A∨¬B."
+    },
+    "L2-05": {
+      "valid": true,
+      "reasoning": "Biconditional Elimination. A↔B means A→B and B→A. With A true, B must be true."
+    },
+    "L2-06": {
+      "valid": false,
+      "reasoning": "INVALID. A→B and C→B share the consequent B, but that creates no logical link between A and C. Just because A and C both imply B doesn't mean A implies C."
+    },
+    "L3-01": {
+      "valid": true,
+      "reasoning": "Reductio ad Absurdum. If P implies both Q and ¬Q, then P leads to a contradiction, so P must be false (¬P)."
+    },
+    "L3-02": {
+      "valid": true,
+      "reasoning": "De Morgan's Law. ¬(A∧B) is equivalent to ¬A∨¬B."
+    },
+    "L3-03": {
+      "valid": true,
+      "reasoning": "De Morgan's Law (second form). ¬(A∨B) is equivalent to ¬A∧¬B."
+    },
+    "L3-04": {
+      "valid": true,
+      "reasoning": "Nested conditional. A→(B→C) with A true gives us B→C. With B true, we get C."
+    },
+    "L3-05": {
+      "valid": false,
+      "reasoning": "INVALID. (A∨B)→C and C is true, but this is Affirming the Consequent on a disjunctive antecedent. C could be true for other reasons, and we cannot conclude A."
+    },
+    "ADV-01": {
+      "valid": true,
+      "reasoning": "The sky being blue (R) is irrelevant. P→Q and P still give us Q via Modus Ponens. The extra premise is a distractor."
+    },
+    "ADV-02": {
+      "valid": false,
+      "reasoning": "INVALID. ¬P→Q and P does not give us ¬Q. The implication only tells us what happens when P is false. When P is true, Q could be true or false. This is NOT Modus Tollens because the antecedent is negated."
+    },
+    "ADV-03": {
+      "valid": false,
+      "reasoning": "INVALID. D→M (all dogs are mammals) and M (Rex is a mammal) does NOT prove D (Rex is a dog). This is Affirming the Consequent. Rex could be a cat."
+    },
+    "ADV-04": {
+      "valid": false,
+      "reasoning": "INVALID. P→Q with ¬P is Denying the Antecedent. The implication P→Q is vacuously true when P is false, but that tells us nothing about Q. We cannot conclude Q."
+    },
+    "ADV-05": {
+      "valid": false,
+      "reasoning": "INVALID. The chain A→B→C→D→E with A true does give us E. But X→Y with no assertion of X does NOT give us Y. So E is true but we cannot conclude E∧Y."
+    }
+  }
+}

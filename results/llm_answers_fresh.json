@@ -1,0 +1,48 @@
+{
+  "exam_id": "00cab7d65a24",
+  "model": "Claude Opus 4.6 (Thinking)",
+  "timestamp": "2026-03-12T12:28:00+01:00",
+  "note": "Fresh generated problems — guaranteed not in training data. Genuine reasoning only.",
+  "answers": {
+    "GEN-001": {
+      "valid": true,
+      "reasoning": "Premise 5 gives E. Premise 4 gives E↔C, so with E we get C. The conclusion is C∨A. Since C is true, C∨A is true by disjunction introduction."
+    },
+    "GEN-002": {
+      "valid": true,
+      "reasoning": "Premise 1 states D. The conclusion is D. This is trivially valid — the conclusion is literally one of the premises."
+    },
+    "GEN-003": {
+      "valid": true,
+      "reasoning": "Premise 4 states E. The conclusion is E. Trivially valid — conclusion is a premise."
+    },
+    "GEN-004": {
+      "valid": true,
+      "reasoning": "A is true (premise 4). (C→E)∧C (premise 5) gives C and E. So A=T and E=T, A↔E = T↔T = T. VALID."
+    },
+    "GEN-005": {
+      "valid": false,
+      "reasoning": "The conclusion is (E↔E)→D. E↔E is always a tautology (T), so this reduces to T→D = D. We need D to be true. But none of the premises assert D or allow us to derive D. Premises give A, B, E, and ¬C∨C (tautology). D is unconstrained. INVALID."
+    },
+    "GEN-006": {
+      "valid": true,
+      "reasoning": "Premise 4 directly states C. The conclusion is C. Trivially valid."
+    },
+    "GEN-007": {
+      "valid": false,
+      "reasoning": "Premise 1 is B↔B which is a tautology (always true, tells us nothing about B's value). Premise 2 gives (B→D)∧A, so A is true. Premise 3 gives ¬A↔E; since A is true, ¬A is false, so E is false. Premise 4 gives ¬C. Premise 5 gives D→A. But nothing forces B to be true. B could be false. If B=F: B→D is vacuously true, so premise 2 is satisfied (T∧T). D could be anything. Nothing contradicts B=F. INVALID."
+    },
+    "GEN-008": {
+      "valid": true,
+      "reasoning": "Premise 2 gives ¬C but premise 6 gives C → CONTRADICTION. Ex falso quodlibet: from contradictory premises, anything follows. VALID."
+    },
+    "GEN-009": {
+      "valid": true,
+      "reasoning": "Premise 3 gives E=true. Premise 4 gives ¬(D∨E). Since E is true, D∨E is true, so ¬(D∨E) is false. This means we have a CONTRADICTION (E and ¬(D∨E)). From contradictory premises, anything follows (ex falso quodlibet). The conclusion is valid."
+    },
+    "GEN-010": {
+      "valid": false,
+      "reasoning": "Premises: C, A∨(C→E), (E↔A)↔B, E. From E (premise 4) and C (premise 1), C→E is true. So premise 2 is A∨T = T (always satisfied regardless of A). Premise 3: E↔A depends on A. If A=F: E↔A = T↔F = F. So (E↔A)↔B = F↔B. This needs to match some B. If B=F: F↔F = T. All premises can be satisfied with A=F, so A is not necessarily true. INVALID."
+    }
+  }
+}

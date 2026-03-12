@@ -1,0 +1,26 @@
+{
+  "round": "round2",
+  "model": "Claude Opus 4.6 (Thinking)",
+  "answers": {
+    "ESC-2-01": {
+      "valid": true,
+      "reasoning": "Premise 9 states A. Conclusion is A. Trivially valid."
+    },
+    "ESC-2-02": {
+      "valid": true,
+      "reasoning": "Premise 7: (F∧D)↔(C↔G) ∧ G. So G=T. Premises 1: B∧D. So B=T, D=T. Premise 5: D∧G∧(B→B). D=T, G=T, B→B=T. Ok. Premise 8,9: C=T. Prem 7: (F∧D)↔(C↔G) = (F∧T)↔(T↔T) = F↔T. So F=T. Prem 6: (E∨B)↔((G∨G)∧(F↔G)) = (E∨T)↔(T∧(T↔T)) = T↔T = T. Ok. Prem 4: (A→F)↔((B∧H)∧(G∧F)) = (A→T)↔(H∧T) = T↔H. So H must make this true: H=T. Prem 2: H↔((H→A)↔G) = T↔((T→A)↔T) = T↔(A↔T) = T↔A. So A=T. Conclusion: (H↔(A∨A))∨(A↔(D→C)) = (T↔T)∨(T↔T) = T∨T = T. All values fixed, conclusion true. VALID."
+    },
+    "ESC-2-03": {
+      "valid": true,
+      "reasoning": "Premise 3: ¬A. Premise 4: A. CONTRADICTION. Ex falso quodlibet. VALID."
+    },
+    "ESC-2-04": {
+      "valid": true,
+      "reasoning": "Premise 3: ¬D. Premise 4: G∧D, so D=T. CONTRADICTION (¬D and D). Ex falso quodlibet. VALID."
+    },
+    "ESC-2-05": {
+      "valid": true,
+      "reasoning": "Premise 3 states G. Conclusion is G. Trivially valid."
+    }
+  }
+}

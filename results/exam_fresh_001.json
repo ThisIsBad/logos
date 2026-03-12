@@ -1,0 +1,125 @@
+{
+  "exam_id": "00cab7d65a24",
+  "generated_at": "2026-03-12T12:27:50",
+  "problems": [
+    {
+      "id": "GEN-001",
+      "natural_language": "Given:\n  1. (D is true) AND ((E is true) IFF (D is true))\n  2. B is true\n  3. (E is true) IFF ((C is true) AND (E is true))\n  4. (E is true) IFF (C is true)\n  5. E is true\nConclusion: (C is true) OR (A is true)",
+      "formal": "(D ∧ (E ↔ D)), B, (E ↔ (C ∧ E)), (E ↔ C), E ⊢ (C ∨ A)"
+    },
+    {
+      "id": "GEN-002",
+      "natural_language": "Given:\n  1. D is true\n  2. E is false\n  3. A is true\n  4. B is true\nConclusion: D is true",
+      "formal": "D, ¬E, A, B ⊢ D"
+    },
+    {
+      "id": "GEN-003",
+      "natural_language": "Given:\n  1. IF (E is true) THEN (C is true)\n  2. IF (E is true) THEN ((A is true) OR (B is true))\n  3. A is true\n  4. E is true\nConclusion: E is true",
+      "formal": "(E → C), (E → (A ∨ B)), A, E ⊢ E"
+    },
+    {
+      "id": "GEN-004",
+      "natural_language": "Given:\n  1. B is true\n  2. B is true\n  3. D is true\n  4. A is true\n  5. (IF (C is true) THEN (E is true)) AND (C is true)\nConclusion: (A is true) IFF (E is true)",
+      "formal": "B, B, D, A, ((C → E) ∧ C) ⊢ (A ↔ E)"
+    },
+    {
+      "id": "GEN-005",
+      "natural_language": "Given:\n  1. A is true\n  2. B is true\n  3. E is true\n  4. (C is false) OR (C is true)\nConclusion: IF ((E is true) IFF (E is true)) THEN (D is true)",
+      "formal": "A, B, E, (¬C ∨ C) ⊢ ((E ↔ E) → D)"
+    },
+    {
+      "id": "GEN-006",
+      "natural_language": "Given:\n  1. ((D is true) IFF (C is true)) IFF (C is true)\n  2. A is true\n  3. IF (B is true) THEN ((E is true) OR (C is true))\n  4. C is true\n  5. E is false\nConclusion: C is true",
+      "formal": "((D ↔ C) ↔ C), A, (B → (E ∨ C)), C, ¬E ⊢ C"
+    },
+    {
+      "id": "GEN-007",
+      "natural_language": "Given:\n  1. (B is true) IFF (B is true)\n  2. (IF (B is true) THEN (D is true)) AND (A is true)\n  3. (A is false) IFF (E is true)\n  4. C is false\n  5. IF (D is true) THEN (A is true)\nConclusion: B is true",
+      "formal": "(B ↔ B), ((B → D) ∧ A), (¬A ↔ E), ¬C, (D → A) ⊢ B"
+    },
+    {
+      "id": "GEN-008",
+      "natural_language": "Given:\n  1. ((C is true) OR (D is true)) AND (B is true)\n  2. (IF (B is true) THEN (A is true)) AND (C is false)\n  3. E is true\n  4. E is true\n  5. D is false\n  6. C is true\nConclusion: (D is true) IFF (A is false)",
+      "formal": "((C ∨ D) ∧ B), ((B → A) ∧ ¬C), E, E, ¬D, C ⊢ (D ↔ ¬A)"
+    },
+    {
+      "id": "GEN-009",
+      "natural_language": "Given:\n  1. ((E is true) AND (B is true)) OR ((D is true) OR (D is true))\n  2. IF ((B is true) IFF (B is true)) THEN (C is true)\n  3. E is true\n  4. NOT ((D is true) OR (E is true))\n  5. ((E is true) IFF (A is true)) OR ((A is true) OR (B is true))\n  6. C is true\nConclusion: (E is true) OR (IF (C is true) THEN (A is true))",
+      "formal": "((E ∧ B) ∨ (D ∨ D)), ((B ↔ B) → C), E, ¬(D ∨ E), ((E ↔ A) ∨ (A ∨ B)), C ⊢ (E ∨ (C → A))"
+    },
+    {
+      "id": "GEN-010",
+      "natural_language": "Given:\n  1. C is true\n  2. (A is true) OR (IF (C is true) THEN (E is true))\n  3. ((E is true) IFF (A is true)) IFF (B is true)\n  4. E is true\nConclusion: A is true",
+      "formal": "C, (A ∨ (C → E)), ((E ↔ A) ↔ B), E ⊢ A"
+    }
+  ],
+  "answer_key": {
+    "GEN-001": {
+      "valid": true,
+      "rule": "Valid (rule not identified)",
+      "counterexample": null
+    },
+    "GEN-002": {
+      "valid": true,
+      "rule": "Valid (rule not identified)",
+      "counterexample": null
+    },
+    "GEN-003": {
+      "valid": true,
+      "rule": "Valid (rule not identified)",
+      "counterexample": null
+    },
+    "GEN-004": {
+      "valid": true,
+      "rule": "Valid (rule not identified)",
+      "counterexample": null
+    },
+    "GEN-005": {
+      "valid": false,
+      "rule": "Invalid (fallacy not identified)",
+      "counterexample": {
+        "A": true,
+        "B": true,
+        "C": false,
+        "D": false,
+        "E": true
+      }
+    },
+    "GEN-006": {
+      "valid": true,
+      "rule": "Valid (rule not identified)",
+      "counterexample": null
+    },
+    "GEN-007": {
+      "valid": false,
+      "rule": "Invalid (fallacy not identified)",
+      "counterexample": {
+        "A": true,
+        "B": false,
+        "C": false,
+        "D": false,
+        "E": false
+      }
+    },
+    "GEN-008": {
+      "valid": true,
+      "rule": "Valid (rule not identified)",
+      "counterexample": null
+    },
+    "GEN-009": {
+      "valid": true,
+      "rule": "Valid (rule not identified)",
+      "counterexample": null
+    },
+    "GEN-010": {
+      "valid": false,
+      "rule": "Invalid (fallacy not identified)",
+      "counterexample": {
+        "A": false,
+        "B": false,
+        "C": true,
+        "E": true
+      }
+    }
+  }
+}

@@ -1,0 +1,153 @@
+{
+  "config": {
+    "vars": 10,
+    "premises": 10,
+    "depth": 3
+  },
+  "generated_at": "2026-03-12T16:17:23",
+  "problems": [
+    {
+      "id": "HARD-01",
+      "premises_formal": [
+        "((C → (I ↔ C)) ↔ ((F ∨ G) ∨ (B ∧ G)))",
+        "(((J ↔ C) ↔ (B → C)) ∧ ((F ∧ F) → (G → F)))",
+        "E",
+        "(((A → F) ∧ B) ∨ A)",
+        "D",
+        "(J ∧ A)",
+        "¬((E ∧ ¬B))",
+        "J",
+        "F",
+        "((J ∨ H) ∧ (F ∧ G))"
+      ],
+      "conclusion_formal": "B",
+      "full_formal": "((C → (I ↔ C)) ↔ ((F ∨ G) ∨ (B ∧ G))), (((J ↔ C) ↔ (B → C)) ∧ ((F ∧ F) → (G → F))), E, (((A → F) ∧ B) ∨ A), D, (J ∧ A), ¬((E ∧ ¬B)), J, F, ((J ∨ H) ∧ (F ∧ G)) ⊢ B"
+    },
+    {
+      "id": "HARD-02",
+      "premises_formal": [
+        "(H ∨ ((F ∨ C) ∧ (B → H)))",
+        "B",
+        "C",
+        "F",
+        "((J ↔ (C → I)) ∧ F)",
+        "(¬G ↔ (D ∧ (C ↔ B)))",
+        "(((F ↔ E) ∨ (J ∨ G)) ∨ A)",
+        "((J → A) ↔ H)",
+        "((¬F ∧ (E ∧ B)) ∨ (H ↔ (C ∧ I)))",
+        "E"
+      ],
+      "conclusion_formal": "I",
+      "full_formal": "(H ∨ ((F ∨ C) ∧ (B → H))), B, C, F, ((J ↔ (C → I)) ∧ F), (¬G ↔ (D ∧ (C ↔ B))), (((F ↔ E) ∨ (J ∨ G)) ∨ A), ((J → A) ↔ H), ((¬F ∧ (E ∧ B)) ∨ (H ↔ (C ∧ I))), E ⊢ I"
+    },
+    {
+      "id": "HARD-03",
+      "premises_formal": [
+        "C",
+        "(C ∧ J)",
+        "((J → (G ↔ C)) ∨ ((D ∨ D) → ¬E))",
+        "¬(((E → E) ∧ (E ↔ B)))",
+        "(F ∨ C)",
+        "(((D ∨ E) → (D ∨ I)) ↔ C)",
+        "((¬I ∨ ¬C) → H)",
+        "J",
+        "(((H ∧ C) ↔ B) → E)",
+        "D"
+      ],
+      "conclusion_formal": "I",
+      "full_formal": "C, (C ∧ J), ((J → (G ↔ C)) ∨ ((D ∨ D) → ¬E)), ¬(((E → E) ∧ (E ↔ B))), (F ∨ C), (((D ∨ E) → (D ∨ I)) ↔ C), ((¬I ∨ ¬C) → H), J, (((H ∧ C) ↔ B) → E), D ⊢ I"
+    },
+    {
+      "id": "HARD-04",
+      "premises_formal": [
+        "(¬D ∧ (F ∨ (C → J)))",
+        "¬((D ∧ G))",
+        "B",
+        "((E ↔ (I ↔ A)) ↔ ((C → A) ∨ (F ∧ F)))",
+        "G",
+        "C",
+        "A",
+        "((E ↔ (D ∨ D)) ↔ ¬((C ↔ A)))",
+        "(¬(¬H) → ((E → E) → F))",
+        "(F ∧ I)"
+      ],
+      "conclusion_formal": "(((J ∧ F) ∧ F) → (B → D))",
+      "full_formal": "(¬D ∧ (F ∨ (C → J))), ¬((D ∧ G)), B, ((E ↔ (I ↔ A)) ↔ ((C → A) ∨ (F ∧ F))), G, C, A, ((E ↔ (D ∨ D)) ↔ ¬((C ↔ A))), (¬(¬H) → ((E → E) → F)), (F ∧ I) ⊢ (((J ∧ F) ∧ F) → (B → D))"
+    },
+    {
+      "id": "HARD-05",
+      "premises_formal": [
+        "G",
+        "C",
+        "(J → ¬((E ∨ E)))",
+        "G",
+        "J",
+        "(C ∧ D)",
+        "A",
+        "(B ↔ H)",
+        "C",
+        "((¬I ∨ (I ∨ E)) ∨ (H ∨ (D ↔ C)))"
+      ],
+      "conclusion_formal": "H",
+      "full_formal": "G, C, (J → ¬((E ∨ E))), G, J, (C ∧ D), A, (B ↔ H), C, ((¬I ∨ (I ∨ E)) ∨ (H ∨ (D ↔ C))) ⊢ H"
+    }
+  ],
+  "answer_key": {
+    "HARD-01": {
+      "valid": true,
+      "rule": "Valid (rule not identified)",
+      "counterexample": null
+    },
+    "HARD-02": {
+      "valid": true,
+      "rule": "Valid (rule not identified)",
+      "counterexample": null
+    },
+    "HARD-03": {
+      "valid": false,
+      "rule": "Invalid (fallacy not identified)",
+      "counterexample": {
+        "B": false,
+        "C": true,
+        "D": true,
+        "E": true,
+        "F": false,
+        "G": true,
+        "H": true,
+        "I": false,
+        "J": true
+      }
+    },
+    "HARD-04": {
+      "valid": false,
+      "rule": "Invalid (fallacy not identified)",
+      "counterexample": {
+        "A": true,
+        "B": true,
+        "C": true,
+        "D": false,
+        "E": true,
+        "F": true,
+        "G": true,
+        "H": false,
+        "I": true,
+        "J": true
+      }
+    },
+    "HARD-05": {
+      "valid": false,
+      "rule": "Invalid (fallacy not identified)",
+      "counterexample": {
+        "A": true,
+        "B": false,
+        "C": true,
+        "D": true,
+        "E": false,
+        "G": true,
+        "H": false,
+        "I": false,
+        "J": true
+      }
+    }
+  }
+}

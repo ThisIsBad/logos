@@ -1,0 +1,26 @@
+{
+  "round": "hardmode_12v_12p",
+  "model": "Gemini 3.1 Pro (High)",
+  "answers": {
+    "HARD-01": {
+      "valid": true,
+      "reasoning": "P3 gives E=T. P7 gives ¬(E ∧ ¬B) = T -> E ∧ ¬B = F. Since E=T, B=T. The conclusion simplifies to H → (J ↔ ((D → J) ∧ A)). Because P8 gives J=T, and P5 gives D=T, and P6 gives A=T, the expression J ↔ ((D → J) ∧ A) evaluates to T ↔ ((T → T) ∧ T) = T. H → T is tautologically True. Thus, the conclusion is Valid."
+    },
+    "HARD-02": {
+      "valid": false,
+      "reasoning": "With H=T, F=T, I=T, B=T, evaluating P8 yields D != E. From P7, L → D = T and A=F. The conclusion calculates to F ↔ T = F. Setting L=F, J=T, C=F, K=T, H=T, F=T, I=T, B=T, A=F, D=F, E=T, G=T perfectly satisfies all premises but renders the conclusion False. Therefore, not forced. Invalid."
+    },
+    "HARD-03": {
+      "valid": false,
+      "reasoning": "P1 gives C=T, P6 K=T, P8 B=T, P10 C=T (already known) and G ∨ ¬J. Conclusion LHS is (G ↔ (A → J)) ∧ ((D ↔ K) ↔ A). If we set A=F, F=T, D=T, K=T, LHS is F because (D ↔ K) ↔ A == T ↔ F == F. The RHS is B ∨ ... = T (since B=T). So conclusion evaluates to F ↔ T = F. Checking premises with A=F, F=T, D=T, K=T, J=T, G=T, H=T, I=T, E=any, C=T, L=T, B=T leaves no contradictions. Since assignment satisfies premises and yields False conclusion, it is Invalid."
+    },
+    "HARD-04": {
+      "valid": false,
+      "reasoning": "P3(B=T), P6(A=T), P7(B=T again), P2(F=T). P1 gives D=F. Conclusion is ((J ∧ F) ∧ F) → (B → D). Since B=T, D=F, B → D is F, and conclusion simplifies to ¬J. But nothing constrains J to be False. We can set J=T, E=T. All premises remain satisfied, yet the conclusion is False. Thus, not forced, Invalid."
+    },
+    "HARD-05": {
+      "valid": false,
+      "reasoning": "P1(B=T), P6(D=T), P8(H=T), P12(L=T). P10 forces C=T and K=F. P2 and P5 force I=F and E=T. P9 requires F ∨ ¬J. Conclusion is (F ∨ (A ∨ (C → G))) → ¬A. If we set A=T, J=T, F=T, all premises are completely satisfied. The conclusion evaluates to T → F = F. Since a valid truth assignment falsifies the conclusion, it's Invalid."
+    }
+  }
+}

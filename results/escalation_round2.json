@@ -1,0 +1,119 @@
+{
+  "round": "round2",
+  "config": {
+    "vars": 8,
+    "premises": 9,
+    "depth": 3,
+    "problems": 5
+  },
+  "generated_at": "2026-03-12T12:41:24",
+  "problems": [
+    {
+      "id": "ESC-2-01",
+      "premises_formal": [
+        "(G ↔ F)",
+        "¬(((C ↔ G) ∧ B))",
+        "B",
+        "(((E → F) ∧ ¬D) ↔ (¬A ∧ (D ∨ F)))",
+        "(((E ∧ C) ↔ F) → F)",
+        "((H ∧ (G ∨ D)) ∨ ¬E)",
+        "(E → H)",
+        "((G ∧ (A → H)) ↔ (H ∧ (G ∧ D)))",
+        "A"
+      ],
+      "conclusion_formal": "A",
+      "full_formal": "(G ↔ F), ¬(((C ↔ G) ∧ B)), B, (((E → F) ∧ ¬D) ↔ (¬A ∧ (D ∨ F))), (((E ∧ C) ↔ F) → F), ((H ∧ (G ∨ D)) ∨ ¬E), (E → H), ((G ∧ (A → H)) ↔ (H ∧ (G ∧ D))), A ⊢ A"
+    },
+    {
+      "id": "ESC-2-02",
+      "premises_formal": [
+        "(B ∧ D)",
+        "(H ↔ ((H → A) ↔ G))",
+        "D",
+        "((A → F) ↔ ((B ∧ H) ∧ (G ∧ F)))",
+        "(D ∧ (G ∧ (B → B)))",
+        "((E ∨ B) ↔ ((G ∨ G) ∧ (F ↔ G)))",
+        "(((F ∧ D) ↔ (C ↔ G)) ∧ G)",
+        "C",
+        "C"
+      ],
+      "conclusion_formal": "((H ↔ (A ∨ A)) ∨ (A ↔ (D → C)))",
+      "full_formal": "(B ∧ D), (H ↔ ((H → A) ↔ G)), D, ((A → F) ↔ ((B ∧ H) ∧ (G ∧ F))), (D ∧ (G ∧ (B → B))), ((E ∨ B) ↔ ((G ∨ G) ∧ (F ↔ G))), (((F ∧ D) ↔ (C ↔ G)) ∧ G), C, C ⊢ ((H ↔ (A ∨ A)) ∨ (A ↔ (D → C)))"
+    },
+    {
+      "id": "ESC-2-03",
+      "premises_formal": [
+        "G",
+        "(D ↔ C)",
+        "¬A",
+        "A",
+        "(G ∧ E)",
+        "(((E ∧ E) ∧ D) → (¬D → ¬H))",
+        "(E ∨ ((A ↔ G) ↔ (D → C)))",
+        "F",
+        "¬(((F → F) → (B ∨ D)))"
+      ],
+      "conclusion_formal": "((¬B ↔ (A ∨ C)) ↔ (A → (D ∨ F)))",
+      "full_formal": "G, (D ↔ C), ¬A, A, (G ∧ E), (((E ∧ E) ∧ D) → (¬D → ¬H)), (E ∨ ((A ↔ G) ↔ (D → C))), F, ¬(((F → F) → (B ∨ D))) ⊢ ((¬B ↔ (A ∨ C)) ↔ (A → (D ∨ F)))"
+    },
+    {
+      "id": "ESC-2-04",
+      "premises_formal": [
+        "G",
+        "B",
+        "¬D",
+        "(G ∧ D)",
+        "(H → ¬B)",
+        "E",
+        "(B → (G ∧ D))",
+        "(((E ↔ F) ∧ F) ∨ A)",
+        "G"
+      ],
+      "conclusion_formal": "(C ∧ ¬((E → H)))",
+      "full_formal": "G, B, ¬D, (G ∧ D), (H → ¬B), E, (B → (G ∧ D)), (((E ↔ F) ∧ F) ∨ A), G ⊢ (C ∧ ¬((E → H)))"
+    },
+    {
+      "id": "ESC-2-05",
+      "premises_formal": [
+        "(E ↔ ((F ∨ D) ↔ D))",
+        "F",
+        "G",
+        "F",
+        "(¬F ∨ ((F ∨ A) → (G ∧ F)))",
+        "(D → E)",
+        "(¬((F ∧ F)) ↔ A)",
+        "(E ∨ (¬C ↔ D))",
+        "(A → E)"
+      ],
+      "conclusion_formal": "G",
+      "full_formal": "(E ↔ ((F ∨ D) ↔ D)), F, G, F, (¬F ∨ ((F ∨ A) → (G ∧ F))), (D → E), (¬((F ∧ F)) ↔ A), (E ∨ (¬C ↔ D)), (A → E) ⊢ G"
+    }
+  ],
+  "answer_key": {
+    "ESC-2-01": {
+      "valid": true,
+      "rule": "Valid (rule not identified)",
+      "counterexample": null
+    },
+    "ESC-2-02": {
+      "valid": true,
+      "rule": "Valid (rule not identified)",
+      "counterexample": null
+    },
+    "ESC-2-03": {
+      "valid": true,
+      "rule": "Valid (rule not identified)",
+      "counterexample": null
+    },
+    "ESC-2-04": {
+      "valid": true,
+      "rule": "Valid (rule not identified)",
+      "counterexample": null
+    },
+    "ESC-2-05": {
+      "valid": true,
+      "rule": "Valid (rule not identified)",
+      "counterexample": null
+    }
+  }
+}

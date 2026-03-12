@@ -1,0 +1,29 @@
+{
+  "model": "Gemini 3.1 Pro (High)",
+  "answers": {
+    "LEAN-01": {
+      "tactic_proof": "rfl",
+      "reasoning": "Addition of zero on the right is definitionally equal in Peano arithmetic."
+    },
+    "LEAN-02": {
+      "tactic_proof": "rfl",
+      "reasoning": "Constants compute to the same value (1), so reflexivity works."
+    },
+    "LEAN-03": {
+      "tactic_proof": "exact hpq hp",
+      "reasoning": "We apply the function hpq to the value hp."
+    },
+    "LEAN-04": {
+      "tactic_proof": "exact ⟨h.right, h.left⟩",
+      "reasoning": "Constructor for the AND structure taking the right and left components of the hypothesis."
+    },
+    "LEAN-05": {
+      "tactic_proof": "rw [Nat.add_assoc]",
+      "reasoning": "Rewriting using the standard library's associativity theorem for natural numbers."
+    },
+    "LEAN-06": {
+      "tactic_proof": "omega",
+      "reasoning": "Omega is a very powerful linear integer arithmetic solver in Lean 4 that can immediately discharge this."
+    }
+  }
+}

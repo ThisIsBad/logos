@@ -1,0 +1,124 @@
+{
+  "exam_id": "766e22bb5079",
+  "generated_at": "2026-03-12T12:25:26+0100",
+  "config": {
+    "num_variables": 5,
+    "num_premises": 6,
+    "max_depth": 3,
+    "seed": null
+  },
+  "problems": [
+    {
+      "id": "GEN-001",
+      "difficulty": "medium",
+      "natural_language": "Given the following premises:\n  1. E is true\n  2. E is true\n  3. (E is true) and (B is true)\n  4. B is true\n  5. (if (E is false) then (A is true)) or (C is true)\n  6. ((B is true) and (A is true)) or ((A is true) if and only if (A is false))\nConclusion: (B is true) or (E is true)\nIs this conclusion logically valid?",
+      "formal": "E, E, (E ∧ B), B, ((¬E → A) ∨ C), ((B ∧ A) ∨ (A ↔ ¬A)) ⊢ (B ∨ E)"
+    },
+    {
+      "id": "GEN-002",
+      "difficulty": "hard",
+      "natural_language": "Given the following premises:\n  1. it is not the case that (((D is true) if and only if (B is true)) or (C is true))\n  2. if (C is true) then (if ((B is true) and (A is true)) then (if (A is true) then (B is true)))\n  3. if (D is true) then (B is true)\n  4. (B is true) or (D is true)\n  5. (C is false) or (((A is true) or (A is true)) if and only if (C is true))\n  6. ((if (C is true) then (D is true)) if and only if (A is true)) and (if (if (B is true) then (C is true)) then (D is true))\nConclusion: D is true\nIs this conclusion logically valid?",
+      "formal": "¬((D ↔ B) ∨ C), (C → ((B ∧ A) → (A → B))), (D → B), (B ∨ D), (¬C ∨ ((A ∨ A) ↔ C)), (((C → D) ↔ A) ∧ ((B → C) → D)) ⊢ D"
+    },
+    {
+      "id": "GEN-003",
+      "difficulty": "hard",
+      "natural_language": "Given the following premises:\n  1. C is true\n  2. A is true\n  3. B is true\n  4. (D is false) or (if (C is true) then ((E is true) if and only if (D is true)))\n  5. D is true\n  6. (E is true) and (((D is true) if and only if (D is true)) and ((A is true) or (A is true)))\nConclusion: A is true\nIs this conclusion logically valid?",
+      "formal": "C, A, B, (¬D ∨ (C → (E ↔ D))), D, (E ∧ ((D ↔ D) ∧ (A ∨ A))) ⊢ A"
+    },
+    {
+      "id": "GEN-004",
+      "difficulty": "hard",
+      "natural_language": "Given the following premises:\n  1. B is true\n  2. ((B is true) if and only if (C is true)) and (E is true)\n  3. it is not the case that (if ((E is true) or (D is true)) then (B is true))\n  4. B is true\n  5. (C is true) or (C is false)\n  6. ((C is true) and (B is true)) or (D is true)\nConclusion: if (B is true) then (E is true)\nIs this conclusion logically valid?",
+      "formal": "B, ((B ↔ C) ∧ E), ¬((E ∨ D) → B), B, (C ∨ ¬C), ((C ∧ B) ∨ D) ⊢ (B → E)"
+    },
+    {
+      "id": "GEN-005",
+      "difficulty": "extreme",
+      "natural_language": "Given the following premises:\n  1. (E is false) or (((E is true) if and only if (D is true)) if and only if (B is true))\n  2. D is true\n  3. if ((E is false) and ((C is true) and (C is true))) then (D is true)\n  4. B is false\n  5. (E is true) or (if (C is true) then ((E is true) if and only if (B is true)))\n  6. it is not the case that (if (if (C is true) then (D is true)) then (E is true))\nConclusion: (D is true) or (it is not the case that ((A is true) or (B is true)))\nIs this conclusion logically valid?",
+      "formal": "(¬E ∨ ((E ↔ D) ↔ B)), D, ((¬E ∧ (C ∧ C)) → D), ¬B, (E ∨ (C → (E ↔ B))), ¬((C → D) → E) ⊢ (D ∨ ¬(A ∨ B))"
+    },
+    {
+      "id": "GEN-006",
+      "difficulty": "hard",
+      "natural_language": "Given the following premises:\n  1. ((D is false) or (A is true)) if and only if (D is true)\n  2. (E is true) or (B is true)\n  3. C is true\n  4. B is true\n  5. ((D is true) or ((C is true) if and only if (A is true))) or (B is false)\n  6. if (B is true) then (C is true)\nConclusion: E is false\nIs this conclusion logically valid?",
+      "formal": "((¬D ∨ A) ↔ D), (E ∨ B), C, B, ((D ∨ (C ↔ A)) ∨ ¬B), (B → C) ⊢ ¬E"
+    },
+    {
+      "id": "GEN-007",
+      "difficulty": "hard",
+      "natural_language": "Given the following premises:\n  1. (D is true) or (B is true)\n  2. ((E is true) and (E is true)) and (if (E is true) then (if (E is true) then (D is true)))\n  3. if (if (A is true) then (C is true)) then (C is true)\n  4. if (if ((C is true) and (A is true)) then ((E is true) and (A is true))) then (if (if (D is true) then (E is true)) then ((E is true) or (A is true)))\n  5. A is true\n  6. A is true\nConclusion: B is true\nIs this conclusion logically valid?",
+      "formal": "(D ∨ B), ((E ∧ E) ∧ (E → (E → D))), ((A → C) → C), (((C ∧ A) → (E ∧ A)) → ((D → E) → (E ∨ A))), A, A ⊢ B"
+    },
+    {
+      "id": "GEN-008",
+      "difficulty": "medium",
+      "natural_language": "Given the following premises:\n  1. if (B is true) then (B is true)\n  2. ((C is true) if and only if (if (D is true) then (D is true))) and (((E is true) or (E is true)) if and only if (B is false))\n  3. E is false\n  4. if (C is false) then (D is true)\n  5. B is true\n  6. C is true\nConclusion: C is false\nIs this conclusion logically valid?",
+      "formal": "(B → B), ((C ↔ (D → D)) ∧ ((E ∨ E) ↔ ¬B)), ¬E, (¬C → D), B, C ⊢ ¬C"
+    },
+    {
+      "id": "GEN-009",
+      "difficulty": "hard",
+      "natural_language": "Given the following premises:\n  1. C is true\n  2. (B is false) and (A is true)\n  3. A is true\n  4. (((D is true) or (E is true)) if and only if (E is true)) and (D is true)\n  5. (((A is true) or (B is true)) or ((E is true) and (A is true))) if and only if (if ((D is true) if and only if (A is true)) then (if (C is true) then (E is true)))\n  6. if (((B is true) and (D is true)) and ((A is true) or (E is true))) then (A is true)\nConclusion: (((D is true) if and only if (C is true)) and (E is true)) if and only if (D is true)\nIs this conclusion logically valid?",
+      "formal": "C, (¬B ∧ A), A, (((D ∨ E) ↔ E) ∧ D), (((A ∨ B) ∨ (E ∧ A)) ↔ ((D ↔ A) → (C → E))), (((B ∧ D) ∧ (A ∨ E)) → A) ⊢ (((D ↔ C) ∧ E) ↔ D)"
+    },
+    {
+      "id": "GEN-010",
+      "difficulty": "extreme",
+      "natural_language": "Given the following premises:\n  1. (it is not the case that ((B is true) and (D is true))) and (C is true)\n  2. it is not the case that (if ((B is true) or (E is true)) then (B is false))\n  3. E is true\n  4. B is true\n  5. ((C is true) and ((B is true) or (E is true))) if and only if (A is true)\n  6. (B is true) or ((C is true) if and only if ((C is true) or (C is true)))\nConclusion: (D is true) or ((B is true) if and only if ((B is true) if and only if (B is true)))\nIs this conclusion logically valid?",
+      "formal": "(¬(B ∧ D) ∧ C), ¬((B ∨ E) → ¬B), E, B, ((C ∧ (B ∨ E)) ↔ A), (B ∨ (C ↔ (C ∨ C))) ⊢ (D ∨ (B ↔ (B ↔ B)))"
+    }
+  ],
+  "answer_key": {
+    "GEN-001": {
+      "valid": true,
+      "rule": "Valid (rule not identified)",
+      "explanation": "The conclusion follows necessarily from the premises. No truth-value assignment can make all premises true while making the conclusion false."
+    },
+    "GEN-002": {
+      "valid": false,
+      "rule": "Invalid (fallacy not identified)",
+      "explanation": "The conclusion does NOT follow from the premises. Counterexample: when A=T, B=T, C=F, D=F, all premises are true but the conclusion is false."
+    },
+    "GEN-003": {
+      "valid": true,
+      "rule": "Valid (rule not identified)",
+      "explanation": "The conclusion follows necessarily from the premises. No truth-value assignment can make all premises true while making the conclusion false."
+    },
+    "GEN-004": {
+      "valid": true,
+      "rule": "Valid (rule not identified)",
+      "explanation": "The conclusion follows necessarily from the premises. No truth-value assignment can make all premises true while making the conclusion false."
+    },
+    "GEN-005": {
+      "valid": true,
+      "rule": "Valid (rule not identified)",
+      "explanation": "The conclusion follows necessarily from the premises. No truth-value assignment can make all premises true while making the conclusion false."
+    },
+    "GEN-006": {
+      "valid": false,
+      "rule": "Invalid (fallacy not identified)",
+      "explanation": "The conclusion does NOT follow from the premises. Counterexample: when A=T, B=T, C=T, D=T, E=T, all premises are true but the conclusion is false."
+    },
+    "GEN-007": {
+      "valid": false,
+      "rule": "Invalid (fallacy not identified)",
+      "explanation": "The conclusion does NOT follow from the premises. Counterexample: when A=T, B=F, C=F, D=T, E=T, all premises are true but the conclusion is false."
+    },
+    "GEN-008": {
+      "valid": false,
+      "rule": "Invalid (fallacy not identified)",
+      "explanation": "The conclusion does NOT follow from the premises. Counterexample: when B=T, C=T, D=F, E=F, all premises are true but the conclusion is false."
+    },
+    "GEN-009": {
+      "valid": true,
+      "rule": "Valid (rule not identified)",
+      "explanation": "The conclusion follows necessarily from the premises. No truth-value assignment can make all premises true while making the conclusion false."
+    },
+    "GEN-010": {
+      "valid": true,
+      "rule": "Valid (rule not identified)",
+      "explanation": "The conclusion follows necessarily from the premises. No truth-value assignment can make all premises true while making the conclusion false."
+    }
+  }
+}

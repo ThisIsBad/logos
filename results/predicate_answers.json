@@ -1,0 +1,45 @@
+{
+  "model": "Gemini 3.1 Pro (High)",
+  "answers": {
+    "FOL-01": {
+      "valid": true,
+      "reasoning": "Standard syllogism. For all x, Human(x) -> Mortal(x). Socrates is a Human. Therefore, Mortal(Socrates). Valid."
+    },
+    "FOL-02": {
+      "valid": false,
+      "reasoning": "Affirming the consequent. Being mortal doesn't guarantee being human (e.g., dogs are mortal). Invalid."
+    },
+    "FOL-03": {
+      "valid": true,
+      "reasoning": "Premise: There is a y who loves every x. This means y loves a, y loves b, y loves c, etc. The conclusion is for every x, there is a y who loves x. This is true, because we can just pick the same y for everyone. Valid."
+    },
+    "FOL-04": {
+      "valid": false,
+      "reasoning": "Premise: For every x, there is a y who loves x. (Everyone has somebody who loves them). Conclusion: There is a y who loves every x. (There is one universal lover who loves absolutely everyone). This does not logically follow. Invalid."
+    },
+    "FOL-05": {
+      "valid": true,
+      "reasoning": "Premise: It is NOT the case that (For all x, IF Bird(x) THEN CanFly(x)). By De Morgan's for quantifiers, ¬∀x P(x) is ∃x ¬P(x). Here P(x) is Bird(x) → CanFly(x). ¬(A → B) is A ∧ ¬B. So the premise is equivalent to ∃x (Bird(x) ∧ ¬CanFly(x)). This perfectly matches the conclusion. Valid."
+    },
+    "FOL-06": {
+      "valid": true,
+      "reasoning": "The premise is the Barber Paradox: ∀x (Shaves(Barber, x) ↔ ¬Shaves(x, x)). If we plug in x=Barber, we get Shaves(Barber, Barber) ↔ ¬Shaves(Barber, Barber). This is a logical contradiction (P ↔ ¬P). Because the premise is a contradiction, ANY conclusion derived from it is technically valid in classical first-order logic (Principle of Explosion / Ex Falso Quodlibet). Thus, the conclusion Shaves(Barber, Barber) is Valid."
+    },
+    "FOL-07": {
+      "valid": true,
+      "reasoning": "Premise 1 establishes transitivity of Taller. Premise 2: Alice > Bob. Premise 3: Bob > Charlie. By universal instantiation of P1 with x=Alice, y=Bob, z=Charlie, we get (Taller(A,B) ∧ Taller(B,C)) → Taller(A,C). Since the antecedent is true, the consequent Taller(Alice, Charlie) is true. Valid."
+    },
+    "FOL-08": {
+      "valid": false,
+      "reasoning": "∃x P(x) means there is at least one thing that is P. ∃y Q(y) means there is at least one thing that is Q. Note that x and y are independent. The conclusion ∃z (P(z) ∧ Q(z)) claims there is a single entity z that is BOTH P and Q. This does not follow. E.g., there exists a green thing (grass), there exists a red thing (apple). Does not imply there exists a thing that is both green and red. Invalid."
+    },
+    "FOL-09": {
+      "valid": true,
+      "reasoning": "Premise 1: ∀x ( (∃y Loves(x, y)) → Happy(x) ). Premise 2: Loves(John, Mary). From P2, we can deduce ∃y Loves(John, y) via existential generalization. Applying universal instantiation on P1 with x=John, we get (∃y Loves(John, y)) → Happy(John). By Modus Ponens, Happy(John) is true. Valid."
+    },
+    "FOL-10": {
+      "valid": false,
+      "reasoning": "Premise 1: (∀x TakesExam(x)) → (∀y WillPass(y)). Meaning: IF absolutely everyone in the domain takes the exam, THEN absolutely everyone will pass. Premise 2: ∀z (Student(z) → TakesExam(z)). Meaning: Every student takes the exam. This does NOT guarantee that everyone in the domain takes the exam (there could be non-students who didn't take it). Therefore, the antecedent of P1 is not necessarily satisfied. We cannot conclude that everyone will pass, nor can we even conclude that all students will pass. Invalid."
+    }
+  }
+}

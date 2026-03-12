@@ -1,0 +1,67 @@
+{
+  "model": "Claude Opus 4.6 (Thinking)",
+  "timestamp": "2026-03-11T22:05:00+01:00",
+  "note": "Level 4 stress test — genuine answers. These problems are designed to find my limits.",
+  "answers": {
+    "L4-01": {
+      "valid": true,
+      "reasoning": "7-step chain A→B→C→D→E→F→G→H with A true. Each step follows from the previous. H must be true."
+    },
+    "L4-02": {
+      "valid": false,
+      "reasoning": "The chain breaks between D and E. A→B→C→D is valid (giving us D), but E→F→G→H requires E to be true, and there is no D→E link. We cannot derive H."
+    },
+    "L4-03": {
+      "valid": true,
+      "reasoning": "A→B with A true gives B. The fact that later A→B→C→¬A creates a contradiction with A doesn't matter for whether B follows — the premises are inconsistent, but B still follows directly from A→B and A. In fact, from inconsistent premises, anything follows."
+    },
+    "L4-04": {
+      "valid": true,
+      "reasoning": "Ex Falso Quodlibet (Principle of Explosion). P and ¬P are contradictory. From a contradiction, ANYTHING can be derived. So yes, Q (the moon is made of cheese) follows. This is deeply counterintuitive but logically valid in classical logic."
+    },
+    "L4-05": {
+      "valid": true,
+      "reasoning": "Among the 11 premises, only E→F and E are relevant. E is true (given as premise), E→F gives F. All other premises (A→B, C→D, G→H, I→J, K→L, M→N, C, D, G) are distractors."
+    },
+    "L4-06": {
+      "valid": true,
+      "reasoning": "A→(B∨C). ¬B and ¬C. By De Morgan: ¬B∧¬C ≡ ¬(B∨C). So we have ¬(B∨C). By Modus Tollens on A→(B∨C): ¬A."
+    },
+    "L4-07": {
+      "valid": true,
+      "reasoning": "Proof by Cases. A→B and ¬A→B. A must be either true or false (law of excluded middle). In both cases, B follows. Therefore B must be true."
+    },
+    "L4-08": {
+      "valid": true,
+      "reasoning": "A→¬B with A true gives ¬B directly by Modus Ponens. The other premises (A∨B, B→¬A) are consistent but not needed — A→¬B and A suffice."
+    },
+    "L4-09": {
+      "valid": true,
+      "reasoning": "XOR(A,B) = (A∧¬B)∨(¬A∧B). With ¬A given, the first disjunct (A∧¬B) is impossible. So (¬A∧B) must hold. This is exactly B∧¬A."
+    },
+    "L4-10": {
+      "valid": false,
+      "reasoning": "INVALID. A→B→C→D with D true is Affirming the Consequent across a chain. D could be true independently of A. We cannot reverse conditionals."
+    },
+    "L4-11": {
+      "valid": true,
+      "reasoning": "A↔B with A gives B (biconditional elimination). B↔C with B gives C. Biconditional chains transfer truth values."
+    },
+    "L4-12": {
+      "valid": true,
+      "reasoning": "¬¬A is given (not-not-A), which simplifies to A by double negation. The antecedent ¬(¬A∧¬B) is equivalent to A∨B by De Morgan. Since A is true, A∨B is true, so the implication gives us C."
+    },
+    "L4-13": {
+      "valid": false,
+      "reasoning": "INVALID. A→B→C is valid, giving us C. D→C is given, but that only tells us 'if D then C', not 'if C then D'. Knowing C is true does NOT let us conclude D — that would be Affirming the Consequent."
+    },
+    "L4-14": {
+      "valid": true,
+      "reasoning": "Chained Modus Tollens. ¬D with C→D gives ¬C. ¬C with B→C gives ¬B. ¬B with A→B gives ¬A."
+    },
+    "L4-15": {
+      "valid": true,
+      "reasoning": "A→B and B→A together constitute A↔B (biconditional introduction). The premise A is actually redundant — A↔B follows from the two conditional premises alone."
+    }
+  }
+}

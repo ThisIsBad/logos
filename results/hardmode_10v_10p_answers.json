@@ -1,0 +1,26 @@
+{
+  "round": "hardmode_10v_10p",
+  "model": "Gemini 3.1 Pro (High)",
+  "answers": {
+    "HARD-01": {
+      "valid": true,
+      "reasoning": "Premise 3 gives E=T. Premise 7 gives ¬(E ∧ ¬B) = T, so E ∧ ¬B = F. Since E=T, ¬B must be F, thus B=T. The conclusion is B, which is explicitly forced to be T. Valid."
+    },
+    "HARD-02": {
+      "valid": true,
+      "reasoning": "P2(B=T), P3(C=T), P4(F=T), P10(E=T). P5((J ↔ (C → I)) ∧ F) means J ↔ (T → I), so J ↔ I. P9( (¬F ∧ (E ∧ B)) ∨ (H ↔ (C ∧ I)) ): since ¬F=F, the first disjunct is F, so H ↔ (C ∧ I) = T. Since C=T, H ↔ I = T. So J = I = H. P1(H ∨ ((F ∨ C) ∧ (B → H))): Since F∨C=T and B=T, this simplifies to H ∨ (T ∧ H) = H. So P1 asserts H is True. Since H=T and H=I, I must be True. Conclusion is I. Valid."
+    },
+    "HARD-03": {
+      "valid": false,
+      "reasoning": "P1(C=T), P2(J=T), P8(J=T), P10(D=T). P4 gives E != B. P6 gives T ↔ C, which is T. P7( (¬I ∨ ¬C) → H ) gives ¬I → H. P9( ((H ∧ C) ↔ B) → E) gives (H ↔ B) → E. If I=F, then H=T. If H=T, P9 is B → E. Since E != B, we can choose B=F, E=T. P3(J → (G ↔ C) ∨ (D → ¬E)) gives G ∨ False (since ¬E=F), so G=T. This perfectly satisfies all premises with I=F. Since I is not forced to be T, the conclusion I is Invalid."
+    },
+    "HARD-04": {
+      "valid": false,
+      "reasoning": "P3(B=T), P5(G=T), P6(C=T), P7(A=T), P10(F=T, I=T). P1(¬D ∧ ...) gives D=F. The conclusion is ((J ∧ F) ∧ F) → (B → D). Since B=T, D=F, B → D is F. So conclusion is J → F, meaning ¬J. Can J be True? If J=T, conclusion = F. Let's check consistency. P8((E ↔ (D ∨ D)) ↔ ¬(C ↔ A)) evaluates to (E ↔ F) ↔ F, so E=T. P4 evaluates to T ↔ T = T. P9 evaluates to T → T = T. All premises are satisfiable with J=T! The conclusion doesn't have to be True. Invalid."
+    },
+    "HARD-05": {
+      "valid": false,
+      "reasoning": "P1/P4(G=T), P2/P9(C=T), P5(J=T), P6(C=T, D=T), P7(A=T). P3 gives ¬(E ∨ E), so E=F. P8 gives B ↔ H. P10 is a tautology (¬I ∨ I is True). The conclusion is H. But H is only constrained by P8 (B ↔ H). We can set H=F and B=F without violating any premises. Thus, H is not forced to be True. Invalid."
+    }
+  }
+}
