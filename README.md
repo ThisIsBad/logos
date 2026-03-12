@@ -35,6 +35,14 @@ are_equivalent("~(P & Q)", "~P | ~Q")  # True (De Morgan's Law)
 are_equivalent("P -> Q", "~Q -> ~P")   # True (Contraposition)
 ```
 
+## CLI
+
+```powershell
+python -m logic_brain "P -> Q, P |- Q"
+python -m logic_brain "P -> Q, Q |- P" --explain
+python -m logic_brain "P -> Q, P |- Q" --json
+```
+
 ## Syntax
 
 | Symbol | Meaning | Alternatives |
