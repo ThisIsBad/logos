@@ -231,6 +231,16 @@ python tools/check_results.py hardmode hardmode_10v_10p
 python tools/check_results.py escalation round2
 ```
 
+## Examples
+
+```powershell
+python examples/quick_verify.py
+python examples/interactive_sessions.py
+```
+
+Notebook demo:
+- `examples/logic_brain_demo.ipynb`
+
 ## License
 
 MIT
