@@ -244,6 +244,13 @@ Notebook demo:
 Roadmap assessment:
 - `docs/logic_extensions_assessment.md`
 
+## Releases
+
+- Follow semantic versioning (`MAJOR.MINOR.PATCH`).
+- Check `CHANGELOG.md` for release notes and upgrade context.
+- GitHub releases are published at:
+  - `https://github.com/ThisIsBad/LogicBrain/releases`
+
 ## License
 
 MIT
