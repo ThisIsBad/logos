@@ -224,6 +224,11 @@ pytest tests/ -v       # Run all tests verbosely
 
 ```powershell
 python -m logic_brain.runner
+
+# Check result files
+python tools/check_results.py exam
+python tools/check_results.py hardmode hardmode_10v_10p
+python tools/check_results.py escalation round2
 ```
 
 ## License
