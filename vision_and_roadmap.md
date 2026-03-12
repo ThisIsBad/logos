@@ -127,7 +127,9 @@ print(session.unsat_core())  # ["x > 0", "x < 0"]
 
 **Aufwand:** 1-2 Tage (Z3 hat gute Python-Bindings)
 
-### Phase 3: Strukturierte Diagnostik (Priorität: MITTEL)
+### Phase 3: Strukturierte Diagnostik (ERLEDIGT)
+
+**Status:** Implementiert in `logic_brain/diagnostics.py` und in Lean/Z3 integriert.
 
 Bessere Fehlerausgaben, die der Agent direkt nutzen kann:
 
@@ -140,7 +142,10 @@ if not result.success:
     print(result.suggestion)     # "Did you mean: apply Nat.mul_comm?"
 ```
 
-**Aufwand:** 1 Woche
+**Ergebnis:**
+- `TacticResult` und `CheckResult` liefern strukturierte Diagnostik
+- Fehlerklassifikation (`ErrorType`) + Vorschläge (`suggestions`)
+- Neue Tests für Diagnostikpfade vorhanden
 
 ### Phase 4: Lemma-Cache (Priorität: NIEDRIG)
 
@@ -201,14 +206,25 @@ LogicBrain ist das **Werkzeug**, nicht der **Arbeiter**.
 
 ---
 
-## Nächster Schritt
+## Nächste Schritte (ab v0.1.1)
 
-**Phase 1: LeanSession implementieren**
+1. **CI stabilisieren**
+   - GitHub Actions Workflow für `pip install -e ".[dev]"` + `pytest -q`
+   - Python-Versionen 3.10/3.11 abdecken
 
-Minimaler PoC:
-1. Lean 4 Prozess starten
-2. Theorem-Header senden
-3. Taktik senden → Goal-State zurück
-4. Wiederholen bis complete oder Fehler
+2. **Tooling vereinheitlichen**
+   - Restliche Check-Skripte (`check_lean.py`, `check_predicate.py`) unter `tools/` konsolidieren
+   - Einheitliche CLI-Parameter und Doku
 
-Das ist der größte Hebel für iteratives Proving.
+3. **Optionale Erweiterungen planen**
+   - Konkrete Umsetzung nach `docs/logic_extensions_assessment.md`
+   - Empfohlene Reihenfolge: Modal -> Temporal -> Many-valued
+
+---
+
+## Session-Handoff (2026-03-12)
+
+- Release `v0.1.1` ist live.
+- Tests: `144 passed`.
+- Roadmap-Issues `#1` bis `#5` geschlossen.
+- Fokus für Folgesession: CI + Tooling-Konsolidierung.
