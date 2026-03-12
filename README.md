@@ -241,6 +241,9 @@ python examples/interactive_sessions.py
 Notebook demo:
 - `examples/logic_brain_demo.ipynb`
 
+Roadmap assessment:
+- `docs/logic_extensions_assessment.md`
+
 ## License
 
 MIT
