@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "logic-brain"
-version = "0.1.0"
+version = "0.1.1"
 description = "LLM × Deterministic Logic Verifier — exploiting the P≠NP asymmetry"
 requires-python = ">=3.10"
 dependencies = [
