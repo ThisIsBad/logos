@@ -64,102 +64,62 @@ Fehler werden sofort erkannt. Kein Aufbauen auf falschen Annahmen.
 
 ---
 
-## Roadmap
+## Implementierte Komponenten (v0.1.2)
 
-### Phase 1: Lean REPL-Wrapper (ERLEDIGT)
+Die folgenden Kernkomponenten sind implementiert und getestet (153 Tests):
 
-**Status:** Implementiert in `logic_brain/lean_session.py` mit 18 Tests.
+### Lean REPL-Wrapper (`lean_session.py`)
 
-### Phase 1 (Original):
-
-**Ziel:** Interaktive Lean 4 Sessions, die der Agent Taktik-für-Taktik steuern kann.
+Interaktive Lean 4 Sessions, die der Agent Taktik-für-Taktik steuern kann.
 
 ```python
 from logic_brain import LeanSession
 
 session = LeanSession()
 session.start("theorem test : 1 + 1 = 2 := by")
-
-print(session.goals)       # ["⊢ 1 + 1 = 2"]
-print(session.is_complete) # False
-
 result = session.apply("rfl")
-print(result.success)      # True
-print(session.goals)       # []
-print(session.is_complete) # True
-print(session.proof)       # "theorem test : 1 + 1 = 2 := by rfl"
+print(session.is_complete)  # True
 ```
 
-**Was LogicBrain liefert:**
-- Zustandsverwaltung (offene Goals, bisherige Taktiken)
-- Goal-State-Parsing (Lean-Output → strukturierte Daten)
-- Fehlerbehandlung (Timeout, Syntax-Fehler, etc.)
+### Z3 Incremental Solving (`z3_session.py`)
 
-**Was der Agent macht:**
-- Taktik-Auswahl ("Welchen Schritt probiere ich?")
-- Backtracking ("Sackgasse, zurück zu Schritt 3")
-- Strategie ("Erst vereinfachen, dann induktiv")
-
-**Aufwand:** 2-3 Tage
-
-### Phase 2: Z3 Incremental Solving (ERLEDIGT)
-
-**Status:** Implementiert in `logic_brain/z3_session.py` mit 31 Tests.
-
-### Phase 2 (Original):
-
-Ähnlich wie Lean-REPL, aber für Z3:
+Stateful Z3 Sessions mit push/pop, unsat-core und sicherem AST-basiertem Constraint-Parsing.
 
 ```python
 from logic_brain import Z3Session
 
 session = Z3Session()
 session.declare("x", "Int")
-session.declare("y", "Int")
-
 session.assert_constraint("x > 0")
 print(session.check())  # sat
-
-session.assert_constraint("x < 0")
-print(session.check())  # unsat
-print(session.unsat_core())  # ["x > 0", "x < 0"]
 ```
 
-**Aufwand:** 1-2 Tage (Z3 hat gute Python-Bindings)
+### Strukturierte Diagnostik (`diagnostics.py`)
 
-### Phase 3: Strukturierte Diagnostik (ERLEDIGT)
-
-**Status:** Implementiert in `logic_brain/diagnostics.py` und in Lean/Z3 integriert.
-
-Bessere Fehlerausgaben, die der Agent direkt nutzen kann:
+Maschinenlesbare Fehlerklassifikation mit Vorschlägen für Agent-Recovery.
 
 ```python
 result = session.apply("apply Nat.add_comm")
 if not result.success:
-    print(result.error_type)     # "tactic_failed"
-    print(result.expected_type)  # "⊢ a + b = b + a"
-    print(result.actual_type)    # "⊢ a * b = b * a"
-    print(result.suggestion)     # "Did you mean: apply Nat.mul_comm?"
+    print(result.error_type)   # "tactic_failed"
+    print(result.suggestion)   # "Did you mean: apply Nat.mul_comm?"
 ```
 
-**Ergebnis:**
-- `TacticResult` und `CheckResult` liefern strukturierte Diagnostik
-- Fehlerklassifikation (`ErrorType`) + Vorschläge (`suggestions`)
-- Neue Tests für Diagnostikpfade vorhanden
+### Propositional & Predicate Logic Verifier
 
-### Phase 4: Lemma-Cache (Priorität: NIEDRIG)
-
-Erfolgreiche Zwischen-Lemmata speichern und wiederverwenden:
+Quick-Verify API und vollständiger FOL-Verifier mit Z3-Backend.
 
 ```python
-# Automatisch nach erfolgreichem Beweis
-session.save_lemma("my_helper", "∀ n, n + 0 = n")
-
-# Später in anderem Beweis
-session.use_lemma("my_helper")
+from logic_brain import verify
+result = verify("P -> Q, P |- Q")
+print(result.valid, result.rule)  # True, "Modus Ponens"
 ```
 
-**Aufwand:** 1-2 Wochen
+### CI & Tooling
+
+- GitHub Actions CI (Python 3.10/3.11)
+- Konsolidierte Benchmark-Tools unter `tools/`
+- Release-Playbook unter `docs/release_playbook.md`
 
 ---
 
@@ -206,25 +166,30 @@ LogicBrain ist das **Werkzeug**, nicht der **Arbeiter**.
 
 ---
 
-## Nächste Schritte (ab v0.1.1)
+## Aktuelle Roadmap (ab v0.1.3)
 
-1. **CI stabilisieren**
-   - GitHub Actions Workflow für `pip install -e ".[dev]"` + `pytest -q`
-   - Python-Versionen 3.10/3.11 abdecken
+Die detaillierte Roadmap mit Phasen, KPIs, Issue-Vorschlägen und Risikoanalyse liegt in:
 
-2. **Tooling vereinheitlichen**
-   - Restliche Check-Skripte (`check_lean.py`, `check_predicate.py`) unter `tools/` konsolidieren
-   - Einheitliche CLI-Parameter und Doku
+**→ [`docs/roadmap_v013_v020.md`](docs/roadmap_v013_v020.md)**
 
-3. **Optionale Erweiterungen planen**
-   - Konkrete Umsetzung nach `docs/logic_extensions_assessment.md`
-   - Empfohlene Reihenfolge: Modal -> Temporal -> Many-valued
+Zusammenfassung der drei Phasen:
+
+1. **v0.1.3 — API Stabilization** (2-3 Wochen): Stabilitätsvertrag, Deprecation-Policy, interne API-Grenzen, Root-Cleanup
+2. **v0.1.4 — Quality & Observability** (2-3 Wochen): Test-Coverage ≥85%, CI mit Linting/mypy/Coverage, Benchmark-Regression-Gate
+3. **v0.2.0 — Integration & Documentation** (3-4 Wochen): Agent-Integrationsbeispiel, API-Referenz, erstes "stable" Release
+
+### Bewusst zurückgestellt
+
+- Logik-Erweiterungen (Modal/Temporal/Many-valued) — erst nach v0.2.0, siehe `docs/logic_extensions_assessment.md`
+- Lemma-Cache — erst bei nachgewiesener Agent-Nutzung von LeanSession
+- PyPI-Release — erst nach stabilem API-Vertrag
 
 ---
 
-## Session-Handoff (2026-03-12)
+## Referenzen
 
-- Release `v0.1.1` ist live.
-- Tests: `144 passed`.
-- Roadmap-Issues `#1` bis `#5` geschlossen.
-- Fokus für Folgesession: CI + Tooling-Konsolidierung.
+- Detaillierte Roadmap: `docs/roadmap_v013_v020.md`
+- Planning Brief: `docs/claude_opus_planning_brief.md`
+- Extensions Assessment: `docs/logic_extensions_assessment.md`
+- Release Playbook: `docs/release_playbook.md`
+- Changelog: `CHANGELOG.md`

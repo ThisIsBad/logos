@@ -1,6 +1,11 @@
-"""Error pattern analyzer for LLM logic evaluation results."""
+"""Error pattern analyzer for LLM logic evaluation results.
+
+Internal module — not part of the public API (Tier 3).
+"""
 
 from __future__ import annotations
+
+__all__ = ["AnalysisReport", "ErrorAnalyzer"]
 
 from collections import Counter
 from dataclasses import dataclass

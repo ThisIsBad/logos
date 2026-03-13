@@ -2,9 +2,13 @@
 
 Takes a JSON file of LLM answers and checks them against the verifier.
 Produces a detailed comparison report.
+
+Internal module — not part of the public API (Tier 3).
 """
 
 from __future__ import annotations
+
+__all__ = ["evaluate"]
 
 import json
 import sys

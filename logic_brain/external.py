@@ -1,5 +1,7 @@
 """External benchmark integration — notes and adapters.
 
+Internal module — not part of the public API (Tier 3).
+
 Useful external benchmarks for LLM logic evaluation:
 
 1. **SATBench** (Apache 2.0, HuggingFace)
@@ -28,6 +30,8 @@ Useful external benchmarks for LLM logic evaluation:
 """
 
 from __future__ import annotations
+
+__all__ = ["load_satbench", "load_folio"]
 
 import json
 from pathlib import Path

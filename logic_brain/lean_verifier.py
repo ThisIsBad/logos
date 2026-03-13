@@ -1,4 +1,9 @@
-"""Lean 4 Verification Backend."""
+"""Lean 4 Verification Backend.
+
+Internal module — not part of the public API (Tier 3).
+"""
+
+__all__ = ["LeanVerifier", "LeanVerificationResult"]
 
 import os
 import tempfile

@@ -50,6 +50,9 @@ class Diagnostic:
     This class provides detailed, machine-readable information about
     errors that occur during proving or constraint solving, making it
     easier for agents to understand and recover from failures.
+    
+    The ``schema_version`` field allows agents to check compatibility
+    before processing diagnostics.
     """
     
     error_type: ErrorType
@@ -57,6 +60,9 @@ class Diagnostic:
     
     message: str
     """Human-readable error message."""
+    
+    schema_version: str = "1"
+    """Schema version for forward-compatibility checks."""
     
     expected: Optional[str] = None
     """What was expected (e.g., expected type)."""

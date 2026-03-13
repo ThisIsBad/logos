@@ -1,6 +1,11 @@
-"""Benchmark loader — deserialises problems.json into model objects."""
+"""Benchmark loader — deserialises problems.json into model objects.
+
+Internal module — not part of the public API (Tier 3).
+"""
 
 from __future__ import annotations
+
+__all__ = ["load_problems", "parse_problem"]
 
 import json
 from pathlib import Path

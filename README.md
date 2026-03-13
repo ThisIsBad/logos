@@ -203,23 +203,28 @@ Features:
 
 ```
 logic_brain/
-├── parser.py         # String-based parser ("P -> Q, P |- Q")
-├── verifier.py       # Z3-backed propositional logic verifier
-├── predicate.py      # Z3-backed predicate logic verifier
-├── lean_session.py   # Lean 4 interactive session wrapper
-├── z3_session.py     # Z3 incremental solving session
-├── models.py         # Core data types
+├── parser.py           # String-based parser ("P -> Q, P |- Q")
+├── verifier.py         # Z3-backed propositional logic verifier
+├── predicate.py        # Z3-backed predicate logic verifier
+├── lean_session.py     # Lean 4 interactive session wrapper
+├── z3_session.py       # Z3 incremental solving session
+├── diagnostics.py      # Structured error diagnostics for agents
+├── cli.py              # CLI entrypoint (python -m logic_brain)
+├── models.py           # Core data types
 ├── predicate_models.py # FOL data types
-├── loader.py         # Benchmark loader
-└── runner.py         # Benchmark runner
+├── loader.py           # Benchmark loader
+└── runner.py           # Benchmark runner
+tools/
+├── generate_exam.py    # Generate exam benchmarks
+├── generate_hardmode.py # Generate hard benchmarks
+├── generate_escalation.py # Generate escalation benchmarks
+├── check_results.py    # Check exam/hardmode/escalation answers
+├── check_stress_results.py # Check stress test answers
+├── check_fol_results.py # Check FOL benchmark answers
+└── check_lean_results.py # Check Lean benchmark answers
 benchmarks/
-└── problems.json     # 25 graded logic problems
-tests/
-├── test_parser.py    # Parser tests (45 tests)
-├── test_verifier.py  # Verifier tests
-├── test_predicate.py # FOL tests
-├── test_lean_session.py # Lean session tests (18 tests)
-└── test_z3_session.py   # Z3 session tests (31 tests)
+└── problems.json       # 25 graded logic problems
+tests/                  # 153 tests (pytest)
 ```
 
 ## Running Tests
@@ -258,16 +263,7 @@ FOL checker schema expectations:
 - Benchmark file contains `problems` with `id` and `expected_valid`.
 - Answers file contains `answers` keyed by problem id, each with a `valid` boolean.
 
-Legacy compatibility wrappers (deprecated):
-
-```powershell
-python check_lean.py
-python check_predicate.py
-python generate_exam.py
-python hardmode.py
-python escalate.py
-python verify_stress.py
-```
+All benchmark tools live under `tools/`. Legacy root-level wrappers have been removed.
 
 ## Examples
 
@@ -279,8 +275,11 @@ python examples/interactive_sessions.py
 Notebook demo:
 - `examples/logic_brain_demo.ipynb`
 
-Roadmap assessment:
-- `docs/logic_extensions_assessment.md`
+Further documentation:
+- Roadmap: `docs/roadmap_v013_v020.md`
+- API stability: `STABILITY.md`
+- Development process: `docs/development_process.md`
+- Logic extensions assessment: `docs/logic_extensions_assessment.md`
 
 ## Releases
 

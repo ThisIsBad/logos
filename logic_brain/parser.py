@@ -49,23 +49,34 @@ from logic_brain.verifier import PropositionalVerifier
 Expr = Union[Proposition, LogicalExpression]
 
 
+__all__ = [
+    "verify",
+    "parse_argument",
+    "parse_expression",
+    "is_tautology",
+    "is_contradiction",
+    "are_equivalent",
+    "ParseError",
+]
+
+
 class ParseError(Exception):
     """Raised when parsing fails."""
     pass
 
 
 @dataclass
-class Token:
-    """A lexical token."""
+class _Token:
+    """A lexical token (internal)."""
     type: str
     value: str
     pos: int
 
 
-class Lexer:
-    """Tokenizes a logic string."""
+class _Lexer:
+    """Tokenizes a logic string (internal)."""
     
-    # Token patterns (order matters - longer patterns first)
+    # _Token patterns (order matters - longer patterns first)
     PATTERNS = [
         (r'\s+', None),           # Whitespace (skip)
         (r'<->', 'IFF'),          # Biconditional
@@ -90,9 +101,9 @@ class Lexer:
         self.pos = 0
         self.compiled = [(re.compile(p), t) for p, t in self.PATTERNS]
     
-    def tokenize(self) -> list[Token]:
+    def tokenize(self) -> list[_Token]:
         """Convert input string to list of tokens."""
-        tokens: list[Token] = []
+        tokens: list[_Token] = []
         
         while self.pos < len(self.text):
             match_found = False
@@ -101,7 +112,7 @@ class Lexer:
                 match = pattern.match(self.text, self.pos)
                 if match:
                     if token_type is not None:  # Skip whitespace
-                        tokens.append(Token(token_type, match.group(), self.pos))
+                        tokens.append(_Token(token_type, match.group(), self.pos))
                     self.pos = match.end()
                     match_found = True
                     break
@@ -114,8 +125,8 @@ class Lexer:
         return tokens
 
 
-class Parser:
-    """Recursive descent parser for propositional logic.
+class _Parser:
+    """Recursive descent parser for propositional logic (internal).
     
     Grammar (precedence low to high):
         argument    := premises TURNSTILE expr
@@ -129,7 +140,7 @@ class Parser:
         atom        := ATOM | LPAREN expr RPAREN
     """
     
-    def __init__(self, tokens: list[Token]):
+    def __init__(self, tokens: list[_Token]):
         self.tokens = tokens
         self.pos = 0
     
@@ -252,7 +263,7 @@ class Parser:
         
         raise ParseError(f"Expected atom or '(', got '{token.value}'")
     
-    def current(self) -> Token:
+    def current(self) -> _Token:
         """Get current token."""
         return self.tokens[self.pos]
     
@@ -273,13 +284,13 @@ def parse_expression(text: str) -> Expr:
     Raises:
         ParseError: If parsing fails.
     """
-    lexer = Lexer(text)
+    lexer = _Lexer(text)
     tokens = lexer.tokenize()
     
     if not tokens:
         raise ParseError("Empty expression")
     
-    parser = Parser(tokens)
+    parser = _Parser(tokens)
     return parser.parse_expr()
 
 
@@ -295,13 +306,13 @@ def parse_argument(text: str) -> Argument:
     Raises:
         ParseError: If parsing fails.
     """
-    lexer = Lexer(text)
+    lexer = _Lexer(text)
     tokens = lexer.tokenize()
     
     if not tokens:
         raise ParseError("Empty argument")
     
-    parser = Parser(tokens)
+    parser = _Parser(tokens)
     return parser.parse_argument()
 
 

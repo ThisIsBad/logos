@@ -1,6 +1,11 @@
-"""Benchmark runner — verifies all problems and collects results."""
+"""Benchmark runner — verifies all problems and collects results.
+
+Internal module — not part of the public API (Tier 3).
+"""
 
 from __future__ import annotations
+
+__all__ = ["BenchmarkRunner", "ProblemResult", "format_report"]
 
 from dataclasses import dataclass, field
 from typing import Any

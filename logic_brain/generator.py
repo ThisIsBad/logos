@@ -5,9 +5,13 @@ they are randomly generated at evaluation time. The Z3 verifier determines
 the ground truth, making the evaluation fully deterministic and trustworthy.
 
 Design principle: The LLM cannot cheat. It must reason.
+
+Internal module — not part of the public API (Tier 3).
 """
 
 from __future__ import annotations
+
+__all__ = ["ProblemGenerator", "GeneratorConfig", "EASY", "MEDIUM", "HARD", "EXTREME"]
 
 import hashlib
 import json
