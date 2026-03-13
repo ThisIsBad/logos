@@ -5,20 +5,29 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "logic-brain"
 version = "0.1.2"
-description = "LLM × Deterministic Logic Verifier — exploiting the P≠NP asymmetry"
+description = "LLM x Deterministic Logic Verifier — exploiting the P!=NP asymmetry"
 requires-python = ">=3.10"
 dependencies = [
-    "z3-solver>=4.12",
+    "z3-solver>=4.12,<5.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0",
     "hypothesis>=6.0",
+    "ruff>=0.4",
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+ignore = ["W293", "W291"]
 
 [tool.setuptools.packages.find]
 include = ["logic_brain*"]

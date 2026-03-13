@@ -69,8 +69,8 @@ def evaluate(answers_path: Path) -> str:
         status = "✅" if llm_correct else "❌ WRONG"
         lines.append(f"## {pid}: {meta['category']}")
         lines.append(f"**Problem**: {raw['natural_language']}\n")
-        lines.append(f"| | LLM | Verifier | Ground Truth |")
-        lines.append(f"|---|---|---|---|")
+        lines.append("| | LLM | Verifier | Ground Truth |")
+        lines.append("|---|---|---|---|")
         lines.append(
             f"| Valid? | {'yes' if llm_said_valid else 'no'} "
             f"| {'yes' if verification.valid else 'no'} "
@@ -82,14 +82,14 @@ def evaluate(answers_path: Path) -> str:
             lines.append(f"**LLM reasoning**: {llm_reasoning}\n")
         lines.append(f"**Verifier**: {verification}\n")
         if not llm_correct:
-            lines.append(f"> [!CAUTION]")
+            lines.append("> [!CAUTION]")
             lines.append(f"> LLM got this **wrong**! {meta['explanation']}\n")
         lines.append("---\n")
 
     # Summary
     accuracy = correct / total if total > 0 else 0
     summary = [
-        f"\n# Summary\n",
+        "\n# Summary\n",
         f"**Accuracy: {accuracy:.0%}** ({correct}/{total})\n",
     ]
 

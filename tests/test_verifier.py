@@ -11,7 +11,6 @@ from logic_brain.models import (
     Connective,
     LogicalExpression,
     Proposition,
-    VerificationResult,
 )
 from logic_brain.verifier import PropositionalVerifier
 

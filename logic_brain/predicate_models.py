@@ -12,7 +12,7 @@ class Quantifier(Enum):
 class Variable:
     """A logical variable (e.g., x, y)."""
     name: str
-    
+
     def __str__(self):
         return self.name
 
@@ -20,7 +20,7 @@ class Variable:
 class Constant:
     """A specific entity/constant (e.g., Socrates, John)."""
     name: str
-    
+
     def __str__(self):
         return self.name
 
@@ -31,7 +31,7 @@ class Predicate:
     """A predicate applied to terms (e.g., Mortal(Socrates), Loves(x, y))."""
     name: str
     terms: tuple[Term, ...]
-    
+
     def __str__(self):
         terms_str = ", ".join(str(t) for t in self.terms)
         return f"{self.name}({terms_str})"
@@ -49,7 +49,7 @@ class PredicateExpression:
     connective: PredicateConnective
     left: 'FOLFormula'
     right: 'FOLFormula' = None  # None for NOT
-    
+
     def __str__(self):
         if self.connective == PredicateConnective.NOT:
             return f"{self.connective.value}{self.left}"
@@ -61,7 +61,7 @@ class QuantifiedExpression:
     quantifier: Quantifier
     variable: Variable
     expression: 'FOLFormula'
-    
+
     def __str__(self):
         return f"{self.quantifier.value}{self.variable.name} {self.expression}"
 
@@ -72,7 +72,7 @@ class FOLArgument:
     """An argument consisting of premises and a conclusion in First-Order Logic."""
     premises: tuple[FOLFormula, ...]
     conclusion: FOLFormula
-    
+
     def __str__(self):
         lines = ["Premises:"]
         for i, p in enumerate(self.premises, 1):

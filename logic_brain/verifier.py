@@ -7,7 +7,7 @@ Exploiting the P != NP asymmetry: verification is cheap, generation is hard.
 
 from __future__ import annotations
 
-from typing import Optional, Union
+from typing import Union
 
 import z3
 
@@ -172,7 +172,7 @@ class PropositionalVerifier:
 
         if expr.right is None:
             raise ValueError(f"Binary connective {expr.connective} requires right operand")
-        
+
         right = self._to_z3(expr.right, z3_vars)
 
         if expr.connective is Connective.AND:
@@ -225,7 +225,7 @@ class PropositionalVerifier:
                 if i == j:
                     continue
                 if (
-                    isinstance(p2, LogicalExpression) 
+                    isinstance(p2, LogicalExpression)
                     and p2.connective is Connective.IMPLIES
                     and p2.right is not None
                 ):
@@ -235,7 +235,7 @@ class PropositionalVerifier:
         # Modus Tollens: P->Q, ~Q |- ~P
         for i, p1 in enumerate(prems):
             if (
-                isinstance(p1, LogicalExpression) 
+                isinstance(p1, LogicalExpression)
                 and p1.connective is Connective.IMPLIES
                 and p1.right is not None
             ):
@@ -249,7 +249,7 @@ class PropositionalVerifier:
 
         # Hypothetical Syllogism: P->Q, Q->R |- P->R
         if (
-            isinstance(conc, LogicalExpression) 
+            isinstance(conc, LogicalExpression)
             and conc.connective is Connective.IMPLIES
             and conc.right is not None
         ):
@@ -275,7 +275,7 @@ class PropositionalVerifier:
         # Disjunctive Syllogism: P|Q, ~P |- Q
         for i, p1 in enumerate(prems):
             if (
-                isinstance(p1, LogicalExpression) 
+                isinstance(p1, LogicalExpression)
                 and p1.connective is Connective.OR
                 and p1.right is not None
             ):
@@ -315,7 +315,7 @@ class PropositionalVerifier:
         # Affirming the Consequent: P->Q, Q |- P  (INVALID)
         for i, p1 in enumerate(prems):
             if (
-                isinstance(p1, LogicalExpression) 
+                isinstance(p1, LogicalExpression)
                 and p1.connective is Connective.IMPLIES
                 and p1.right is not None
             ):
@@ -328,7 +328,7 @@ class PropositionalVerifier:
         # Denying the Antecedent: P->Q, ~P |- ~Q  (INVALID)
         for i, p1 in enumerate(prems):
             if (
-                isinstance(p1, LogicalExpression) 
+                isinstance(p1, LogicalExpression)
                 and p1.connective is Connective.IMPLIES
                 and p1.right is not None
             ):

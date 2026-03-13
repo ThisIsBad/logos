@@ -75,7 +75,7 @@ class _Token:
 
 class _Lexer:
     """Tokenizes a logic string (internal)."""
-    
+
     # _Token patterns (order matters - longer patterns first)
     PATTERNS = [
         (r'\s+', None),           # Whitespace (skip)
@@ -95,19 +95,19 @@ class _Lexer:
         (r',', 'COMMA'),          # Comma
         (r'[A-Z]', 'ATOM'),       # Atomic proposition
     ]
-    
+
     def __init__(self, text: str):
         self.text = text
         self.pos = 0
         self.compiled = [(re.compile(p), t) for p, t in self.PATTERNS]
-    
+
     def tokenize(self) -> list[_Token]:
         """Convert input string to list of tokens."""
         tokens: list[_Token] = []
-        
+
         while self.pos < len(self.text):
             match_found = False
-            
+
             for pattern, token_type in self.compiled:
                 match = pattern.match(self.text, self.pos)
                 if match:
@@ -116,12 +116,12 @@ class _Lexer:
                     self.pos = match.end()
                     match_found = True
                     break
-            
+
             if not match_found:
                 raise ParseError(
                     f"Unexpected character '{self.text[self.pos]}' at position {self.pos}"
                 )
-        
+
         return tokens
 
 
@@ -139,32 +139,32 @@ class _Parser:
         not_expr    := NOT not_expr | atom
         atom        := ATOM | LPAREN expr RPAREN
     """
-    
+
     def __init__(self, tokens: list[_Token]):
         self.tokens = tokens
         self.pos = 0
-    
+
     def parse_argument(self) -> Argument:
         """Parse a full argument: premises |- conclusion."""
         premises: list[Expr] = []
-        
+
         # Parse first premise (required)
         if self.pos >= len(self.tokens):
             raise ParseError("Empty input")
-        
+
         # Check for empty premises (just "|- conclusion")
         if self.current().type == 'TURNSTILE':
             self.advance()
             conclusion = self.parse_expr()
             return Argument(premises=[], conclusion=conclusion)
-        
+
         # Parse premises
         premises.append(self.parse_expr())
-        
+
         while self.pos < len(self.tokens) and self.current().type == 'COMMA':
             self.advance()  # consume comma
             premises.append(self.parse_expr())
-        
+
         # Expect turnstile
         if self.pos >= len(self.tokens) or self.current().type != 'TURNSTILE':
             raise ParseError(
@@ -172,101 +172,101 @@ class _Parser:
                 f"Got: {self.current().value if self.pos < len(self.tokens) else 'end of input'}"
             )
         self.advance()  # consume turnstile
-        
+
         # Parse conclusion
         conclusion = self.parse_expr()
-        
+
         # Check for leftover tokens
         if self.pos < len(self.tokens):
             raise ParseError(
                 f"Unexpected token after conclusion: '{self.current().value}'"
             )
-        
+
         return Argument(premises=premises, conclusion=conclusion)
-    
+
     def parse_expr(self) -> Expr:
         """Parse an expression (entry point)."""
         return self.parse_iff()
-    
+
     def parse_iff(self) -> Expr:
         """Parse biconditional (lowest precedence binary)."""
         left = self.parse_impl()
-        
+
         while self.pos < len(self.tokens) and self.current().type == 'IFF':
             self.advance()
             right = self.parse_impl()
             left = LogicalExpression(Connective.IFF, left, right)
-        
+
         return left
-    
+
     def parse_impl(self) -> Expr:
         """Parse implication (right-associative)."""
         left = self.parse_or()
-        
+
         if self.pos < len(self.tokens) and self.current().type == 'IMPLIES':
             self.advance()
             right = self.parse_impl()  # Right-associative
             return LogicalExpression(Connective.IMPLIES, left, right)
-        
+
         return left
-    
+
     def parse_or(self) -> Expr:
         """Parse disjunction."""
         left = self.parse_and()
-        
+
         while self.pos < len(self.tokens) and self.current().type == 'OR':
             self.advance()
             right = self.parse_and()
             left = LogicalExpression(Connective.OR, left, right)
-        
+
         return left
-    
+
     def parse_and(self) -> Expr:
         """Parse conjunction."""
         left = self.parse_not()
-        
+
         while self.pos < len(self.tokens) and self.current().type == 'AND':
             self.advance()
             right = self.parse_not()
             left = LogicalExpression(Connective.AND, left, right)
-        
+
         return left
-    
+
     def parse_not(self) -> Expr:
         """Parse negation (prefix, highest precedence)."""
         if self.pos < len(self.tokens) and self.current().type == 'NOT':
             self.advance()
             operand = self.parse_not()  # Allow chained negation: ~~P
             return LogicalExpression(Connective.NOT, operand)
-        
+
         return self.parse_atom()
-    
+
     def parse_atom(self) -> Expr:
         """Parse atomic proposition or parenthesized expression."""
         if self.pos >= len(self.tokens):
             raise ParseError("Unexpected end of input")
-        
+
         token = self.current()
-        
+
         if token.type == 'ATOM':
             self.advance()
             return Proposition(token.value)
-        
+
         if token.type == 'LPAREN':
             self.advance()
             expr = self.parse_expr()
-            
+
             if self.pos >= len(self.tokens) or self.current().type != 'RPAREN':
-                raise ParseError(f"Missing closing parenthesis")
+                raise ParseError("Missing closing parenthesis")
             self.advance()
             return expr
-        
+
         raise ParseError(f"Expected atom or '(', got '{token.value}'")
-    
+
     def current(self) -> _Token:
         """Get current token."""
         return self.tokens[self.pos]
-    
+
     def advance(self) -> None:
         """Move to next token."""
         self.pos += 1
@@ -286,10 +286,10 @@ def parse_expression(text: str) -> Expr:
     """
     lexer = _Lexer(text)
     tokens = lexer.tokenize()
-    
+
     if not tokens:
         raise ParseError("Empty expression")
-    
+
     parser = _Parser(tokens)
     return parser.parse_expr()
 
@@ -308,10 +308,10 @@ def parse_argument(text: str) -> Argument:
     """
     lexer = _Lexer(text)
     tokens = lexer.tokenize()
-    
+
     if not tokens:
         raise ParseError("Empty argument")
-    
+
     parser = _Parser(tokens)
     return parser.parse_argument()
 

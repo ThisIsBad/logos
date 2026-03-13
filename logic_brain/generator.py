@@ -17,7 +17,7 @@ import hashlib
 import json
 import random
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -26,7 +26,6 @@ from logic_brain.models import (
     Connective,
     LogicalExpression,
     Proposition,
-    VerificationResult,
 )
 from logic_brain.verifier import PropositionalVerifier
 

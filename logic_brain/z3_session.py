@@ -21,7 +21,6 @@ from __future__ import annotations
 import ast
 import re
 from dataclasses import dataclass, field
-from enum import Enum
 from typing import TYPE_CHECKING, Any, Optional, cast
 
 import z3
@@ -30,30 +29,22 @@ if TYPE_CHECKING:
     from logic_brain.diagnostics import Diagnostic
 
 
-class SortType(Enum):
-    """Supported Z3 sorts (types)."""
-    INT = "Int"
-    REAL = "Real"
-    BOOL = "Bool"
-    BITVEC = "BitVec"  # Requires size parameter
-
-
 @dataclass
 class CheckResult:
     """Result of a satisfiability check."""
-    
+
     status: str
     """One of 'sat', 'unsat', or 'unknown'."""
-    
+
     satisfiable: Optional[bool]
     """True if sat, False if unsat, None if unknown."""
-    
+
     model: Optional[dict[str, Any]] = None
     """Variable assignments if satisfiable."""
-    
+
     unsat_core: Optional[list[str]] = None
     """Named constraints in the unsat core (if tracking enabled)."""
-    
+
     reason: Optional[str] = None
     """Reason for unknown result, if applicable."""
 
@@ -95,31 +86,31 @@ class Z3Session:
     >>> result = session.check()
     >>> print(result.satisfiable)  # False
     """
-    
+
     timeout_ms: int = 30000
     """Timeout for solver in milliseconds."""
-    
+
     track_unsat_core: bool = False
     """Whether to track assertions for unsat core extraction."""
-    
+
     # Internal state
     _solver: z3.Solver = field(default_factory=z3.Solver, init=False)
     _variables: dict[str, z3.ExprRef] = field(default_factory=dict, init=False)
     _assertions: list[str] = field(default_factory=list, init=False)
     _assertion_names: dict[str, z3.BoolRef] = field(default_factory=dict, init=False)
     _scope_depth: int = field(default=0, init=False)
-    
+
     def __post_init__(self) -> None:
         """Initialize the solver with settings."""
         self._solver = z3.Solver()
         self._solver.set("timeout", self.timeout_ms)
         if self.track_unsat_core:
             self._solver.set("unsat_core", True)
-    
+
     def declare(
-        self, 
-        name: str, 
-        sort: str, 
+        self,
+        name: str,
+        sort: str,
         size: Optional[int] = None
     ) -> None:
         """Declare a variable with the given name and sort.
@@ -146,9 +137,9 @@ class Z3Session:
         """
         if name in self._variables:
             raise ValueError(f"Variable '{name}' already declared")
-        
+
         sort_upper = sort.upper()
-        
+
         if sort_upper == "INT":
             self._variables[name] = z3.Int(name)
         elif sort_upper == "REAL":
@@ -163,10 +154,10 @@ class Z3Session:
             raise ValueError(
                 f"Unknown sort '{sort}'. Supported: Int, Real, Bool, BitVec"
             )
-    
+
     def assert_constraint(
-        self, 
-        constraint: str, 
+        self,
+        constraint: str,
         name: Optional[str] = None
     ) -> None:
         """Assert a constraint in the current scope.
@@ -191,7 +182,7 @@ class Z3Session:
 
             diagnostic = Z3DiagnosticParser.parse_constraint_error(str(exc), constraint)
             raise ValueError(str(diagnostic)) from exc
-        
+
         if self.track_unsat_core and name:
             # Create a named assertion for unsat core tracking
             indicator = z3.Bool(f"__track_{name}")
@@ -200,9 +191,9 @@ class Z3Session:
             self._solver.add(indicator)
         else:
             self._solver.add(expr)
-        
+
         self._assertions.append(constraint)
-    
+
     def check(self) -> CheckResult:
         """Check satisfiability of current constraints.
         
@@ -212,7 +203,7 @@ class Z3Session:
             Result containing status, model (if sat), or unsat core.
         """
         result = self._solver.check()
-        
+
         if result == z3.sat:
             model = self._solver.model()
             model_dict = self._extract_model(model)
@@ -258,7 +249,7 @@ class Z3Session:
                     suggestions=suggestions,
                 ),
             )
-    
+
     def push(self) -> None:
         """Create a new scope for backtracking.
         
@@ -275,7 +266,7 @@ class Z3Session:
         """
         self._solver.push()
         self._scope_depth += 1
-    
+
     def pop(self, n: int = 1) -> None:
         """Pop n scopes, removing all assertions made in those scopes.
         
@@ -295,7 +286,7 @@ class Z3Session:
             )
         self._solver.pop(n)
         self._scope_depth -= n
-    
+
     def reset(self) -> None:
         """Reset the session, clearing all state."""
         self._solver.reset()
@@ -303,27 +294,27 @@ class Z3Session:
         self._assertions.clear()
         self._assertion_names.clear()
         self._scope_depth = 0
-        
+
         # Reapply settings
         self._solver.set("timeout", self.timeout_ms)
         if self.track_unsat_core:
             self._solver.set("unsat_core", True)
-    
+
     @property
     def num_assertions(self) -> int:
         """Number of assertions in the solver."""
         return len(self._assertions)
-    
+
     @property
     def scope_depth(self) -> int:
         """Current scope depth (number of active push() calls)."""
         return self._scope_depth
-    
+
     @property
     def variables(self) -> list[str]:
         """List of declared variable names."""
         return list(self._variables.keys())
-    
+
     def _parse_constraint(self, constraint: str) -> z3.BoolRef:
         """Parse a constraint string into a Z3 expression.
 
@@ -505,7 +496,7 @@ class Z3Session:
             return z3.If(cond, body, orelse)
 
         raise ValueError(f"Unsupported syntax node: {type(node).__name__}")
-    
+
     def _extract_model(self, model: z3.ModelRef) -> dict[str, Any]:
         """Extract variable values from a Z3 model."""
         result = {}
@@ -527,7 +518,7 @@ class Z3Session:
             else:
                 result[name] = str(val)
         return result
-    
+
     def _extract_unsat_core(self) -> list[str]:
         """Extract named assertions from the unsat core."""
         core = self._solver.unsat_core()

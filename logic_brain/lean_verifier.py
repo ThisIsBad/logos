@@ -17,10 +17,10 @@ class LeanVerificationResult:
     valid: bool
     output: str
     error: Optional[str] = None
-    
+
 class LeanVerifier:
     """Verifies mathematical proofs using the Lean 4 interactive theorem prover."""
-    
+
     def __init__(self, lean_path: str = "lean"):
         # Allow passing the explicit path to the lean executable if it's not in global PATH
         self.lean_path = lean_path
@@ -31,7 +31,8 @@ class LeanVerifier:
         and parses the result.
         
         Args:
-            theorem_header: The theorem statement (e.g. `theorem sum_even (a b : Nat) (ha : Even a) (hb : Even b) : Even (a + b) := by`)
+            theorem_header: The theorem statement, e.g.
+                ``theorem sum_even (a b : Nat) ... : Even (a + b) := by``
             tactic_proof: The generated tactics to prove the theorem.
             
         Returns:
@@ -41,7 +42,7 @@ class LeanVerifier:
         # Indent the tactic proof appropriately
         for line in tactic_proof.strip().split("\n"):
             full_code += f"  {line.lstrip()}\n"
-            
+
         return self.verify_raw(full_code)
 
     def verify_raw(self, full_lean_code: str) -> LeanVerificationResult:
@@ -54,7 +55,7 @@ class LeanVerifier:
                 # For now, we assume simple theorems that don't need heavy imports,
                 # or the LLM includes `import Mathlib` at the top.
                 f.write(full_lean_code)
-            
+
             # Run lean compiler
             process = subprocess.run(
                 [self.lean_path, temp_path],
@@ -62,9 +63,9 @@ class LeanVerifier:
                 text=True,
                 encoding="utf-8"
             )
-            
+
             output = process.stdout + process.stderr
-            
+
             # In Lean 4, if there are unsolved goals or errors, the exit code is non-zero
             if process.returncode == 0 and "error:" not in output.lower():
                 return LeanVerificationResult(
@@ -78,18 +79,18 @@ class LeanVerifier:
                     output=output,
                     error="Proof failed. See compiler output."
                 )
-                
+
         except FileNotFoundError:
              return LeanVerificationResult(
                 valid=False,
                 output="",
                 error=f"Lean executable not found at '{self.lean_path}'. Please ensure Lean 4 (elan) is installed."
             )
-        except Exception as e:
+        except (OSError, subprocess.SubprocessError) as e:
             return LeanVerificationResult(
                 valid=False,
                 output="",
-                error=f"Unexpected error running Lean: {str(e)}"
+                error=f"Error running Lean: {str(e)}"
             )
         finally:
             if os.path.exists(temp_path):

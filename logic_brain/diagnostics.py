@@ -23,7 +23,7 @@ from typing import Optional
 
 class ErrorType(Enum):
     """Categories of errors for structured handling."""
-    
+
     # Lean/Proof errors
     UNKNOWN_TACTIC = "unknown_tactic"
     TACTIC_FAILED = "tactic_failed"
@@ -31,13 +31,13 @@ class ErrorType(Enum):
     UNKNOWN_IDENTIFIER = "unknown_identifier"
     SYNTAX_ERROR = "syntax_error"
     TIMEOUT = "timeout"
-    
+
     # Z3/Constraint errors
     UNSATISFIABLE = "unsatisfiable"
     UNDECLARED_VARIABLE = "undeclared_variable"
     INVALID_SORT = "invalid_sort"
     PARSE_ERROR = "parse_error"
-    
+
     # Generic
     UNKNOWN = "unknown"
     INTERNAL_ERROR = "internal_error"
@@ -54,38 +54,38 @@ class Diagnostic:
     The ``schema_version`` field allows agents to check compatibility
     before processing diagnostics.
     """
-    
+
     error_type: ErrorType
     """Category of the error."""
-    
+
     message: str
     """Human-readable error message."""
-    
+
     schema_version: str = "1"
     """Schema version for forward-compatibility checks."""
-    
+
     expected: Optional[str] = None
     """What was expected (e.g., expected type)."""
-    
+
     actual: Optional[str] = None
     """What was actually found (e.g., actual type)."""
-    
+
     location: Optional[str] = None
     """Location of the error (e.g., line:column)."""
-    
+
     context: Optional[str] = None
     """Additional context (e.g., surrounding code)."""
-    
+
     suggestions: list[str] = field(default_factory=list)
     """Suggested fixes or alternatives."""
-    
+
     raw_output: Optional[str] = None
     """The raw error output for debugging."""
-    
+
     def __str__(self) -> str:
         """Format diagnostic as a readable string."""
         parts = [f"[{self.error_type.value}] {self.message}"]
-        
+
         if self.expected and self.actual:
             parts.append(f"  Expected: {self.expected}")
             parts.append(f"  Actual:   {self.actual}")
@@ -93,21 +93,21 @@ class Diagnostic:
             parts.append(f"  Expected: {self.expected}")
         elif self.actual:
             parts.append(f"  Found: {self.actual}")
-        
+
         if self.location:
             parts.append(f"  At: {self.location}")
-        
+
         if self.suggestions:
             parts.append("  Suggestions:")
             for s in self.suggestions:
                 parts.append(f"    - {s}")
-        
+
         return "\n".join(parts)
 
 
 class LeanDiagnosticParser:
     """Parser for Lean 4 error messages to extract structured diagnostics."""
-    
+
     # Patterns for common Lean errors
     PATTERNS = {
         ErrorType.UNKNOWN_TACTIC: [
@@ -132,7 +132,7 @@ class LeanDiagnosticParser:
             r"unexpected end of input",
         ],
     }
-    
+
     # Suggestion mappings for common errors
     SUGGESTIONS = {
         "rfl": [
@@ -156,7 +156,7 @@ class LeanDiagnosticParser:
             "Try 'induction x with ...' to name cases",
         ],
     }
-    
+
     # Common tactic typos and corrections
     TYPO_CORRECTIONS = {
         "reflexivity": "rfl",
@@ -173,7 +173,7 @@ class LeanDiagnosticParser:
         "omega": "omega",
         "norm_num": "norm_num",
     }
-    
+
     @classmethod
     def parse(cls, error_output: str, tactic: Optional[str] = None) -> Diagnostic:
         """Parse Lean error output into a structured Diagnostic.
@@ -195,7 +195,7 @@ class LeanDiagnosticParser:
         expected, actual = cls._extract_types(error_output)
         location = cls._extract_location(error_output)
         suggestions = cls._generate_suggestions(error_output, tactic, error_type)
-        
+
         return Diagnostic(
             error_type=error_type,
             message=message,
@@ -205,22 +205,22 @@ class LeanDiagnosticParser:
             suggestions=suggestions,
             raw_output=error_output,
         )
-    
+
     @classmethod
     def _identify_error_type(cls, output: str) -> ErrorType:
         """Identify the type of error from the output."""
         output_lower = output.lower()
-        
+
         for error_type, patterns in cls.PATTERNS.items():
             for pattern in patterns:
                 if re.search(pattern, output, re.IGNORECASE):
                     return error_type
-        
+
         if "error:" in output_lower:
             return ErrorType.UNKNOWN
-        
+
         return ErrorType.UNKNOWN
-    
+
     @classmethod
     def _extract_message(cls, output: str) -> str:
         """Extract the main error message."""
@@ -228,15 +228,15 @@ class LeanDiagnosticParser:
         match = re.search(r'error:\s*(.+?)(?:\n|$)', output, re.IGNORECASE)
         if match:
             return match.group(1).strip()
-        
+
         # Fallback: first non-empty line
         for line in output.split('\n'):
             line = line.strip()
             if line and not line.startswith(('/', 'temp', 'logic_brain')):
                 return line
-        
+
         return "Unknown error"
-    
+
     @classmethod
     def _extract_types(cls, output: str) -> tuple[Optional[str], Optional[str]]:
         """Extract expected and actual types from type mismatch errors."""
@@ -250,14 +250,14 @@ class LeanDiagnosticParser:
             actual = match.group(1).strip()
             expected = match.group(2).strip()
             return expected, actual
-        
+
         # Pattern: "expected X, got Y"
         match = re.search(r'expected\s+(.+?),\s*got\s+(.+)', output, re.IGNORECASE)
         if match:
             return match.group(1).strip(), match.group(2).strip()
-        
+
         return None, None
-    
+
     @classmethod
     def _extract_location(cls, output: str) -> Optional[str]:
         """Extract error location (file:line:column)."""
@@ -265,23 +265,23 @@ class LeanDiagnosticParser:
         if match:
             return f"line {match.group(2)}, column {match.group(3)}"
         return None
-    
+
     @classmethod
     def _generate_suggestions(
-        cls, 
-        output: str, 
+        cls,
+        output: str,
         tactic: Optional[str],
         error_type: ErrorType
     ) -> list[str]:
         """Generate suggestions based on the error."""
         suggestions = []
-        
+
         # Add tactic-specific suggestions
         if tactic:
             tactic_name = tactic.split()[0].lower()
             if tactic_name in cls.SUGGESTIONS:
                 suggestions.extend(cls.SUGGESTIONS[tactic_name])
-        
+
         # Check for typos
         if error_type == ErrorType.UNKNOWN_TACTIC and tactic:
             tactic_name = tactic.split()[0].lower()
@@ -290,12 +290,12 @@ class LeanDiagnosticParser:
                 if cls._similar(tactic_name, typo):
                     suggestions.append(f"Did you mean: {correct}")
                     break
-        
+
         # Type mismatch suggestions
         if error_type == ErrorType.TYPE_MISMATCH:
             suggestions.append("Check that the types are compatible")
             suggestions.append("Consider using a conversion tactic")
-        
+
         # Unknown identifier suggestions
         if error_type == ErrorType.UNKNOWN_IDENTIFIER:
             match = re.search(r"unknown identifier '([^']+)'", output)
@@ -303,9 +303,9 @@ class LeanDiagnosticParser:
                 name = match.group(1)
                 suggestions.append(f"Check spelling of '{name}'")
                 suggestions.append("Ensure required imports are present")
-        
+
         return suggestions
-    
+
     @staticmethod
     def _similar(s1: str, s2: str) -> bool:
         """Check if two strings are similar (simple Levenshtein-like)."""
@@ -313,12 +313,12 @@ class LeanDiagnosticParser:
             return True
         if abs(len(s1) - len(s2)) > 2:
             return False
-        
+
         # Check for prefix match
         min_len = min(len(s1), len(s2))
         if min_len >= 3 and s1[:3] == s2[:3]:
             return True
-        
+
         # Check for single character difference
         diffs = sum(1 for a, b in zip(s1, s2) if a != b)
         return diffs <= 1
@@ -326,7 +326,7 @@ class LeanDiagnosticParser:
 
 class Z3DiagnosticParser:
     """Parser for Z3 errors to extract structured diagnostics."""
-    
+
     @classmethod
     def parse_unsat(
         cls,
@@ -346,7 +346,7 @@ class Z3DiagnosticParser:
             The model before the conflicting constraint was added.
         """
         suggestions = []
-        
+
         if unsat_core:
             suggestions.append(
                 f"Conflicting constraints: {', '.join(unsat_core)}"
@@ -354,24 +354,23 @@ class Z3DiagnosticParser:
             suggestions.append("Try removing or weakening one of these constraints")
         else:
             suggestions.append("Use track_unsat_core=True to identify conflicting constraints")
-        
+
         if len(constraints) <= 3:
             suggestions.append(
                 "With few constraints, check each one manually for contradictions"
             )
-        
+
         return Diagnostic(
             error_type=ErrorType.UNSATISFIABLE,
             message="Constraints are unsatisfiable (no solution exists)",
             context=f"{len(constraints)} constraints asserted",
             suggestions=suggestions,
         )
-    
+
     @classmethod
     def parse_constraint_error(cls, error: str, constraint: str) -> Diagnostic:
         """Create diagnostic for constraint parsing errors."""
-        suggestions = []
-        
+
         error_lower = error.lower()
 
         if (
@@ -383,7 +382,7 @@ class Z3DiagnosticParser:
             # Extract variable name
             match = re.search(r"'(\w+)'", error)
             var_name = match.group(1) if match else "variable"
-            
+
             return Diagnostic(
                 error_type=ErrorType.UNDECLARED_VARIABLE,
                 message=f"Variable '{var_name}' not declared",
@@ -393,7 +392,7 @@ class Z3DiagnosticParser:
                     "Check spelling of variable names",
                 ],
             )
-        
+
         if "sort" in error.lower() or "type" in error.lower():
             return Diagnostic(
                 error_type=ErrorType.INVALID_SORT,
@@ -404,7 +403,7 @@ class Z3DiagnosticParser:
                     "Check that arithmetic operations match variable sorts",
                 ],
             )
-        
+
         return Diagnostic(
             error_type=ErrorType.PARSE_ERROR,
             message=f"Failed to parse constraint: {error}",

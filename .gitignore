@@ -10,3 +10,6 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+
+# Internal planning briefs (not versioned)
+docs/claude_opus_planning_brief.md

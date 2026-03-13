@@ -8,32 +8,32 @@ import z3
 
 from logic_brain.models import VerificationResult
 from logic_brain.predicate_models import (
-    Variable, Constant, Predicate, PredicateConnective, 
+    Variable, Constant, Predicate, PredicateConnective,
     PredicateExpression, QuantifiedExpression, Quantifier, FOLArgument
 )
 
 
 class PredicateVerifier:
     """Verifies First-Order Logic arguments using the Z3 SMT solver."""
-    
+
     def __init__(self) -> None:
         # We use a single domain of discourse (Universe of Discourse)
         self.U: z3.SortRef = z3.DeclareSort('U')  # type: ignore[assignment]
         # Cache for Z3 constants, variables, and predicates so they remain consistent across the argument
         self.z3_constants: dict[str, z3.ExprRef] = {}
         self.z3_predicates: dict[str, z3.FuncDeclRef] = {}
-        
+
     def _reset_cache(self) -> None:
         """Clears the cache for a new verification run."""
         self.z3_constants.clear()
         self.z3_predicates.clear()
-        
+
     def _get_z3_constant(self, name: str) -> z3.ExprRef:
         """Get or create a Z3 constant in the universe of discourse."""
         if name not in self.z3_constants:
             self.z3_constants[name] = z3.Const(name, self.U)  # type: ignore[assignment]
         return self.z3_constants[name]
-        
+
     def _get_z3_predicate(self, name: str, arity: int) -> z3.FuncDeclRef:
         """Get or create an uninterpreted relation (predicate) taking 'arity' elements from U."""
         if name not in self.z3_predicates:
@@ -43,7 +43,7 @@ class PredicateVerifier:
 
     def _convert(self, expr: Any, var_env: dict[str, z3.ExprRef]) -> z3.ExprRef:
         """Translates a FOLFormula AST into a Z3 expression recursively."""
-        
+
         if isinstance(expr, Predicate):
             z3_terms: list[z3.ExprRef] = []
             for term in expr.terms:
@@ -56,15 +56,15 @@ class PredicateVerifier:
                     z3_terms.append(self._get_z3_constant(term.name))
                 else:
                     raise ValueError(f"Unknown term type: {type(term)}")
-            
+
             z3_pred = self._get_z3_predicate(expr.name, len(expr.terms))
             return z3_pred(*z3_terms)
-            
+
         elif isinstance(expr, PredicateExpression):
             left_z3 = self._convert(expr.left, var_env)
             if expr.connective == PredicateConnective.NOT:
                 return z3.Not(left_z3)  # type: ignore[arg-type, return-value]
-                
+
             right_z3 = self._convert(expr.right, var_env)
             if expr.connective == PredicateConnective.AND:
                 return z3.And(left_z3, right_z3)  # type: ignore[arg-type, return-value]
@@ -74,18 +74,18 @@ class PredicateVerifier:
                 return z3.Implies(left_z3, right_z3)  # type: ignore[arg-type, return-value]
             elif expr.connective == PredicateConnective.IFF:
                 return left_z3 == right_z3  # type: ignore[return-value]
-        
+
         elif isinstance(expr, QuantifiedExpression):
             # Create a fresh bound variable for Z3
             # In Z3, quantified variables are also just z3.Const but inside of a z3.ForAll
             bound_var = z3.Const(expr.variable.name, self.U)
-            
+
             # Create a new environment extending the old one with the bound variable
             new_env = var_env.copy()
             new_env[expr.variable.name] = bound_var
-            
+
             inside_expr = self._convert(expr.expression, new_env)
-            
+
             if expr.quantifier == Quantifier.FORALL:
                 return z3.ForAll([bound_var], inside_expr)
             elif expr.quantifier == Quantifier.EXISTS:
@@ -101,21 +101,21 @@ class PredicateVerifier:
         """
         self._reset_cache()
         solver = z3.Solver()
-        
+
         # 1. Provide all premises to the solver
         try:
             for p in argument.premises:
                 z3_p = self._convert(p, {})
                 solver.add(z3_p)
-                
+
             # 2. Negate the conclusion
             z3_c = self._convert(argument.conclusion, {})
             # We want to check P1 ^ P2 ^ ... ^ ~C
             solver.add(z3.Not(z3_c))
-            
+
             # 3. Check satisfiability of the negation
             result = solver.check()
-            
+
             if result == z3.unsat:
                 return VerificationResult(
                     valid=True,
@@ -141,7 +141,7 @@ class PredicateVerifier:
                     rule="Unknown",
                     explanation=f"Z3 solver returned unknown. Reason: {solver.reason_unknown()}"
                 )
-        except Exception as e:
+        except (z3.Z3Exception, ValueError, TypeError, KeyError) as e:
             return VerificationResult(
                 valid=False,
                 counterexample=None,

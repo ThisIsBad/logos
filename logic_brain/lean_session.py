@@ -44,29 +44,29 @@ class TacticResult:
     diagnostic : Diagnostic, optional
         Structured diagnostic information for errors.
     """
-    
+
     success: bool
     """Whether the tactic was accepted by Lean."""
-    
+
     goals: list[str]
     """List of remaining goals after the tactic."""
-    
+
     proof_so_far: str
     """The complete proof text so far."""
-    
+
     error_message: Optional[str] = None
     """Error message if the tactic failed."""
-    
+
     diagnostic: Optional["Diagnostic"] = None
     """Structured diagnostic information (error type, suggestions, etc.)."""
-    
+
     @property
     def error_type(self) -> Optional[str]:
         """Shortcut to diagnostic.error_type.value."""
         if self.diagnostic:
             return self.diagnostic.error_type.value
         return None
-    
+
     @property
     def suggestions(self) -> list[str]:
         """Shortcut to diagnostic.suggestions."""
@@ -98,22 +98,22 @@ class LeanSession:
     >>> result = session.apply("trivial")
     >>> assert session.is_complete
     """
-    
+
     lean_path: Optional[str] = None
     timeout: int = 30
-    
+
     # Internal state
     _header: str = field(default="", init=False)
     _tactics: list[str] = field(default_factory=list, init=False)
     _goals: list[str] = field(default_factory=list, init=False)
     _is_complete: bool = field(default=False, init=False)
     _initialized: bool = field(default=False, init=False)
-    
+
     def __post_init__(self) -> None:
         """Find Lean executable if not provided."""
         if self.lean_path is None:
             self.lean_path = self._find_lean()
-    
+
     @staticmethod
     def _find_lean() -> str:
         """Try to find the Lean 4 executable."""
@@ -122,7 +122,7 @@ class LeanSession:
             shutil.which("lean"),  # System PATH
             shutil.which("lake"),  # Lake might be in PATH
         ]
-        
+
         # Windows: Check elan default location
         if os.name == 'nt':
             home = os.environ.get('USERPROFILE', '')
@@ -135,26 +135,26 @@ class LeanSession:
             elan_lean = os.path.join(home, '.elan', 'bin', 'lean')
             if os.path.exists(elan_lean):
                 candidates.append(elan_lean)
-        
+
         for candidate in candidates:
             if candidate and os.path.exists(candidate):
                 return candidate
-        
+
         raise FileNotFoundError(
             "Could not find Lean 4 executable. Please install Lean 4 via elan "
             "(https://elan.leanprover.org) or provide the path explicitly."
         )
-    
+
     @property
     def goals(self) -> list[str]:
         """Current list of open goals."""
         return self._goals.copy()
-    
+
     @property
     def is_complete(self) -> bool:
         """Whether the proof is complete (no remaining goals)."""
         return self._is_complete
-    
+
     @property
     def proof(self) -> str:
         """The complete proof text so far."""
@@ -162,7 +162,7 @@ class LeanSession:
         for tactic in self._tactics:
             lines.append(f"  {tactic}")
         return "\n".join(lines)
-    
+
     def start(self, theorem_header: str) -> TacticResult:
         """Start a new proof session.
         
@@ -181,13 +181,13 @@ class LeanSession:
         self._tactics = []
         self._is_complete = False
         self._initialized = True
-        
+
         # Check initial state
         result = self._check_state()
         self._goals = result.goals
-        
+
         return result
-    
+
     def apply(self, tactic: str) -> TacticResult:
         """Apply a tactic to the current proof state.
         
@@ -204,7 +204,7 @@ class LeanSession:
         """
         if not self._initialized:
             raise RuntimeError("Session not started. Call start() first.")
-        
+
         if self._is_complete:
             return TacticResult(
                 success=False,
@@ -212,14 +212,14 @@ class LeanSession:
                 proof_so_far=self.proof,
                 error_message="Proof is already complete."
             )
-        
+
         # Temporarily add the tactic
         tactic_stripped = tactic.strip()
         self._tactics.append(tactic_stripped)
-        
+
         # Check if it works
         result = self._check_state(current_tactic=tactic_stripped)
-        
+
         if result.success:
             self._goals = result.goals
             if not self._goals:
@@ -229,7 +229,7 @@ class LeanSession:
             # Revert on failure
             self._tactics.pop()
             return result
-    
+
     def undo(self) -> TacticResult:
         """Undo the last tactic.
         
@@ -245,14 +245,14 @@ class LeanSession:
                 proof_so_far=self.proof,
                 error_message="No tactics to undo."
             )
-        
+
         self._tactics.pop()
         self._is_complete = False
-        
+
         result = self._check_state()
         self._goals = result.goals
         return result
-    
+
     def reset(self) -> None:
         """Reset the session, clearing all state."""
         self._header = ""
@@ -260,17 +260,17 @@ class LeanSession:
         self._goals = []
         self._is_complete = False
         self._initialized = False
-    
+
     def _check_state(self, current_tactic: Optional[str] = None) -> TacticResult:
         """Run Lean on the current proof and parse the output."""
         proof_text = self.proof
-        
+
         # Create a temporary file
         fd, temp_path = tempfile.mkstemp(suffix='.lean', prefix='logic_brain_')
         try:
             with os.fdopen(fd, 'w', encoding='utf-8') as f:
                 f.write(proof_text)
-            
+
             # Run Lean compiler
             try:
                 if self.lean_path is None:
@@ -285,7 +285,7 @@ class LeanSession:
                 )
                 output = process.stdout + process.stderr
                 return self._parse_output(output, proof_text, current_tactic)
-            
+
             except subprocess.TimeoutExpired:
                 from logic_brain.diagnostics import Diagnostic, ErrorType
                 return TacticResult(
@@ -316,16 +316,16 @@ class LeanSession:
             # Clean up temp file
             if os.path.exists(temp_path):
                 os.remove(temp_path)
-    
+
     def _parse_output(
-        self, 
-        output: str, 
+        self,
+        output: str,
         proof_text: str,
         current_tactic: Optional[str] = None
     ) -> TacticResult:
         """Parse Lean compiler output to extract goals and errors."""
         output_lower = output.lower()
-        
+
         # Check for errors
         if "error:" in output_lower:
             # Extract the error message
@@ -335,13 +335,13 @@ class LeanSession:
                     error_lines.append(line)
                     if len(error_lines) > 5:  # Limit error length
                         break
-            
+
             error_message = '\n'.join(error_lines).strip() or output.strip()
-            
+
             # Parse into structured diagnostic
             from logic_brain.diagnostics import LeanDiagnosticParser
             diagnostic = LeanDiagnosticParser.parse(output, current_tactic)
-            
+
             return TacticResult(
                 success=False,
                 goals=self._goals,
@@ -349,7 +349,7 @@ class LeanSession:
                 error_message=error_message,
                 diagnostic=diagnostic,
             )
-        
+
         # Check for unsolved goals
         goals = []
         if "unsolved goals" in output_lower:
@@ -359,14 +359,14 @@ class LeanSession:
                 goals=goals if goals else ["(could not parse goal state)"],
                 proof_so_far=proof_text
             )
-        
+
         # No errors and no unsolved goals = proof complete
         return TacticResult(
             success=True,
             goals=[],
             proof_so_far=proof_text
         )
-    
+
     def _extract_goals(self, output: str) -> list[str]:
         """Extract goal states from Lean output.
         
@@ -380,12 +380,12 @@ class LeanSession:
         lines = output.split('\n')
         current_goal: list[str] = []
         capturing = False
-        
+
         for line in lines:
             if "unsolved goals" in line.lower():
                 capturing = True
                 continue
-            
+
             if capturing:
                 # Empty line might separate multiple goals
                 if line.strip() == "" and current_goal:
@@ -397,13 +397,13 @@ class LeanSession:
                     # Skip file path lines like "temp.lean:1:2:"
                     if not (line.strip().endswith(':') and ':' in line):
                         current_goal.append(line)
-        
+
         # Don't forget the last goal
         if current_goal:
             goal_text = '\n'.join(current_goal).strip()
             if goal_text:
                 goals.append(goal_text)
-        
+
         return goals
 
 

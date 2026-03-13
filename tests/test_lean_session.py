@@ -21,7 +21,7 @@ class TestLeanSessionBasic:
         # Note: Lean 4 requires at least a placeholder tactic after "by"
         # The session reports an error for empty tactics, which is expected
         result = session.start("theorem test : True := by")
-        
+
         # Starting with just "by" may error in Lean 4 - that's okay
         # The important thing is we can then apply tactics
         # If it errors, goals will be empty initially
@@ -30,9 +30,9 @@ class TestLeanSessionBasic:
     def test_trivial_proof(self):
         session = LeanSession()
         session.start("theorem test : True := by")
-        
+
         result = session.apply("trivial")
-        
+
         assert result.success
         assert session.is_complete
         assert session.goals == []
@@ -40,22 +40,22 @@ class TestLeanSessionBasic:
     def test_rfl_proof(self):
         session = LeanSession()
         session.start("theorem test : 1 + 1 = 2 := by")
-        
+
         result = session.apply("rfl")
-        
+
         # This should work with native_decide or rfl depending on Lean version
         # If rfl doesn't work directly, try native_decide
         if not result.success:
             result = session.apply("native_decide")
-        
+
         assert session.is_complete or result.success
 
     def test_invalid_tactic_fails(self):
         session = LeanSession()
         session.start("theorem test (n : Nat) : n = n := by")
-        
+
         result = session.apply("nonexistent_tactic_xyz")
-        
+
         assert not result.success
         assert result.error_message is not None
 
@@ -63,9 +63,9 @@ class TestLeanSessionBasic:
         session = LeanSession()
         session.start("theorem test : True := by")
         goals_before = session.goals.copy()
-        
+
         session.apply("nonexistent_tactic")
-        
+
         assert session.goals == goals_before
         assert not session.is_complete
 
@@ -77,20 +77,20 @@ class TestLeanSessionState:
         session = LeanSession()
         session.start("theorem test : True := by")
         session.apply("trivial")
-        
+
         proof = session.proof
-        
+
         assert "theorem test" in proof
         assert "trivial" in proof
 
     def test_undo_reverts_last_tactic(self):
         session = LeanSession()
         session.start("theorem test (a b : Nat) : a + b = a + b := by")
-        
+
         result = session.apply("rfl")
         if result.success:
             assert session.is_complete
-            
+
             session.undo()
             assert not session.is_complete
             # After undo, we're back to empty tactics state
@@ -99,9 +99,9 @@ class TestLeanSessionState:
     def test_undo_on_empty_fails(self):
         session = LeanSession()
         session.start("theorem test : True := by")
-        
+
         result = session.undo()
-        
+
         assert not result.success
         assert result.error_message is not None
         assert "No tactics to undo" in result.error_message
@@ -110,15 +110,15 @@ class TestLeanSessionState:
         session = LeanSession()
         session.start("theorem test : True := by")
         session.apply("trivial")
-        
+
         session.reset()
-        
+
         assert session.goals == []
         assert not session.is_complete
 
     def test_apply_without_start_raises(self):
         session = LeanSession()
-        
+
         with pytest.raises(RuntimeError, match="not started"):
             session.apply("rfl")
 
@@ -129,24 +129,24 @@ class TestLeanSessionMultiStep:
     def test_intro_then_rfl(self):
         session = LeanSession()
         session.start("theorem test (n : Nat) : n = n := by")
-        
+
         result = session.apply("rfl")
-        
+
         assert result.success
         assert session.is_complete
 
     def test_multi_goal_proof(self):
         session = LeanSession()
         session.start("theorem test : True ∧ True := by")
-        
+
         # This should create two goals
         result = session.apply("constructor")
-        
+
         if result.success:
             # Now we need to prove both goals
             session.apply("trivial")
             session.apply("trivial")
-            
+
             # Should be complete after proving both
             assert session.is_complete
 
@@ -158,11 +158,11 @@ class TestLeanSessionEdgeCases:
         session = LeanSession()
         session.start("theorem test : True := by")
         session.apply("trivial")
-        
+
         assert session.is_complete
-        
+
         result = session.apply("rfl")
-        
+
         assert not result.success
         assert result.error_message is not None
         assert "already complete" in result.error_message.lower()
@@ -170,16 +170,16 @@ class TestLeanSessionEdgeCases:
     def test_syntax_error_in_header(self):
         session = LeanSession()
         result = session.start("this is not valid lean syntax")
-        
+
         assert not result.success or "error" in str(result.error_message).lower()
 
     def test_goals_returns_copy(self):
         session = LeanSession()
         session.start("theorem test : True := by")
-        
+
         goals = session.goals
         goals.append("fake goal")
-        
+
         assert "fake goal" not in session.goals
 
 
@@ -193,7 +193,7 @@ class TestTacticResult:
             proof_so_far="theorem test : True := by",
             error_message=None
         )
-        
+
         assert result.success
         assert result.goals == ["⊢ True"]
         assert "theorem" in result.proof_so_far
@@ -206,7 +206,7 @@ class TestTacticResult:
             proof_so_far="",
             error_message="unknown tactic"
         )
-        
+
         assert not result.success
         assert result.error_message == "unknown tactic"
 

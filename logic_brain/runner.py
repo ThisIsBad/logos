@@ -8,7 +8,6 @@ from __future__ import annotations
 __all__ = ["BenchmarkRunner", "ProblemResult", "format_report"]
 
 from dataclasses import dataclass, field
-from typing import Any
 
 from logic_brain.loader import load_problems, parse_problem
 from logic_brain.models import VerificationResult
