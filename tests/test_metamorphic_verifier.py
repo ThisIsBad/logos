@@ -22,20 +22,28 @@ def _assert_same_validity(source_argument: str, transformed_argument: str) -> No
     ("source_argument", "transformed_argument"),
     [
         # Implication rewrite: (A -> B)  <=>  (~A | B)
-        ("P -> Q, P |- Q", "(~P | Q), P |- Q"),
-        ("R -> S, ~S |- ~R", "(~R | S), ~S |- ~R"),
+        pytest.param("P -> Q, P |- Q", "(~P | Q), P |- Q", id="implication-rewrite-mp"),
+        pytest.param("R -> S, ~S |- ~R", "(~R | S), ~S |- ~R", id="implication-rewrite-mt"),
         # Double negation
-        ("~~P |- P", "P |- P"),
-        ("P |- ~~P", "P |- P"),
+        pytest.param("~~P |- P", "P |- P", id="double-negation-elim"),
+        pytest.param("P |- ~~P", "P |- P", id="double-negation-intro"),
         # Commutativity
-        ("P & Q |- Q & P", "Q & P |- P & Q"),
-        ("P |- P | Q", "P |- Q | P"),
+        pytest.param("P & Q |- Q & P", "Q & P |- P & Q", id="commutativity-and"),
+        pytest.param("P |- P | Q", "P |- Q | P", id="commutativity-or"),
         # Associativity
-        ("(P & Q) & R |- P & (Q & R)", "P & (Q & R) |- (P & Q) & R"),
-        ("(P | Q) | R, ~P, ~Q |- R", "P | (Q | R), ~P, ~Q |- R"),
+        pytest.param(
+            "(P & Q) & R |- P & (Q & R)",
+            "P & (Q & R) |- (P & Q) & R",
+            id="associativity-and",
+        ),
+        pytest.param(
+            "(P | Q) | R, ~P, ~Q |- R",
+            "P | (Q | R), ~P, ~Q |- R",
+            id="associativity-or",
+        ),
         # De Morgan rewrites
-        ("~(P & Q), P |- ~Q", "(~P | ~Q), P |- ~Q"),
-        ("~(P | Q), P |- ~Q", "(~P & ~Q), P |- ~Q"),
+        pytest.param("~(P & Q), P |- ~Q", "(~P | ~Q), P |- ~Q", id="de-morgan-and"),
+        pytest.param("~(P | Q), P |- ~Q", "(~P & ~Q), P |- ~Q", id="de-morgan-or"),
     ],
 )
 def test_metamorphic_relations_preserve_validity(

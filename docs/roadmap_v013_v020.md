@@ -197,6 +197,7 @@ LogicBrain ist technisch solide. Der gesamte Wert der Library liegt im Versprech
 - Vision & Architektur: `vision_and_roadmap.md`
 - Changelog: `CHANGELOG.md`
 - Release Playbook: `docs/release_playbook.md`
+- Metamorphic ledger: `docs/metamorphic_ledger.md`
 - Extensions Assessment: `docs/logic_extensions_assessment.md`
 - Planning Brief: `docs/claude_opus_planning_brief.md`
 - Archiviertes Session-Log: `docs/archive/todo_v012.md`

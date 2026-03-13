@@ -289,6 +289,7 @@ structured diagnostics, and optionally build Lean 4 proofs.
 
 Further documentation:
 - **API reference:** `docs/api/logic_brain.html` (regenerate: `python -m pdoc logic_brain -o docs/api`)
+- Metamorphic relation ledger: `docs/metamorphic_ledger.md`
 - Roadmap: `docs/roadmap_v013_v020.md`
 - API stability: `STABILITY.md`
 - Development process: `docs/development_process.md`

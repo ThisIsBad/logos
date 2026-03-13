@@ -22,17 +22,17 @@ def _assert_same_outcome(source_argument: str, transformed_argument: str) -> Non
     ("source_argument", "transformed_argument"),
     [
         # Whitespace and line-break invariance
-        ("P -> Q, P |- Q", "   P   ->   Q  ,   P   |-   Q   "),
-        ("P -> Q, Q |- P", "P -> Q,\nQ |- P"),
+        pytest.param("P -> Q, P |- Q", "   P   ->   Q  ,   P   |-   Q   ", id="whitespace-padding"),
+        pytest.param("P -> Q, Q |- P", "P -> Q,\nQ |- P", id="newline-premise-break"),
         # Parentheses insertion/removal where precedence stays equivalent
-        ("P -> Q, P |- Q", "((P -> Q)), (P) |- (Q)"),
-        ("~P & Q |- Q", "(~P) & (Q) |- (Q)"),
+        pytest.param("P -> Q, P |- Q", "((P -> Q)), (P) |- (Q)", id="parentheses-redundant"),
+        pytest.param("~P & Q |- Q", "(~P) & (Q) |- (Q)", id="parentheses-unary-binary"),
         # Operator alias equivalence
-        ("P -> Q, ~Q |- ~P", "P => Q, !Q |- !P"),
-        ("P <-> Q |- Q <-> P", "P <=> Q |- Q <=> P"),
-        ("P & Q |- P", "P ^ Q |- P"),
+        pytest.param("P -> Q, ~Q |- ~P", "P => Q, !Q |- !P", id="alias-imp-not"),
+        pytest.param("P <-> Q |- Q <-> P", "P <=> Q |- Q <=> P", id="alias-iff"),
+        pytest.param("P & Q |- P", "P ^ Q |- P", id="alias-and"),
         # Premise ordering invariance
-        ("P -> Q, P, R |- Q", "R, P, P -> Q |- Q"),
+        pytest.param("P -> Q, P, R |- Q", "R, P, P -> Q |- Q", id="premise-order"),
     ],
 )
 def test_parser_metamorphic_relations_preserve_outcome(
