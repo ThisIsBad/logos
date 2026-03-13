@@ -19,6 +19,7 @@ For every phase or milestone:
 3. Update documentation affected by the changes.
 4. Run validation (`pytest -q`, plus relevant tooling checks).
 5. Commit with a message that explains intent and outcome.
+6. Push to GitHub (`git push`).
 
 ## Branch and Commit Hygiene
 
