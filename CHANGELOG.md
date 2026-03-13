@@ -4,6 +4,8 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-03-13
+
 ### Added
 - Safe AST-based constraint parsing in `Z3Session` (replaces `eval`) with explicit operator/function allow-listing.
 - New tooling entrypoints: `tools/generate_exam.py`, `tools/generate_hardmode.py`, `tools/generate_escalation.py`, `tools/check_stress_results.py`, `tools/check_fol_results.py`.
