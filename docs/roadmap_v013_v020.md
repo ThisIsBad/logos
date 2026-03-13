@@ -1,6 +1,16 @@
 # LogicBrain Roadmap v0.1.3 – v0.2.0
 
-Stand: 2026-03-13 | Basis: `claude_opus_planning_brief.md` + Repo-Analyse auf v0.1.2
+Stand: 2026-03-13 (abgeschlossen) | Basis: `claude_opus_planning_brief.md` + Repo-Analyse auf v0.1.2
+
+## Status
+
+Diese Roadmap ist abgeschlossen.
+
+| Phase | Zielversion | Status | Commit |
+|---|---|---|---|
+| Phase 1: API Stabilization | v0.1.3 | DONE | `67615b6` |
+| Phase 2: Quality & Observability | v0.1.4 | DONE (mit Follow-ups) | `ccd5208` |
+| Phase 3: Integration & Documentation | v0.2.0 | DONE | `bd9337a` |
 
 ---
 
@@ -59,14 +69,14 @@ LogicBrain ist technisch solide. Der gesamte Wert der Library liegt im Versprech
 
 | KPI | Aktuell | Ziel v0.1.4 | Ziel v0.2.0 | Messmethode |
 |---|---|---|---|---|
-| **Test Count** | 153 | 180+ | 200+ | `pytest --co -q` |
-| **Test Coverage** | unbekannt | ≥85% | ≥90% | `pytest --cov` in CI |
-| **Module mit direkten Tests** | 11/17 | 15/17 | 17/17 | Glob `tests/test_*.py` vs `logic_brain/*.py` |
-| **CI Pipeline-Dauer** | ~90s | <120s | <120s | GitHub Actions Timing |
-| **Linting-Fehler** | unbekannt | 0 | 0 | ruff in CI |
-| **mypy strict Fehler** | unbekannt | 0 | 0 | mypy in CI |
-| **Benchmark-Score (Exam)** | Baseline TBD | ≥ Baseline | ≥ Baseline | `tools/check_results.py exam` in CI |
-| **Time-to-Integration** | unbekannt | — | <30 min | Manueller Test mit frischem Checkout |
+| **Test Count** | 185+ | 180+ | 200+ | `pytest --co -q` |
+| **Test Coverage** | nicht gemessen | ≥85% | ≥90% | `pytest --cov` in CI |
+| **Module mit direkten Tests** | 15/17 | 15/17 | 17/17 | Glob `tests/test_*.py` vs `logic_brain/*.py` |
+| **CI Pipeline-Dauer** | ~120s | <120s | <120s | GitHub Actions Timing |
+| **Linting-Fehler** | 0 | 0 | 0 | ruff in CI |
+| **mypy strict Fehler** | nicht aktiviert | 0 | 0 | mypy in CI |
+| **Benchmark-Score (Exam)** | Gate aktiv | ≥ Baseline | ≥ Baseline | `tools/check_results.py exam` in CI |
+| **Time-to-Integration** | mit Beispiel erreichbar | — | <30 min | Manueller Test mit frischem Checkout |
 | **API-Breaking-Changes ohne Deprecation** | n/a | 0 | 0 | Review-Policy |
 | **Root-Level Clutter** | 9 Skripte | ≤3 | 0 | Root `*.py` Dateien |
 
@@ -79,31 +89,31 @@ LogicBrain ist technisch solide. Der gesamte Wert der Library liegt im Versprech
 **Prioritaet:** P0 (Blocker fuer v0.1.3)
 
 **Akzeptanzkriterien:**
-- [ ] `STABILITY.md` existiert im Repo-Root
-- [ ] Alle 30 Exports aus `__all__` sind einem Stability-Tier zugeordnet (stable / provisional / internal)
-- [ ] Semver-Regeln dokumentiert: was ist breaking, was ist minor, was ist patch
-- [ ] Deprecation-Policy: mindestens 1 Minor-Version Vorlauf, `DeprecationWarning` Pflicht
-- [ ] Diagnostics-Schema bekommt `schema_version` Feld
-- [ ] README verlinkt auf STABILITY.md
+- [x] `STABILITY.md` existiert im Repo-Root
+- [x] Alle Exports aus `__all__` sind einem Stability-Tier zugeordnet (stable / provisional / internal)
+- [x] Semver-Regeln dokumentiert: was ist breaking, was ist minor, was ist patch
+- [x] Deprecation-Policy: mindestens 1 Minor-Version Vorlauf, `DeprecationWarning` Pflicht
+- [x] Diagnostics-Schema bekommt `schema_version` Feld
+- [x] README verlinkt auf STABILITY.md
 
 ### Issue #2: Interne API-Grenzen schaerfen
 
 **Prioritaet:** P1
 
 **Akzeptanzkriterien:**
-- [ ] `Lexer`, `Parser`, `Token` in `parser.py` mit `_`-Prefix umbenannt
-- [ ] Alle internen Module (`analyzer`, `evaluate`, `external`, `generator`, `lean_verifier`, `loader`, `runner`) definieren eigenes `__all__`
-- [ ] Kein Breaking Change fuer bestehende `from logic_brain import X` Imports
+- [x] `Lexer`, `Parser`, `Token` in `parser.py` mit `_`-Prefix umbenannt
+- [x] Alle internen Module (`analyzer`, `evaluate`, `external`, `generator`, `lean_verifier`, `loader`, `runner`) definieren eigenes `__all__`
+- [x] Kein Breaking Change fuer bestehende `from logic_brain import X` Imports
 
 ### Issue #3: Test Coverage Gaps schliessen
 
 **Prioritaet:** P1
 
 **Akzeptanzkriterien:**
-- [ ] `tests/test_generator.py` — mind. 5 Tests (Presets, Seed-Determinismus, Edge Cases)
-- [ ] `tests/test_analyzer.py` — mind. 3 Tests (Report, Markdown-Output, leere Inputs)
-- [ ] `tests/test_external.py` — mind. 2 Tests (SATBench/FOLIO Loader mit Fixture-Daten)
-- [ ] `tests/test_lean_verifier.py` — mind. 2 Tests (conditional auf Lean-Verfuegbarkeit)
+- [x] `tests/test_generator.py` — mind. 5 Tests (Presets, Seed-Determinismus, Edge Cases)
+- [x] `tests/test_analyzer.py` — mind. 3 Tests (Report, Markdown-Output, leere Inputs)
+- [x] `tests/test_external.py` — mind. 2 Tests (SATBench/FOLIO Loader mit Fixture-Daten)
+- [x] `tests/test_lean_verifier.py` — mind. 2 Tests (conditional auf Lean-Verfuegbarkeit)
 - [ ] `pytest --cov` zeigt ≥85% Gesamtcoverage
 - [ ] CI-Step fuer Coverage mit Threshold
 
@@ -112,33 +122,33 @@ LogicBrain ist technisch solide. Der gesamte Wert der Library liegt im Versprech
 **Prioritaet:** P1
 
 **Akzeptanzkriterien:**
-- [ ] ruff-Linting als CI-Step (0 Fehler)
+- [x] ruff-Linting als CI-Step (0 Fehler)
 - [ ] mypy strict als CI-Step (0 Fehler)
 - [ ] Coverage-Report als CI-Artefakt
-- [ ] Python 3.12 in CI-Matrix
-- [ ] `tools/check_results.py exam` als CI-Step (Benchmark-Regression-Gate)
-- [ ] CI-Dauer bleibt unter 3 Minuten
+- [x] Python 3.12 in CI-Matrix
+- [x] `tools/check_results.py exam` als CI-Step (Benchmark-Regression-Gate)
+- [x] CI-Dauer bleibt unter 3 Minuten
 
 ### Issue #5: Root-Verzeichnis aufraeumen + Doku aktualisieren
 
 **Prioritaet:** P2
 
 **Akzeptanzkriterien:**
-- [ ] `debug_fol09.py`, `test_lean.py`, `test_z3_09.py` entfernt
-- [ ] Root-Wrapper (`check_lean.py`, `check_predicate.py`, `generate_exam.py`, `hardmode.py`, `escalate.py`, `verify_stress.py`) entfernt — `tools/` ist kanonisch
-- [ ] `vision_and_roadmap.md` aktualisiert
-- [ ] `todo.md` archiviert nach `docs/archive/todo_v012.md`
-- [ ] Root enthaelt max. 3 `.py`-Dateien
+- [x] `debug_fol09.py`, `test_lean.py`, `test_z3_09.py` entfernt
+- [x] Root-Wrapper (`check_lean.py`, `check_predicate.py`, `generate_exam.py`, `hardmode.py`, `escalate.py`, `verify_stress.py`) entfernt — `tools/` ist kanonisch
+- [x] `vision_and_roadmap.md` aktualisiert
+- [x] `todo.md` archiviert nach `docs/archive/todo_v012.md`
+- [x] Root enthaelt max. 3 `.py`-Dateien
 
 ### Issue #6: Exception Handling & Dead Code Cleanup
 
 **Prioritaet:** P2
 
 **Akzeptanzkriterien:**
-- [ ] `predicate.py:144` — `except Exception` durch spezifische Exceptions ersetzt
-- [ ] `lean_verifier.py:83` — analog
-- [ ] `SortType` enum in `z3_session.py` entfernt oder genutzt
-- [ ] `lean_verifier.py` konsolidiert oder klar abgegrenzt
+- [x] `predicate.py:144` — `except Exception` durch spezifische Exceptions ersetzt
+- [x] `lean_verifier.py:83` — analog
+- [x] `SortType` enum in `z3_session.py` entfernt oder genutzt
+- [x] `lean_verifier.py` konsolidiert oder klar abgegrenzt
 - [ ] `Argument.premises` vs `FOLArgument.premises` Typ-Inkonsistenz aufgeloest
 
 ### Issue #7: Minimales Agent-Integrationsbeispiel
@@ -146,11 +156,11 @@ LogicBrain ist technisch solide. Der gesamte Wert der Library liegt im Versprech
 **Prioritaet:** P1 (Blocker fuer v0.2.0)
 
 **Akzeptanzkriterien:**
-- [ ] `examples/agent_integration.py` existiert
-- [ ] Zeigt vollstaendigen Workflow: Problem generieren, verifizieren, Session nutzen, Diagnostik auswerten
-- [ ] Funktioniert als Copy-Paste-Vorlage fuer Claude Code / OpenCode
-- [ ] Enthaelt Kommentare, die Agent-Entscheidungspunkte markieren
-- [ ] README verlinkt darauf
+- [x] `examples/agent_integration.py` existiert
+- [x] Zeigt vollstaendigen Workflow: Problem generieren, verifizieren, Session nutzen, Diagnostik auswerten
+- [x] Funktioniert als Copy-Paste-Vorlage fuer Claude Code / OpenCode
+- [x] Enthaelt Kommentare, die Agent-Entscheidungspunkte markieren
+- [x] README verlinkt darauf
 
 ---
 

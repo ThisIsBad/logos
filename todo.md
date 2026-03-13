@@ -2,11 +2,16 @@
 
 Dieses Dokument verweist auf die aktuelle Planungsdokumentation.
 
-## Aktuelle Roadmap
+## Roadmap-Status
 
 **→ [`docs/roadmap_v013_v020.md`](docs/roadmap_v013_v020.md)**
 
-Drei Phasen: API Stabilization (v0.1.3) → Quality & Observability (v0.1.4) → Integration & Documentation (v0.2.0).
+Die Roadmap `v0.1.3 -> v0.2.0` ist abgeschlossen (alle drei Phasen umgesetzt).
+
+Offene Follow-ups nach v0.2.0:
+- Coverage-Messung + Threshold in CI (`pytest --cov`)
+- mypy strict als CI-Gate
+- Restliche direkte Modul-Tests fuer volle KPI-Abdeckung
 
 ## Archiv
 

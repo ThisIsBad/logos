@@ -64,9 +64,9 @@ Fehler werden sofort erkannt. Kein Aufbauen auf falschen Annahmen.
 
 ---
 
-## Implementierte Komponenten (v0.1.2)
+## Implementierte Komponenten (v0.2.0)
 
-Die folgenden Kernkomponenten sind implementiert und getestet (153 Tests):
+Die folgenden Kernkomponenten sind implementiert und getestet (185+ Tests):
 
 ### Lean REPL-Wrapper (`lean_session.py`)
 
@@ -115,9 +115,24 @@ result = verify("P -> Q, P |- Q")
 print(result.valid, result.rule)  # True, "Modus Ponens"
 ```
 
+### Frische Problemgenerierung fuer Agent-Evaluation (`generator.py`)
+
+`ProblemGenerator` ist aus der Public API exportiert (Tier 2 / Provisional)
+und erzeugt reproduzierbare, zur Laufzeit neue Aufgaben.
+
+```python
+from logic_brain import ProblemGenerator
+
+gen = ProblemGenerator()
+problems = gen.generate_batch(3)
+print(problems[0]["ground_truth_valid"])
+```
+
 ### CI & Tooling
 
-- GitHub Actions CI (Python 3.10/3.11)
+- GitHub Actions CI (Python 3.10/3.11/3.12)
+- Ruff-Linting als Gate
+- Benchmark-Regression-Gate (`tools/check_results.py exam`)
 - Konsolidierte Benchmark-Tools unter `tools/`
 - Release-Playbook unter `docs/release_playbook.md`
 
@@ -166,17 +181,24 @@ LogicBrain ist das **Werkzeug**, nicht der **Arbeiter**.
 
 ---
 
-## Aktuelle Roadmap (ab v0.1.3)
+## Roadmap-Status
 
-Die detaillierte Roadmap mit Phasen, KPIs, Issue-Vorschlägen und Risikoanalyse liegt in:
+Die Roadmap `v0.1.3 -> v0.2.0` ist abgeschlossen.
+
+Die detaillierte Dokumentation mit Phasen, KPIs, Issue-Vorschlägen und Risikoanalyse liegt in:
 
 **→ [`docs/roadmap_v013_v020.md`](docs/roadmap_v013_v020.md)**
 
-Zusammenfassung der drei Phasen:
+Abgeschlossene Phasen:
 
-1. **v0.1.3 — API Stabilization** (2-3 Wochen): Stabilitätsvertrag, Deprecation-Policy, interne API-Grenzen, Root-Cleanup
-2. **v0.1.4 — Quality & Observability** (2-3 Wochen): Test-Coverage ≥85%, CI mit Linting/mypy/Coverage, Benchmark-Regression-Gate
-3. **v0.2.0 — Integration & Documentation** (3-4 Wochen): Agent-Integrationsbeispiel, API-Referenz, erstes "stable" Release
+1. **v0.1.3 — API Stabilization**: Stabilitätsvertrag, Deprecation-Policy, interne API-Grenzen, Root-Cleanup
+2. **v0.1.4 — Quality & Observability**: neue Test-Suites, Ruff + CI-Haertung, Benchmark-Regression-Gate
+3. **v0.2.0 — Integration & Documentation**: Agent-Integrationsbeispiel, API-Referenz, PEP-561 Marker, erweitertes Public API
+
+Post-v0.2.0 Follow-ups (offen):
+- Coverage-Messung und CI-Threshold (`pytest --cov`)
+- mypy strict als CI-Gate
+- Direkte Tests fuer verbleibende ungetestete Module
 
 ### Bewusst zurückgestellt
 
