@@ -235,24 +235,38 @@ pytest tests/ -v       # Test-directory run
 ```powershell
 python -m logic_brain.runner
 
+# Generate fresh benchmark files
+python tools/generate_exam.py --count 10
+python tools/generate_hardmode.py --vars 8 --premises 8 --count 5 --depth 3
+python tools/generate_escalation.py round2 --count 5
+
 # Check result files
 python tools/check_results.py exam
 python tools/check_results.py hardmode hardmode_10v_10p
 python tools/check_results.py escalation round2
+python tools/check_stress_results.py
 
 # Or provide explicit files
 python tools/check_results.py --benchmarks results/hardmode_8v_8p.json --answers results/hardmode_8v_8p_answers.json
 
-# Lean and predicate answer checkers
+# Lean and FOL answer checkers
 python tools/check_lean_results.py
-python tools/check_predicate_results.py
+python tools/check_fol_results.py
 ```
+
+FOL checker schema expectations:
+- Benchmark file contains `problems` with `id` and `expected_valid`.
+- Answers file contains `answers` keyed by problem id, each with a `valid` boolean.
 
 Legacy compatibility wrappers (deprecated):
 
 ```powershell
 python check_lean.py
 python check_predicate.py
+python generate_exam.py
+python hardmode.py
+python escalate.py
+python verify_stress.py
 ```
 
 ## Examples

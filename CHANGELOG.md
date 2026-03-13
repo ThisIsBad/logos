@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented in this file.
 
+## [Unreleased]
+
+### Added
+- Safe AST-based constraint parsing in `Z3Session` (replaces `eval`) with explicit operator/function allow-listing.
+- New tooling entrypoints: `tools/generate_exam.py`, `tools/generate_hardmode.py`, `tools/generate_escalation.py`, `tools/check_stress_results.py`, `tools/check_fol_results.py`.
+- Additional Z3 session tests for implication operators and malformed/unsupported syntax handling.
+
+### Changed
+- `tools/check_predicate_results.py` now acts as a legacy wrapper and forwards to `tools/check_fol_results.py`.
+- Root scripts `generate_exam.py`, `hardmode.py`, `escalate.py`, `verify_stress.py` now act as deprecated wrappers to `tools/` commands.
+- README and release playbook now document canonical `tools/` flows for generation and checking (including FOL and stress).
+
 ## [0.1.1] - 2026-03-12
 
 ### Added

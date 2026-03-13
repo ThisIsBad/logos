@@ -15,7 +15,8 @@ Run from the repository root:
 python -m pip install -e ".[dev]"
 python -m pytest -q
 python tools/check_results.py exam
-python tools/check_predicate_results.py
+python tools/check_fol_results.py
+python tools/check_stress_results.py
 ```
 
 Optional if Lean is installed:
@@ -77,7 +78,10 @@ python -m logic_brain "P -> Q, P |- Q" --json
 python tools/check_results.py exam
 
 # Predicate checker sanity
-python tools/check_predicate_results.py
+python tools/check_fol_results.py
+
+# Stress checker sanity
+python tools/check_stress_results.py
 ```
 
 If Lean is available:
