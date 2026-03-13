@@ -1,42 +1,21 @@
-"""Check LLM answers against the Lean 4 compiler."""
+"""Legacy wrapper for Lean result checking.
 
-import json
-from logic_brain.lean_verifier import LeanVerifier
+Prefer: python tools/check_lean_results.py
+"""
 
-# The path where elan installs lean
-lean_bin = r"C:\Users\Stefan\.elan\bin\lean.exe"
-verifier = LeanVerifier(lean_bin)
+from __future__ import annotations
 
-with open("benchmarks/lean_problems.json", "r", encoding="utf-8") as f:
-    benchmarks = json.load(f)["problems"]
+import subprocess
+import sys
+from pathlib import Path
 
-with open("results/lean_answers.json", "r", encoding="utf-8") as f:
-    answers = json.load(f)["answers"]
 
-correct = 0
-total = len(benchmarks)
+def main() -> int:
+    script = Path(__file__).with_name("tools") / "check_lean_results.py"
+    print("[deprecated] Use `python tools/check_lean_results.py` instead.")
+    result = subprocess.run([sys.executable, str(script), *sys.argv[1:]])
+    return result.returncode
 
-print(f"{'ID':>8s} | {'Status':>12s} | {'Tactic'}")
-print("-" * 50)
 
-for prob in benchmarks:
-    pid = prob["id"]
-    if pid not in answers:
-        print(f"{pid:>8s} | {'MISSING':>12s} | ")
-        continue
-        
-    tactic = answers[pid]["tactic_proof"]
-    header = prob["lean_header"]
-    res = verifier.verify(header, tactic)
-    
-    if res.valid:
-        correct += 1
-        status = "OK"
-    else:
-        status = "!! ERROR !!"
-        
-    print(f"{pid:>8s} | {status:>12s} | {tactic}")
-    if not res.valid:
-        print(f"         > Compiler Error:\n{res.output}")
-
-print(f"\nScore: {correct}/{total} ({100*correct//total}%)")
+if __name__ == "__main__":
+    raise SystemExit(main())

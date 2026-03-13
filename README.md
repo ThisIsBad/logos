@@ -1,5 +1,7 @@
 # LogicBrain
 
+[![CI](https://github.com/ThisIsBad/LogicBrain/actions/workflows/ci.yml/badge.svg)](https://github.com/ThisIsBad/LogicBrain/actions/workflows/ci.yml)
+
 A Z3-backed deterministic verifier for propositional and predicate logic. Designed to be used directly by AI coding agents (Claude Code, OpenCode, Aider, etc.) via Python execution.
 
 ## Quick Start
@@ -8,6 +10,13 @@ A Z3-backed deterministic verifier for propositional and predicate logic. Design
 python -m venv .venv
 .venv\Scripts\activate
 pip install -e ".[dev]"
+```
+
+## Local Test Quickstart
+
+```powershell
+pip install -e ".[dev]"
+pytest -q
 ```
 
 ## Usage
@@ -216,8 +225,9 @@ tests/
 ## Running Tests
 
 ```powershell
-pytest -v              # Run all tests
-pytest tests/ -v       # Run all tests verbosely
+pytest -q              # Run full suite (CI default)
+pytest -v              # Verbose run
+pytest tests/ -v       # Test-directory run
 ```
 
 ## Running Benchmarks
@@ -229,6 +239,20 @@ python -m logic_brain.runner
 python tools/check_results.py exam
 python tools/check_results.py hardmode hardmode_10v_10p
 python tools/check_results.py escalation round2
+
+# Or provide explicit files
+python tools/check_results.py --benchmarks results/hardmode_8v_8p.json --answers results/hardmode_8v_8p_answers.json
+
+# Lean and predicate answer checkers
+python tools/check_lean_results.py
+python tools/check_predicate_results.py
+```
+
+Legacy compatibility wrappers (deprecated):
+
+```powershell
+python check_lean.py
+python check_predicate.py
 ```
 
 ## Examples
@@ -248,6 +272,7 @@ Roadmap assessment:
 
 - Follow semantic versioning (`MAJOR.MINOR.PATCH`).
 - Check `CHANGELOG.md` for release notes and upgrade context.
+- Follow `docs/release_playbook.md` for the release checklist and smoke tests.
 - GitHub releases are published at:
   - `https://github.com/ThisIsBad/LogicBrain/releases`
 

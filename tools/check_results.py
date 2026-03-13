@@ -44,6 +44,7 @@ def _print_score(exam_data: dict, answer_data: dict) -> int:
     correct = 0
     total = 0
     wrong: list[str] = []
+    missing: list[str] = []
 
     for problem_id in sorted(key.keys()):
         total += 1
@@ -52,6 +53,7 @@ def _print_score(exam_data: dict, answer_data: dict) -> int:
 
         if llm_ans is None:
             print(f"MISS         {problem_id} | no answer")
+            missing.append(problem_id)
             continue
 
         ok = llm_ans == truth
@@ -72,16 +74,20 @@ def _print_score(exam_data: dict, answer_data: dict) -> int:
 
     if wrong:
         print("Failed:", ", ".join(wrong))
+    if missing:
+        print("Missing:", ", ".join(missing))
 
-    return 0 if not wrong else 1
+    return 0 if (not wrong and not missing) else 1
 
 
-def main() -> int:
+def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Check benchmark run results")
     parser.add_argument(
         "kind",
+        nargs="?",
         choices=["exam", "hardmode", "escalation"],
-        help="Result family to check",
+        default="exam",
+        help="Result family to check (ignored when --benchmarks and --answers are provided)",
     )
     parser.add_argument(
         "name",
@@ -89,9 +95,29 @@ def main() -> int:
         default="",
         help="Optional run name (e.g. hardmode_10v_10p or round2)",
     )
-    args = parser.parse_args()
+    parser.add_argument(
+        "--benchmarks",
+        type=Path,
+        help="Explicit benchmark result file path (overrides kind/name path resolution)",
+    )
+    parser.add_argument(
+        "--answers",
+        type=Path,
+        help="Explicit answers file path (overrides kind/name path resolution)",
+    )
+    return parser.parse_args()
 
-    exam_path, answer_path = _compute_paths(args.kind, args.name)
+
+def main() -> int:
+    args = _parse_args()
+
+    if args.benchmarks or args.answers:
+        if not (args.benchmarks and args.answers):
+            raise ValueError("Provide both --benchmarks and --answers together")
+        exam_path, answer_path = args.benchmarks, args.answers
+    else:
+        exam_path, answer_path = _compute_paths(args.kind, args.name)
+
     if not exam_path.exists():
         raise FileNotFoundError(f"Exam file not found: {exam_path}")
     if not answer_path.exists():
