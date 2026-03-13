@@ -6,7 +6,9 @@ the ground truth, making the evaluation fully deterministic and trustworthy.
 
 Design principle: The LLM cannot cheat. It must reason.
 
-Internal module — not part of the public API (Tier 3).
+``ProblemGenerator`` and ``GeneratorConfig`` are exported from the public
+API (Tier 2 — Provisional). Difficulty presets (``EASY``, ``MEDIUM``,
+``HARD``, ``EXTREME``) are available as module-level constants.
 """
 
 from __future__ import annotations

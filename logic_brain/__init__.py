@@ -36,6 +36,7 @@ from .diagnostics import (
     LeanDiagnosticParser,
     Z3DiagnosticParser,
 )
+from .generator import ProblemGenerator, GeneratorConfig
 
 __all__ = [
     # Quick API (string-based)
@@ -75,4 +76,7 @@ __all__ = [
     "ErrorType",
     "LeanDiagnosticParser",
     "Z3DiagnosticParser",
+    # Problem generation
+    "ProblemGenerator",
+    "GeneratorConfig",
 ]

@@ -1,6 +1,6 @@
 # API Stability Contract
 
-Version: 1.0 | Effective from: v0.1.3
+Version: 1.0 | Effective from: v0.2.0
 
 ---
 
@@ -53,6 +53,8 @@ The tier determines the guarantees you get when upgrading between releases.
 | `ErrorType` | `diagnostics` | Enum of error categories |
 | `LeanDiagnosticParser` | `diagnostics` | Parser for Lean error output |
 | `Z3DiagnosticParser` | `diagnostics` | Parser for Z3 error output |
+| `ProblemGenerator` | `generator` | Fresh logic problem generator |
+| `GeneratorConfig` | `generator` | Configuration for problem difficulty |
 
 ### Tier 3 — Internal
 
@@ -63,7 +65,7 @@ The tier determines the guarantees you get when upgrading between releases.
 | `analyzer` | Error pattern analysis |
 | `evaluate` | LLM evaluation script |
 | `external` | External benchmark adapters |
-| `generator` | Problem generation |
+| `generator` | Problem generation (presets `EASY`/`MEDIUM`/`HARD`/`EXTREME` are internal) |
 | `lean_verifier` | Non-interactive Lean verification |
 | `loader` | Benchmark JSON loader |
 | `runner` | Benchmark runner |

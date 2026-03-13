@@ -13,3 +13,6 @@ build/
 
 # Internal planning briefs (not versioned)
 docs/claude_opus_planning_brief.md
+
+# Generated API docs (regenerate: python -m pdoc logic_brain -o docs/api)
+docs/api/

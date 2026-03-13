@@ -84,7 +84,7 @@ verify("P -> Q, ~P |- ~Q")         # Denying the Antecedent
 
 ## For AI Agents
 
-This library is designed to be called directly via Python execution. No MCP server or API wrapper needed.
+This library is designed to be called directly via Python execution. No MCP server or API wrapper needed. The package ships a `py.typed` marker (PEP 561) so downstream type checkers see the inline types.
 
 ```python
 # Agent writes this code, executes it, reads the result
@@ -93,6 +93,8 @@ result = verify("P -> Q, P |- Q")
 # Agent sees: valid=True, rule="Modus Ponens"
 # Agent can now use this information to verify its reasoning
 ```
+
+For a complete copy-paste example see [`examples/agent_integration.py`](examples/agent_integration.py).
 
 ## First-Order Logic (Predicate Logic)
 
@@ -203,9 +205,12 @@ Features:
 
 ```
 logic_brain/
+├── __init__.py         # Public API (32 exports)
+├── py.typed            # PEP 561 marker for downstream type-checking
 ├── parser.py           # String-based parser ("P -> Q, P |- Q")
 ├── verifier.py         # Z3-backed propositional logic verifier
 ├── predicate.py        # Z3-backed predicate logic verifier
+├── generator.py        # Fresh problem generator (ProblemGenerator)
 ├── lean_session.py     # Lean 4 interactive session wrapper
 ├── z3_session.py       # Z3 incremental solving session
 ├── diagnostics.py      # Structured error diagnostics for agents
@@ -214,17 +219,16 @@ logic_brain/
 ├── predicate_models.py # FOL data types
 ├── loader.py           # Benchmark loader
 └── runner.py           # Benchmark runner
-tools/
-├── generate_exam.py    # Generate exam benchmarks
-├── generate_hardmode.py # Generate hard benchmarks
-├── generate_escalation.py # Generate escalation benchmarks
-├── check_results.py    # Check exam/hardmode/escalation answers
-├── check_stress_results.py # Check stress test answers
-├── check_fol_results.py # Check FOL benchmark answers
-└── check_lean_results.py # Check Lean benchmark answers
-benchmarks/
-└── problems.json       # 25 graded logic problems
-tests/                  # 153 tests (pytest)
+examples/
+├── agent_integration.py  # Full agent workflow demo (copy-paste ready)
+├── quick_verify.py       # Minimal verification examples
+├── interactive_sessions.py # LeanSession + Z3Session demo
+└── logic_brain_demo.ipynb  # Jupyter notebook demo
+tools/                  # Benchmark generation & checking
+docs/
+├── api/                # Generated API reference (pdoc)
+└── roadmap_v013_v020.md # Development roadmap
+tests/                  # 185+ tests (pytest)
 ```
 
 ## Running Tests
@@ -270,12 +274,21 @@ All benchmark tools live under `tools/`. Legacy root-level wrappers have been re
 ```powershell
 python examples/quick_verify.py
 python examples/interactive_sessions.py
+python examples/agent_integration.py   # Full agent workflow demo
 ```
 
 Notebook demo:
 - `examples/logic_brain_demo.ipynb`
 
+### Agent Integration
+
+See [`examples/agent_integration.py`](examples/agent_integration.py) for a
+copy-paste-ready example showing how an AI coding agent can use LogicBrain:
+verify arguments, generate fresh problems, explore constraints with Z3, read
+structured diagnostics, and optionally build Lean 4 proofs.
+
 Further documentation:
+- **API reference:** `docs/api/logic_brain.html` (regenerate: `python -m pdoc logic_brain -o docs/api`)
 - Roadmap: `docs/roadmap_v013_v020.md`
 - API stability: `STABILITY.md`
 - Development process: `docs/development_process.md`
