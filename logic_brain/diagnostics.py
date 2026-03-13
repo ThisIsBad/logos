@@ -18,7 +18,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional
+from typing import Any, Optional
 
 
 class ErrorType(Enum):
@@ -332,7 +332,7 @@ class Z3DiagnosticParser:
         cls,
         constraints: list[str],
         unsat_core: Optional[list[str]] = None,
-        model_before: Optional[dict] = None,
+        model_before: Optional[dict[str, Any]] = None,
     ) -> Diagnostic:
         """Create diagnostic for unsatisfiable constraints.
         

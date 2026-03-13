@@ -329,7 +329,7 @@ class LeanSession:
         # Check for errors
         if "error:" in output_lower:
             # Extract the error message
-            error_lines = []
+            error_lines: list[str] = []
             for line in output.split('\n'):
                 if 'error:' in line.lower() or (error_lines and line.strip()):
                     error_lines.append(line)

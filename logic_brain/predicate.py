@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 import z3
 
@@ -18,7 +18,7 @@ class PredicateVerifier:
 
     def __init__(self) -> None:
         # We use a single domain of discourse (Universe of Discourse)
-        self.U: z3.SortRef = z3.DeclareSort('U')  # type: ignore[assignment]
+        self.U: z3.SortRef = z3.DeclareSort('U')
         # Cache for Z3 constants, variables, and predicates so they remain consistent across the argument
         self.z3_constants: dict[str, z3.ExprRef] = {}
         self.z3_predicates: dict[str, z3.FuncDeclRef] = {}
@@ -31,7 +31,7 @@ class PredicateVerifier:
     def _get_z3_constant(self, name: str) -> z3.ExprRef:
         """Get or create a Z3 constant in the universe of discourse."""
         if name not in self.z3_constants:
-            self.z3_constants[name] = z3.Const(name, self.U)  # type: ignore[assignment]
+            self.z3_constants[name] = cast(z3.ExprRef, z3.Const(name, self.U))
         return self.z3_constants[name]
 
     def _get_z3_predicate(self, name: str, arity: int) -> z3.FuncDeclRef:
@@ -63,17 +63,20 @@ class PredicateVerifier:
         elif isinstance(expr, PredicateExpression):
             left_z3 = self._convert(expr.left, var_env)
             if expr.connective == PredicateConnective.NOT:
-                return z3.Not(left_z3)  # type: ignore[arg-type, return-value]
+                return cast(z3.ExprRef, z3.Not(left_z3))
+
+            if expr.right is None:
+                raise ValueError("Binary connective requires right operand")
 
             right_z3 = self._convert(expr.right, var_env)
             if expr.connective == PredicateConnective.AND:
-                return z3.And(left_z3, right_z3)  # type: ignore[arg-type, return-value]
+                return cast(z3.ExprRef, z3.And(left_z3, right_z3))
             elif expr.connective == PredicateConnective.OR:
-                return z3.Or(left_z3, right_z3)  # type: ignore[arg-type, return-value]
+                return cast(z3.ExprRef, z3.Or(left_z3, right_z3))
             elif expr.connective == PredicateConnective.IMPLIES:
-                return z3.Implies(left_z3, right_z3)  # type: ignore[arg-type, return-value]
+                return cast(z3.ExprRef, z3.Implies(left_z3, right_z3))
             elif expr.connective == PredicateConnective.IFF:
-                return left_z3 == right_z3  # type: ignore[return-value]
+                return cast(z3.ExprRef, left_z3 == right_z3)
 
         elif isinstance(expr, QuantifiedExpression):
             # Create a fresh bound variable for Z3

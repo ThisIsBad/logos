@@ -7,7 +7,7 @@ Exploiting the P != NP asymmetry: verification is cheap, generation is hard.
 
 from __future__ import annotations
 
-from typing import Union
+from typing import Union, cast
 
 import z3
 
@@ -168,7 +168,7 @@ class PropositionalVerifier:
         left = self._to_z3(expr.left, z3_vars)
 
         if expr.connective is Connective.NOT:
-            return z3.Not(left)  # type: ignore[return-value]
+            return cast(z3.BoolRef, z3.Not(left))
 
         if expr.right is None:
             raise ValueError(f"Binary connective {expr.connective} requires right operand")
@@ -176,13 +176,13 @@ class PropositionalVerifier:
         right = self._to_z3(expr.right, z3_vars)
 
         if expr.connective is Connective.AND:
-            return z3.And(left, right)  # type: ignore[return-value]
+            return cast(z3.BoolRef, z3.And(left, right))
         elif expr.connective is Connective.OR:
-            return z3.Or(left, right)  # type: ignore[return-value]
+            return cast(z3.BoolRef, z3.Or(left, right))
         elif expr.connective is Connective.IMPLIES:
-            return z3.Implies(left, right)  # type: ignore[return-value]
+            return cast(z3.BoolRef, z3.Implies(left, right))
         elif expr.connective is Connective.IFF:
-            return left == right  # type: ignore[return-value]
+            return cast(z3.BoolRef, left == right)
         else:
             raise ValueError(f"Unknown connective: {expr.connective}")
 

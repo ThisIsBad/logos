@@ -14,13 +14,30 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0",
+    "pytest-cov>=5.0",
     "hypothesis>=6.0",
     "ruff>=0.4",
+    "mypy>=1.10",
     "pdoc>=14.0",
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["logic_brain"]
+
+[tool.coverage.report]
+fail_under = 85
+show_missing = true
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+
+[[tool.mypy.overrides]]
+module = ["z3", "z3.*"]
+ignore_missing_imports = true
 
 [tool.ruff]
 target-version = "py310"

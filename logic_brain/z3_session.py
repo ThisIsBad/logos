@@ -508,9 +508,7 @@ class Z3Session:
                 result[name] = as_long() if callable(as_long) else str(val)
             elif z3.is_rational_value(val):
                 as_fraction = getattr(cast(Any, val), "as_fraction", None)
-                result[name] = (
-                    float(cast(Any, as_fraction)()) if callable(as_fraction) else str(val)  # type: ignore[arg-type]
-                )
+                result[name] = float(cast(Any, as_fraction)()) if callable(as_fraction) else str(val)
             elif z3.is_true(val):
                 result[name] = True
             elif z3.is_false(val):

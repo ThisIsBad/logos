@@ -65,7 +65,7 @@ def load_satbench(jsonl_path: Path) -> list[dict[str, Any]]:
     return problems
 
 
-def _format_satbench_problem(raw: dict) -> str:
+def _format_satbench_problem(raw: dict[str, Any]) -> str:
     """Format a SATBench problem as a single natural language string."""
     parts = []
     if "scenario" in raw:
@@ -103,7 +103,7 @@ def load_folio(jsonl_path: Path) -> list[dict[str, Any]]:
     return problems
 
 
-def _format_folio_problem(raw: dict) -> str:
+def _format_folio_problem(raw: dict[str, Any]) -> str:
     """Format a FOLIO problem as natural language."""
     parts = []
     if "premises" in raw:

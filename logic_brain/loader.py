@@ -9,7 +9,7 @@ __all__ = ["load_problems", "parse_problem"]
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from logic_brain.models import (
     Argument,
@@ -29,8 +29,8 @@ def load_problems(path: Path | None = None) -> list[dict[str, Any]]:
     """Load raw problem dicts from the JSON file."""
     path = path or (BENCHMARKS_DIR / "problems.json")
     with open(path, encoding="utf-8") as f:
-        data = json.load(f)
-    return data["problems"]
+        data = cast(dict[str, Any], json.load(f))
+    return cast(list[dict[str, Any]], data["problems"])
 
 
 def parse_problem(raw: dict[str, Any]) -> tuple[Argument, dict[str, Any]]:

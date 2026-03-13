@@ -13,6 +13,7 @@ __all__ = ["evaluate"]
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
 from logic_brain.loader import load_problems, parse_problem
 from logic_brain.verifier import PropositionalVerifier
@@ -35,7 +36,7 @@ def evaluate(answers_path: Path) -> str:
     lines: list[str] = []
     lines.append("# 🧠 LLM vs. Gegenspieler — Live Evaluation\n")
 
-    results_for_analyzer: list[dict] = []
+    results_for_analyzer: list[dict[str, Any]] = []
     correct = 0
     total = 0
 
