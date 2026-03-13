@@ -18,6 +18,8 @@ Example
 
 from __future__ import annotations
 
+import ast
+import re
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Optional, cast
@@ -324,36 +326,15 @@ class Z3Session:
     
     def _parse_constraint(self, constraint: str) -> z3.BoolRef:
         """Parse a constraint string into a Z3 expression.
-        
-        Uses Python's eval with Z3 operators in scope.
+
+        Uses a restricted Python AST translator with explicit allow-listing.
         """
-        # Build evaluation context with variables and operators
-        ctx: dict[str, Any] = {}
-        ctx.update(self._variables)
-        
-        # Add Z3 functions
-        ctx["And"] = z3.And
-        ctx["Or"] = z3.Or
-        ctx["Not"] = z3.Not
-        ctx["Implies"] = z3.Implies
-        ctx["If"] = z3.If
-        ctx["Abs"] = lambda x: z3.If(x >= 0, x, -x)
-        
-        # Translate common operators
-        expr_str = constraint
-        expr_str = expr_str.replace("&&", " and ")
-        expr_str = expr_str.replace("||", " or ")
-        expr_str = expr_str.replace("!", " not ")
-        expr_str = expr_str.replace("=>", " <= ")  # Temporary hack
-        expr_str = expr_str.replace("->", " <= ")  # Implication via <=
-        
-        # Handle == vs = (Python uses ==)
-        # Single = should become ==
-        import re
-        expr_str = re.sub(r'(?<![<>=!])=(?![=])', '==', expr_str)
-        
         try:
-            result = eval(expr_str, {"__builtins__": {}}, ctx)
+            expr_str = self._normalize_constraint_syntax(constraint)
+            parsed = ast.parse(expr_str, mode="eval")
+            result = self._ast_to_z3(parsed.body)
+            if isinstance(result, bool):
+                result = z3.BoolVal(result)
             if not isinstance(result, z3.BoolRef):
                 raise ValueError(
                     f"Constraint '{constraint}' did not evaluate to a boolean expression"
@@ -361,6 +342,169 @@ class Z3Session:
             return result
         except Exception as e:
             raise ValueError(f"Failed to parse constraint '{constraint}': {e}")
+
+    def _normalize_constraint_syntax(self, constraint: str) -> str:
+        """Normalize user-friendly operators into parseable Python syntax."""
+        expr_str = constraint
+        expr_str = expr_str.replace("&&", " and ")
+        expr_str = expr_str.replace("||", " or ")
+        expr_str = re.sub(r"(?<![=!<>])!(?!=)", " not ", expr_str)
+        expr_str = self._rewrite_implication(expr_str)
+        expr_str = re.sub(r'(?<![<>=!])=(?![=])', '==', expr_str)
+        return expr_str
+
+    def _rewrite_implication(self, expr: str) -> str:
+        """Rewrite `a -> b` / `a => b` to `Implies(a, b)` (right-associative)."""
+        index = self._find_top_level_implication(expr)
+        if index is None:
+            return expr
+
+        op_len = 2
+        left = expr[:index].strip()
+        right = expr[index + op_len :].strip()
+
+        if not left or not right:
+            raise ValueError("Incomplete implication expression")
+
+        return f"Implies({self._rewrite_implication(left)}, {self._rewrite_implication(right)})"
+
+    def _find_top_level_implication(self, expr: str) -> Optional[int]:
+        """Find right-most top-level implication operator (`->` or `=>`)."""
+        depth = 0
+        i = len(expr) - 2
+        while i >= 0:
+            ch = expr[i]
+            if ch == ")":
+                depth += 1
+                i -= 1
+                continue
+            if ch == "(":
+                depth -= 1
+                i -= 1
+                continue
+
+            if depth == 0:
+                token = expr[i : i + 2]
+                if token in {"->", "=>"}:
+                    return i
+            i -= 1
+        return None
+
+    def _ast_to_z3(self, node: ast.AST) -> Any:
+        """Translate a restricted Python AST expression into a Z3 expression."""
+        if isinstance(node, ast.Name):
+            if node.id in self._variables:
+                return self._variables[node.id]
+            if node.id == "True":
+                return z3.BoolVal(True)
+            if node.id == "False":
+                return z3.BoolVal(False)
+            raise ValueError(f"Undeclared variable '{node.id}'")
+
+        if isinstance(node, ast.Constant):
+            if isinstance(node.value, bool):
+                return z3.BoolVal(node.value)
+            if isinstance(node.value, int):
+                return z3.IntVal(node.value)
+            if isinstance(node.value, float):
+                return z3.RealVal(str(node.value))
+            raise ValueError(f"Unsupported constant type: {type(node.value).__name__}")
+
+        if isinstance(node, ast.UnaryOp):
+            operand = self._ast_to_z3(node.operand)
+            if isinstance(node.op, ast.Not):
+                return z3.Not(operand)
+            if isinstance(node.op, ast.USub):
+                return -operand
+            raise ValueError(f"Unsupported unary operator: {type(node.op).__name__}")
+
+        if isinstance(node, ast.BoolOp):
+            values = [self._ast_to_z3(v) for v in node.values]
+            if isinstance(node.op, ast.And):
+                return z3.And(*values)
+            if isinstance(node.op, ast.Or):
+                return z3.Or(*values)
+            raise ValueError(f"Unsupported boolean operator: {type(node.op).__name__}")
+
+        if isinstance(node, ast.BinOp):
+            left = self._ast_to_z3(node.left)
+            right = self._ast_to_z3(node.right)
+            if isinstance(node.op, ast.Add):
+                return left + right
+            if isinstance(node.op, ast.Sub):
+                return left - right
+            if isinstance(node.op, ast.Mult):
+                return left * right
+            if isinstance(node.op, ast.Div):
+                return left / right
+            if isinstance(node.op, ast.Mod):
+                return left % right
+            raise ValueError(f"Unsupported binary operator: {type(node.op).__name__}")
+
+        if isinstance(node, ast.Compare):
+            left = self._ast_to_z3(node.left)
+            comparisons: list[z3.BoolRef] = []
+
+            for op, right_node in zip(node.ops, node.comparators):
+                right = self._ast_to_z3(right_node)
+                if isinstance(op, ast.Eq):
+                    comparisons.append(left == right)
+                elif isinstance(op, ast.NotEq):
+                    comparisons.append(left != right)
+                elif isinstance(op, ast.Gt):
+                    comparisons.append(left > right)
+                elif isinstance(op, ast.GtE):
+                    comparisons.append(left >= right)
+                elif isinstance(op, ast.Lt):
+                    comparisons.append(left < right)
+                elif isinstance(op, ast.LtE):
+                    comparisons.append(left <= right)
+                else:
+                    raise ValueError(f"Unsupported comparison operator: {type(op).__name__}")
+                left = right
+
+            if len(comparisons) == 1:
+                return comparisons[0]
+            return z3.And(*comparisons)
+
+        if isinstance(node, ast.Call):
+            if not isinstance(node.func, ast.Name):
+                raise ValueError("Only direct function calls are supported")
+
+            fn_name = node.func.id
+            args = [self._ast_to_z3(arg) for arg in node.args]
+
+            if fn_name == "And":
+                return z3.And(*args)
+            if fn_name == "Or":
+                return z3.Or(*args)
+            if fn_name == "Not":
+                if len(args) != 1:
+                    raise ValueError("Not() expects exactly one argument")
+                return z3.Not(args[0])
+            if fn_name == "Implies":
+                if len(args) != 2:
+                    raise ValueError("Implies() expects exactly two arguments")
+                return z3.Implies(args[0], args[1])
+            if fn_name == "If":
+                if len(args) != 3:
+                    raise ValueError("If() expects exactly three arguments")
+                return z3.If(args[0], args[1], args[2])
+            if fn_name == "Abs":
+                if len(args) != 1:
+                    raise ValueError("Abs() expects exactly one argument")
+                x = args[0]
+                return z3.If(x >= 0, x, -x)
+
+            raise ValueError(f"Unsupported function: {fn_name}")
+
+        if isinstance(node, ast.IfExp):
+            cond = self._ast_to_z3(node.test)
+            body = self._ast_to_z3(node.body)
+            orelse = self._ast_to_z3(node.orelse)
+            return z3.If(cond, body, orelse)
+
+        raise ValueError(f"Unsupported syntax node: {type(node).__name__}")
     
     def _extract_model(self, model: z3.ModelRef) -> dict[str, Any]:
         """Extract variable values from a Z3 model."""

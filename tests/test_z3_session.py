@@ -311,6 +311,44 @@ class TestZ3SessionComplexExpressions:
         with pytest.raises(ValueError, match="undeclared_variable"):
             session.assert_constraint("y > 0")
 
+    def test_implication_operator_arrow(self):
+        session = Z3Session()
+        session.declare("a", "Bool")
+        session.declare("b", "Bool")
+        session.assert_constraint("a")
+        session.assert_constraint("a -> b")
+
+        result = session.check()
+
+        assert result.satisfiable
+        assert result.model["b"] is True
+
+    def test_implication_operator_fat_arrow(self):
+        session = Z3Session()
+        session.declare("a", "Bool")
+        session.declare("b", "Bool")
+        session.assert_constraint("a")
+        session.assert_constraint("a => b")
+
+        result = session.check()
+
+        assert result.satisfiable
+        assert result.model["b"] is True
+
+    def test_malformed_constraint_reports_parse_error(self):
+        session = Z3Session()
+        session.declare("x", "Int")
+
+        with pytest.raises(ValueError, match="parse_error"):
+            session.assert_constraint("x >")
+
+    def test_unsupported_syntax_reports_parse_error(self):
+        session = Z3Session()
+        session.declare("x", "Int")
+
+        with pytest.raises(ValueError, match="parse_error"):
+            session.assert_constraint("[x] == [1]")
+
 
 class TestCheckResult:
     """CheckResult dataclass tests."""
