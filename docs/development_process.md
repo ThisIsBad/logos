@@ -93,6 +93,7 @@ python -m pytest -q
 python -m ruff check logic_brain/ tests/ tools/
 python -m mypy --strict logic_brain
 python -m pytest --cov=logic_brain --cov-report=term-missing --cov-fail-under=85
+python -m pytest -q -m metamorphic
 ```
 
 If one gate fails, do not commit. Fix first.

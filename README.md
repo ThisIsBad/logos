@@ -237,6 +237,7 @@ tests/                  # 185+ tests (pytest)
 pytest -q              # Run full suite (CI default)
 pytest -v              # Verbose run
 pytest tests/ -v       # Test-directory run
+pytest -q -m metamorphic  # Metamorphic regression gate
 ```
 
 ## Running Benchmarks

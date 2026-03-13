@@ -7,6 +7,9 @@ import pytest
 from logic_brain import verify
 
 
+pytestmark = pytest.mark.metamorphic
+
+
 def _assert_same_outcome(source_argument: str, transformed_argument: str) -> None:
     source = verify(source_argument)
     transformed = verify(transformed_argument)
