@@ -42,6 +42,8 @@ Each MR entry should include:
 | MR-Z02 | Constraint order invariance (SAT/UNSAT) | `z3_session` | session-safety | reorder independent / contradictory constraints | `check().status` and `satisfiable` unchanged | exact | active | `tests/test_metamorphic_z3_session.py::test_mr_reordering_independent_constraints_preserves_sat`, `tests/test_metamorphic_z3_session.py::test_mr_reordering_contradictory_constraints_preserves_unsat` |
 | MR-Z03 | Integer bound equivalence | `z3_session` | session-safety | `x > 5` <-> `x >= 6` | sat classification unchanged | exact | active | `tests/test_metamorphic_z3_session.py::test_mr_equivalent_integer_bounds_preserve_classification` |
 | MR-Z04 | Reset-to-fresh equivalence | `z3_session` | session-safety | `reset(); redeclare; reassert` | behaves like fresh session | exact | active | `tests/test_metamorphic_z3_session.py::test_mr_reset_clears_state_and_redeclaration_behaves_like_fresh_session` |
+| MR-C01 | Certificate roundtrip invariance (propositional) | `certificate` | core-semantics | `cert` -> `ProofCertificate.from_json(cert.to_json())` | `verify_certificate` result unchanged | exact | active | `tests/test_metamorphic_certificate.py::test_mr_certificate_json_roundtrip_preserves_verification_state_propositional` |
+| MR-C02 | Certificate roundtrip invariance (z3 session) | `certificate` | session-safety | `cert` -> `ProofCertificate.from_json(cert.to_json())` | `verify_certificate` result unchanged | exact | active | `tests/test_metamorphic_certificate.py::test_mr_certificate_json_roundtrip_preserves_verification_state_z3_session` |
 
 ## Maintenance Rule
 

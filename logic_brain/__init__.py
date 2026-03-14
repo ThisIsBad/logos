@@ -37,6 +37,7 @@ from .diagnostics import (
     Z3DiagnosticParser,
 )
 from .generator import ProblemGenerator, GeneratorConfig
+from .certificate import ProofCertificate, certify, verify_certificate
 
 __all__ = [
     # Quick API (string-based)
@@ -79,4 +80,8 @@ __all__ = [
     # Problem generation
     "ProblemGenerator",
     "GeneratorConfig",
+    # Proof certificates (Tier 2 / Provisional)
+    "ProofCertificate",
+    "certify",
+    "verify_certificate",
 ]
