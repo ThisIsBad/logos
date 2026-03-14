@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from dataclasses import dataclass
 from enum import Enum
+from typing import Mapping
 
 from logic_brain.certificate import ProofCertificate
 
@@ -43,7 +45,7 @@ class ConfidenceRecord:
     claim: str
     level: ConfidenceLevel
     provenance: tuple[str, ...]
-    linked_certificate: str | None = None
+    linked_certificate_ref: str | None = None
 
     def to_dict(self) -> dict[str, object]:
         """Serialize confidence record to dictionary."""
@@ -52,7 +54,7 @@ class ConfidenceRecord:
             "claim": self.claim,
             "level": self.level.value,
             "provenance": list(self.provenance),
-            "linked_certificate": self.linked_certificate,
+            "linked_certificate_ref": self.linked_certificate_ref,
         }
 
     def to_json(self) -> str:
@@ -66,7 +68,8 @@ class ConfidenceRecord:
         claim = payload.get("claim")
         level = payload.get("level")
         provenance = payload.get("provenance")
-        linked_certificate = payload.get("linked_certificate")
+        linked_certificate_ref = payload.get("linked_certificate_ref")
+        legacy_linked_certificate = payload.get("linked_certificate")
 
         if schema_version != SCHEMA_VERSION:
             raise ValueError(f"Unsupported uncertainty schema version '{schema_version}'")
@@ -76,14 +79,20 @@ class ConfidenceRecord:
             raise ValueError("Confidence payload field 'level' must be a string")
         if not isinstance(provenance, list) or not all(isinstance(v, str) for v in provenance):
             raise ValueError("Confidence payload field 'provenance' must be list[str]")
-        if linked_certificate is not None and not isinstance(linked_certificate, str):
-            raise ValueError("Confidence payload field 'linked_certificate' must be str or null")
+        if linked_certificate_ref is not None and not isinstance(linked_certificate_ref, str):
+            raise ValueError("Confidence payload field 'linked_certificate_ref' must be str or null")
+        if legacy_linked_certificate is not None and not isinstance(legacy_linked_certificate, str):
+            raise ValueError("Legacy confidence field 'linked_certificate' must be str or null")
+
+        resolved_ref = linked_certificate_ref
+        if resolved_ref is None and isinstance(legacy_linked_certificate, str):
+            resolved_ref = _certificate_ref_from_payload(legacy_linked_certificate)
 
         return cls(
             claim=claim,
             level=ConfidenceLevel(level),
             provenance=tuple(provenance),
-            linked_certificate=linked_certificate,
+            linked_certificate_ref=resolved_ref,
         )
 
     @classmethod
@@ -151,7 +160,7 @@ class UncertaintyCalibrator:
             claim=str(certificate.claim),
             level=level,
             provenance=tuple(provenance or [certificate.method]),
-            linked_certificate=certificate.to_json(),
+            linked_certificate_ref=certificate_reference(certificate),
         )
 
     def enforce(
@@ -196,3 +205,27 @@ class UncertaintyCalibrator:
         """Check whether an external decision follows escalation policy."""
         expected = self.enforce(record=record, risk_level=risk_level, policy=policy)
         return decision is expected.decision
+
+
+def certificate_reference(certificate: ProofCertificate) -> str:
+    """Build stable certificate reference id from canonical JSON payload."""
+    return _certificate_ref_from_payload(certificate.to_json())
+
+
+def resolve_certificate_reference(
+    record: ConfidenceRecord,
+    certificates: Mapping[str, ProofCertificate],
+) -> ProofCertificate | None:
+    """Resolve linked certificate reference from a candidate certificate map."""
+    if record.linked_certificate_ref is None:
+        return None
+
+    for certificate in certificates.values():
+        if certificate_reference(certificate) == record.linked_certificate_ref:
+            return certificate
+    return None
+
+
+def _certificate_ref_from_payload(payload: str) -> str:
+    digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()
+    return f"sha256:{digest}"

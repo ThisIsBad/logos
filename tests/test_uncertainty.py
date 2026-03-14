@@ -6,7 +6,9 @@ from logic_brain import (
     EscalationDecision,
     RiskLevel,
     UncertaintyCalibrator,
+    certificate_reference,
     certify,
+    resolve_certificate_reference,
 )
 from logic_brain.uncertainty import ConfidenceLevel, ConfidenceRecord
 
@@ -16,7 +18,7 @@ def test_confidence_record_json_roundtrip() -> None:
         claim="x > 0",
         level=ConfidenceLevel.SUPPORTED,
         provenance=("z3_propositional",),
-        linked_certificate=None,
+        linked_certificate_ref=None,
     )
 
     restored = ConfidenceRecord.from_json(record.to_json())
@@ -61,7 +63,8 @@ def test_certificate_integration_produces_confidence_record() -> None:
 
     record = calibrator.from_certificate(cert, provenance=["z3_propositional", "cross_check"])
     assert record.level is ConfidenceLevel.CERTAIN
-    assert record.linked_certificate is not None
+    assert record.linked_certificate_ref is not None
+    assert record.linked_certificate_ref.startswith("sha256:")
 
 
 def test_policy_compliance_check_detects_invalid_external_decision() -> None:
@@ -85,3 +88,28 @@ def test_policy_compliance_check_detects_invalid_external_decision() -> None:
 
     assert compliant is True
     assert non_compliant is False
+
+
+def test_legacy_linked_certificate_payload_is_migrated_to_reference() -> None:
+    cert = certify("P |- P")
+    payload = {
+        "schema_version": "1.0",
+        "claim": "P |- P",
+        "level": "supported",
+        "provenance": ["legacy"],
+        "linked_certificate": cert.to_json(),
+    }
+
+    record = ConfidenceRecord.from_dict(payload)
+
+    assert record.linked_certificate_ref == certificate_reference(cert)
+
+
+def test_resolve_certificate_reference_finds_matching_certificate() -> None:
+    cert = certify("P -> Q, P |- Q")
+    calibrator = UncertaintyCalibrator()
+    record = calibrator.from_certificate(cert)
+
+    resolved = resolve_certificate_reference(record, {"any": cert})
+
+    assert resolved == cert

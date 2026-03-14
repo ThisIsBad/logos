@@ -61,6 +61,8 @@ from .uncertainty import (
     RiskLevel,
     UncertaintyCalibrator,
     UncertaintyPolicy,
+    certificate_reference,
+    resolve_certificate_reference,
 )
 from .proof_exchange import (
     ProofBundle,
@@ -142,6 +144,8 @@ __all__ = [
     "EscalationResult",
     "UncertaintyPolicy",
     "UncertaintyCalibrator",
+    "certificate_reference",
+    "resolve_certificate_reference",
     # Proof exchange protocol (Tier 2 / Provisional)
     "ProofExchangeNode",
     "ProofBundle",
