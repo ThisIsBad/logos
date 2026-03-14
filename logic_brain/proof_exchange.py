@@ -6,6 +6,13 @@ import json
 from dataclasses import dataclass
 
 from logic_brain.certificate import ProofCertificate, verify_certificate
+from logic_brain.schema_utils import (
+    load_json_object,
+    require_dict,
+    require_list,
+    require_list_of_str,
+    require_str,
+)
 
 SCHEMA_VERSION = "1.0"
 
@@ -49,36 +56,39 @@ class ProofBundle:
     @classmethod
     def from_dict(cls, payload: dict[str, object]) -> "ProofBundle":
         """Deserialize bundle from dictionary payload."""
-        schema_version = payload.get("schema_version")
-        roots = payload.get("roots")
-        nodes = payload.get("nodes")
-
-        if not isinstance(schema_version, str):
-            raise ValueError("Proof bundle field 'schema_version' must be a string")
+        schema_version = require_str(
+            payload.get("schema_version"),
+            "Proof bundle field 'schema_version' must be a string",
+        )
         if schema_version != SCHEMA_VERSION:
             raise ValueError(f"Unsupported proof bundle schema version '{schema_version}'")
-        if not isinstance(roots, list) or not all(isinstance(v, str) for v in roots):
-            raise ValueError("Proof bundle field 'roots' must be list[str]")
-        if not isinstance(nodes, list):
-            raise ValueError("Proof bundle field 'nodes' must be a list")
+        roots = require_list_of_str(
+            payload.get("roots"),
+            "Proof bundle field 'roots' must be list[str]",
+        )
+        nodes = require_list(
+            payload.get("nodes"),
+            "Proof bundle field 'nodes' must be a list",
+        )
 
         parsed_nodes: dict[str, ProofExchangeNode] = {}
         for item in nodes:
-            if not isinstance(item, dict):
-                raise ValueError("Proof bundle node entries must be objects")
+            item_dict = require_dict(item, "Proof bundle node entries must be objects")
 
-            node_id = item.get("node_id")
-            cert_payload = item.get("certificate")
-            depends_on = item.get("depends_on", [])
+            node_id = require_str(
+                item_dict.get("node_id"),
+                "Proof node field 'node_id' must be a string",
+            )
+            cert_payload = require_dict(
+                item_dict.get("certificate"),
+                "Proof node field 'certificate' must be an object",
+            )
+            depends_on = require_list_of_str(
+                item_dict.get("depends_on", []),
+                "Proof node field 'depends_on' must be list[str]",
+            )
 
-            if not isinstance(node_id, str):
-                raise ValueError("Proof node field 'node_id' must be a string")
-            if not isinstance(cert_payload, dict):
-                raise ValueError("Proof node field 'certificate' must be an object")
-            if not isinstance(depends_on, list) or not all(isinstance(v, str) for v in depends_on):
-                raise ValueError("Proof node field 'depends_on' must be list[str]")
-
-            certificate = ProofCertificate.from_dict({str(k): v for k, v in cert_payload.items()})
+            certificate = ProofCertificate.from_dict(cert_payload)
             parsed_nodes[node_id] = ProofExchangeNode(
                 node_id=node_id,
                 certificate=certificate,
@@ -90,16 +100,12 @@ class ProofBundle:
     @classmethod
     def from_json(cls, raw_json: str) -> "ProofBundle":
         """Deserialize bundle from JSON string."""
-        try:
-            parsed = json.loads(raw_json)
-        except json.JSONDecodeError as exc:
-            raise ValueError("Invalid proof bundle JSON") from exc
-
-        if not isinstance(parsed, dict):
-            raise ValueError("Proof bundle JSON must be an object")
-
-        normalized = {str(key): value for key, value in parsed.items()}
-        return cls.from_dict(normalized)
+        payload = load_json_object(
+            raw_json,
+            invalid_error="Invalid proof bundle JSON",
+            object_error="Proof bundle JSON must be an object",
+        )
+        return cls.from_dict(payload)
 
 
 @dataclass(frozen=True)

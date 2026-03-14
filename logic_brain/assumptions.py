@@ -8,6 +8,14 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Callable
 
+from logic_brain.schema_utils import (
+    load_json_object,
+    require_dict,
+    require_list,
+    require_optional_str,
+    require_str,
+)
+
 SCHEMA_VERSION = "1.0"
 
 
@@ -173,45 +181,52 @@ class AssumptionSet:
     @classmethod
     def from_dict(cls, payload: dict[str, object]) -> "AssumptionSet":
         """Deserialize from dictionary payload."""
-        schema_version = payload.get("schema_version")
-        assumptions = payload.get("assumptions")
-
-        if not isinstance(schema_version, str):
-            raise ValueError("Assumption payload requires string field 'schema_version'")
-        if not isinstance(assumptions, list):
-            raise ValueError("Assumption payload requires list field 'assumptions'")
+        schema_version = require_str(
+            payload.get("schema_version"),
+            "Assumption payload requires string field 'schema_version'",
+        )
+        assumptions = require_list(
+            payload.get("assumptions"),
+            "Assumption payload requires list field 'assumptions'",
+        )
 
         instance = cls(schema_version=schema_version)
 
         for item in assumptions:
-            if not isinstance(item, dict):
-                raise ValueError("Assumption entries must be objects")
+            item_dict = require_dict(item, "Assumption entries must be objects")
 
-            assumption_id = item.get("assumption_id")
-            statement = item.get("statement")
-            kind = item.get("kind")
-            source = item.get("source")
-            timestamp = item.get("timestamp")
-            scope = item.get("scope")
-            expires_at = item.get("expires_at")
-            status = item.get("status")
-
-            if not isinstance(assumption_id, str):
-                raise ValueError("Assumption field 'assumption_id' must be a string")
-            if not isinstance(statement, str):
-                raise ValueError("Assumption field 'statement' must be a string")
-            if not isinstance(kind, str):
-                raise ValueError("Assumption field 'kind' must be a string")
-            if not isinstance(source, str):
-                raise ValueError("Assumption field 'source' must be a string")
-            if not isinstance(timestamp, str):
-                raise ValueError("Assumption field 'timestamp' must be a string")
-            if scope is not None and not isinstance(scope, str):
-                raise ValueError("Assumption field 'scope' must be a string or null")
-            if expires_at is not None and not isinstance(expires_at, str):
-                raise ValueError("Assumption field 'expires_at' must be a string or null")
-            if not isinstance(status, str):
-                raise ValueError("Assumption field 'status' must be a string")
+            assumption_id = require_str(
+                item_dict.get("assumption_id"),
+                "Assumption field 'assumption_id' must be a string",
+            )
+            statement = require_str(
+                item_dict.get("statement"),
+                "Assumption field 'statement' must be a string",
+            )
+            kind = require_str(
+                item_dict.get("kind"),
+                "Assumption field 'kind' must be a string",
+            )
+            source = require_str(
+                item_dict.get("source"),
+                "Assumption field 'source' must be a string",
+            )
+            timestamp = require_str(
+                item_dict.get("timestamp"),
+                "Assumption field 'timestamp' must be a string",
+            )
+            scope = require_optional_str(
+                item_dict.get("scope"),
+                "Assumption field 'scope' must be a string or null",
+            )
+            expires_at = require_optional_str(
+                item_dict.get("expires_at"),
+                "Assumption field 'expires_at' must be a string or null",
+            )
+            status = require_str(
+                item_dict.get("status"),
+                "Assumption field 'status' must be a string",
+            )
 
             entry = AssumptionEntry(
                 assumption_id=assumption_id,
@@ -230,16 +245,12 @@ class AssumptionSet:
     @classmethod
     def from_json(cls, raw_json: str) -> "AssumptionSet":
         """Deserialize from JSON string."""
-        try:
-            parsed = json.loads(raw_json)
-        except json.JSONDecodeError as exc:
-            raise ValueError("Invalid assumptions JSON") from exc
-
-        if not isinstance(parsed, dict):
-            raise ValueError("Assumptions JSON must be an object")
-
-        normalized = {str(key): value for key, value in parsed.items()}
-        return cls.from_dict(normalized)
+        payload = load_json_object(
+            raw_json,
+            invalid_error="Invalid assumptions JSON",
+            object_error="Assumptions JSON must be an object",
+        )
+        return cls.from_dict(payload)
 
     def _transition(self, assumption_id: str, target: AssumptionStatus) -> AssumptionEntry:
         entry = self._get_required(assumption_id)

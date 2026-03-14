@@ -9,6 +9,12 @@ from enum import Enum
 from typing import Mapping
 
 from logic_brain.certificate import ProofCertificate
+from logic_brain.schema_utils import (
+    load_json_object,
+    require_list_of_str,
+    require_optional_str,
+    require_str,
+)
 
 SCHEMA_VERSION = "1.0"
 
@@ -65,24 +71,25 @@ class ConfidenceRecord:
     def from_dict(cls, payload: dict[str, object]) -> "ConfidenceRecord":
         """Deserialize confidence record from dictionary."""
         schema_version = payload.get("schema_version")
-        claim = payload.get("claim")
-        level = payload.get("level")
-        provenance = payload.get("provenance")
+        claim = require_str(payload.get("claim"), "Confidence payload field 'claim' must be a string")
+        level = require_str(payload.get("level"), "Confidence payload field 'level' must be a string")
+        provenance = require_list_of_str(
+            payload.get("provenance"),
+            "Confidence payload field 'provenance' must be list[str]",
+        )
         linked_certificate_ref = payload.get("linked_certificate_ref")
         legacy_linked_certificate = payload.get("linked_certificate")
 
         if schema_version != SCHEMA_VERSION:
             raise ValueError(f"Unsupported uncertainty schema version '{schema_version}'")
-        if not isinstance(claim, str):
-            raise ValueError("Confidence payload field 'claim' must be a string")
-        if not isinstance(level, str):
-            raise ValueError("Confidence payload field 'level' must be a string")
-        if not isinstance(provenance, list) or not all(isinstance(v, str) for v in provenance):
-            raise ValueError("Confidence payload field 'provenance' must be list[str]")
-        if linked_certificate_ref is not None and not isinstance(linked_certificate_ref, str):
-            raise ValueError("Confidence payload field 'linked_certificate_ref' must be str or null")
-        if legacy_linked_certificate is not None and not isinstance(legacy_linked_certificate, str):
-            raise ValueError("Legacy confidence field 'linked_certificate' must be str or null")
+        linked_certificate_ref = require_optional_str(
+            linked_certificate_ref,
+            "Confidence payload field 'linked_certificate_ref' must be str or null",
+        )
+        legacy_linked_certificate = require_optional_str(
+            legacy_linked_certificate,
+            "Legacy confidence field 'linked_certificate' must be str or null",
+        )
 
         resolved_ref = linked_certificate_ref
         if resolved_ref is None and isinstance(legacy_linked_certificate, str):
@@ -98,16 +105,12 @@ class ConfidenceRecord:
     @classmethod
     def from_json(cls, raw_json: str) -> "ConfidenceRecord":
         """Deserialize confidence record from JSON."""
-        try:
-            parsed = json.loads(raw_json)
-        except json.JSONDecodeError as exc:
-            raise ValueError("Invalid confidence JSON") from exc
-
-        if not isinstance(parsed, dict):
-            raise ValueError("Confidence JSON must be an object")
-
-        normalized = {str(key): value for key, value in parsed.items()}
-        return cls.from_dict(normalized)
+        payload = load_json_object(
+            raw_json,
+            invalid_error="Invalid confidence JSON",
+            object_error="Confidence JSON must be an object",
+        )
+        return cls.from_dict(payload)
 
 
 @dataclass(frozen=True)

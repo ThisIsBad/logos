@@ -6,6 +6,14 @@ import json
 from dataclasses import dataclass
 from enum import Enum
 
+from logic_brain.schema_utils import (
+    load_json_object,
+    require_dict,
+    require_list,
+    require_list_of_str,
+    require_str,
+)
+
 SCHEMA_VERSION = "1.0"
 
 
@@ -125,34 +133,29 @@ class ActionPolicyEngine:
     def from_dict(cls, payload: dict[str, object]) -> "ActionPolicyEngine":
         """Deserialize policy set from dictionary."""
         schema_version = payload.get("schema_version")
-        rules = payload.get("rules")
+        rules = require_list(
+            payload.get("rules"),
+            "Action policy payload requires list field 'rules'",
+        )
 
         if schema_version != SCHEMA_VERSION:
             raise ValueError(f"Unsupported action-policy schema version '{schema_version}'")
-        if not isinstance(rules, list):
-            raise ValueError("Action policy payload requires list field 'rules'")
 
         parsed_rules: list[ActionPolicyRule] = []
         for item in rules:
-            if not isinstance(item, dict):
-                raise ValueError("Policy rule entries must be objects")
+            item_dict = require_dict(item, "Policy rule entries must be objects")
 
-            name = item.get("name")
-            severity = item.get("severity")
-            message = item.get("message")
-            when_true = item.get("when_true", [])
-            when_false = item.get("when_false", [])
-
-            if not isinstance(name, str):
-                raise ValueError("Policy field 'name' must be a string")
-            if not isinstance(severity, str):
-                raise ValueError("Policy field 'severity' must be a string")
-            if not isinstance(message, str):
-                raise ValueError("Policy field 'message' must be a string")
-            if not isinstance(when_true, list) or not all(isinstance(v, str) for v in when_true):
-                raise ValueError("Policy field 'when_true' must be a list[str]")
-            if not isinstance(when_false, list) or not all(isinstance(v, str) for v in when_false):
-                raise ValueError("Policy field 'when_false' must be a list[str]")
+            name = require_str(item_dict.get("name"), "Policy field 'name' must be a string")
+            severity = require_str(item_dict.get("severity"), "Policy field 'severity' must be a string")
+            message = require_str(item_dict.get("message"), "Policy field 'message' must be a string")
+            when_true = require_list_of_str(
+                item_dict.get("when_true", []),
+                "Policy field 'when_true' must be a list[str]",
+            )
+            when_false = require_list_of_str(
+                item_dict.get("when_false", []),
+                "Policy field 'when_false' must be a list[str]",
+            )
 
             parsed_rules.append(
                 ActionPolicyRule(
@@ -169,38 +172,29 @@ class ActionPolicyEngine:
     @classmethod
     def from_json(cls, raw_json: str) -> "ActionPolicyEngine":
         """Deserialize policy set from JSON string."""
-        try:
-            parsed = json.loads(raw_json)
-        except json.JSONDecodeError as exc:
-            raise ValueError("Invalid action-policy JSON") from exc
-
-        if not isinstance(parsed, dict):
-            raise ValueError("Action-policy JSON must be an object")
-
-        normalized = {str(key): value for key, value in parsed.items()}
-        return cls.from_dict(normalized)
+        payload = load_json_object(
+            raw_json,
+            invalid_error="Invalid action-policy JSON",
+            object_error="Action-policy JSON must be an object",
+        )
+        return cls.from_dict(payload)
 
     @classmethod
     def from_legacy_policies(cls, legacy_rules: list[dict[str, object]]) -> "ActionPolicyEngine":
         """Compatibility loader for simple legacy policy dictionaries."""
         rules: list[ActionPolicyRule] = []
         for item in legacy_rules:
-            name = item.get("name")
-            severity = item.get("severity")
-            message = item.get("message")
-            when_true = item.get("when_true", [])
-            when_false = item.get("when_false", [])
-
-            if not isinstance(name, str):
-                raise ValueError("Legacy policy field 'name' must be a string")
-            if not isinstance(severity, str):
-                raise ValueError("Legacy policy field 'severity' must be a string")
-            if not isinstance(message, str):
-                raise ValueError("Legacy policy field 'message' must be a string")
-            if not isinstance(when_true, list) or not all(isinstance(v, str) for v in when_true):
-                raise ValueError("Legacy policy field 'when_true' must be a list[str]")
-            if not isinstance(when_false, list) or not all(isinstance(v, str) for v in when_false):
-                raise ValueError("Legacy policy field 'when_false' must be a list[str]")
+            name = require_str(item.get("name"), "Legacy policy field 'name' must be a string")
+            severity = require_str(item.get("severity"), "Legacy policy field 'severity' must be a string")
+            message = require_str(item.get("message"), "Legacy policy field 'message' must be a string")
+            when_true = require_list_of_str(
+                item.get("when_true", []),
+                "Legacy policy field 'when_true' must be a list[str]",
+            )
+            when_false = require_list_of_str(
+                item.get("when_false", []),
+                "Legacy policy field 'when_false' must be a list[str]",
+            )
 
             rules.append(
                 ActionPolicyRule(
