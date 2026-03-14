@@ -53,6 +53,8 @@ Each MR entry should include:
 | MR-AP02 | Policy order invariance | `action_policy` | core-semantics | reorder policy registration order | final decision unchanged | exact | active | `tests/test_metamorphic_action_policy.py::test_mr_ap02_evaluation_order_does_not_change_decision` |
 | MR-U01 | Risk monotonicity | `uncertainty` | core-semantics | increase risk level for same confidence record | escalation strictness does not decrease | exact | active | `tests/test_metamorphic_uncertainty.py::test_mr_u01_increasing_risk_does_not_reduce_strictness` |
 | MR-U02 | Provenance order invariance | `uncertainty` | parser-robustness | reorder provenance entries | escalation decision unchanged | exact | active | `tests/test_metamorphic_uncertainty.py::test_mr_u02_provenance_order_does_not_change_escalation` |
+| MR-PX01 | Bundle node order invariance | `proof_exchange` | core-semantics | reorder node insertion order in bundle construction | verification result unchanged | exact | active | `tests/test_metamorphic_proof_exchange.py::test_mr_px01_node_order_invariance` |
+| MR-PX02 | Independent node extension invariance | `proof_exchange` | core-semantics | add an independent valid node to bundle | bundle validity remains true | exact | active | `tests/test_metamorphic_proof_exchange.py::test_mr_px02_adding_independent_valid_node_preserves_validity` |
 
 ## Maintenance Rule
 

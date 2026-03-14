@@ -62,6 +62,13 @@ from .uncertainty import (
     UncertaintyCalibrator,
     UncertaintyPolicy,
 )
+from .proof_exchange import (
+    ProofBundle,
+    ProofExchangeNode,
+    ProofExchangeResult,
+    create_proof_bundle,
+    verify_proof_bundle,
+)
 
 __all__ = [
     # Quick API (string-based)
@@ -134,4 +141,10 @@ __all__ = [
     "EscalationResult",
     "UncertaintyPolicy",
     "UncertaintyCalibrator",
+    # Proof exchange protocol (Tier 2 / Provisional)
+    "ProofExchangeNode",
+    "ProofBundle",
+    "ProofExchangeResult",
+    "create_proof_bundle",
+    "verify_proof_bundle",
 ]
