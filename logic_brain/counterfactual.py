@@ -6,7 +6,11 @@ from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Callable, Mapping
 
-from logic_brain.certificate import ProofCertificate, certify, verify_certificate
+from logic_brain.certificate import (
+    ProofCertificate,
+    certify_z3_session,
+    verify_certificate,
+)
 from logic_brain.z3_session import Z3Session
 
 
@@ -176,7 +180,7 @@ class CounterfactualPlanner:
             session.assert_constraint(constraint)
 
         check_result = session.check()
-        certificate = certify(session)
+        certificate = certify_z3_session(session, check_result)
 
         return PlanBranch(
             branch_id="__eval__",

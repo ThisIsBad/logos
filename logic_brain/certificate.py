@@ -161,17 +161,27 @@ def certify(claim: str | FOLArgument | Z3Session) -> ProofCertificate:
 
     if isinstance(claim, Z3Session):
         check_result = claim.check()
-        return ProofCertificate(
-            schema_version=SCHEMA_VERSION,
-            claim_type=Z3_SESSION_CLAIM,
-            claim=_serialize_session_claim(claim),
-            method="z3_session",
-            verified=check_result.satisfiable is True,
-            timestamp=timestamp,
-            verification_artifact=_check_result_artifact(check_result),
-        )
+        return certify_z3_session(claim, check_result=check_result, timestamp=timestamp)
 
     raise TypeError("Unsupported claim type for certify()")
+
+
+def certify_z3_session(
+    session: Z3Session,
+    check_result: CheckResult,
+    timestamp: str | None = None,
+) -> ProofCertificate:
+    """Create a Z3 session certificate from an existing check result."""
+    cert_timestamp = timestamp or datetime.now(timezone.utc).isoformat()
+    return ProofCertificate(
+        schema_version=SCHEMA_VERSION,
+        claim_type=Z3_SESSION_CLAIM,
+        claim=_serialize_session_claim(session),
+        method="z3_session",
+        verified=check_result.satisfiable is True,
+        timestamp=cert_timestamp,
+        verification_artifact=_check_result_artifact(check_result),
+    )
 
 
 def verify_certificate(certificate: ProofCertificate) -> bool:

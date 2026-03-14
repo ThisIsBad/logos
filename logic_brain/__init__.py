@@ -37,7 +37,7 @@ from .diagnostics import (
     Z3DiagnosticParser,
 )
 from .generator import ProblemGenerator, GeneratorConfig
-from .certificate import ProofCertificate, certify, verify_certificate
+from .certificate import ProofCertificate, certify, certify_z3_session, verify_certificate
 from .assumptions import (
     AssumptionConsistency,
     AssumptionEntry,
@@ -114,6 +114,7 @@ __all__ = [
     # Proof certificates (Tier 2 / Provisional)
     "ProofCertificate",
     "certify",
+    "certify_z3_session",
     "verify_certificate",
     # Assumption state kernel (Tier 2 / Provisional)
     "AssumptionKind",

@@ -6,7 +6,7 @@ from dataclasses import replace
 
 import pytest
 
-from logic_brain import ProofCertificate, certify, verify_certificate
+from logic_brain import ProofCertificate, certify, certify_z3_session, verify_certificate
 from logic_brain.predicate_models import (
     Constant,
     FOLArgument,
@@ -164,6 +164,19 @@ def test_certify_z3_session_unsat_claim() -> None:
     assert cert.claim_type == "z3_session"
     assert cert.verified is False
     assert verify_certificate(cert) is True
+
+
+def test_certify_z3_session_uses_existing_check_result() -> None:
+    session = Z3Session()
+    session.declare("x", "Int")
+    session.assert_constraint("x > 0")
+    check_result = session.check()
+
+    cert = certify_z3_session(session, check_result)
+
+    assert cert.claim_type == "z3_session"
+    assert cert.verified is True
+    assert cert.verification_artifact["status"] == check_result.status
 
 
 def test_certificate_json_roundtrip_for_z3_session() -> None:

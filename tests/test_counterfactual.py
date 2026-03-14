@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 from dataclasses import FrozenInstanceError
+from unittest.mock import patch
 
 import pytest
 
 from logic_brain import CounterfactualPlanner
+from logic_brain.z3_session import Z3Session
 
 
 def _new_planner() -> CounterfactualPlanner:
@@ -98,3 +100,17 @@ def test_result_snapshot_dict_mutation_does_not_affect_internal_state() -> None:
     snapshot.branches.pop("b1")
 
     assert planner.get_branch("b1").status == "sat"
+
+
+def test_branch_evaluation_calls_solver_check_once() -> None:
+    planner = _new_planner()
+
+    with patch.object(
+        Z3Session,
+        "check",
+        autospec=True,
+        wraps=Z3Session.check,
+    ) as wrapped_check:
+        planner.branch("b1", additional_constraints=["x < 10"])
+
+    assert wrapped_check.call_count == 1
