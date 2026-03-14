@@ -78,6 +78,14 @@ from .belief_graph import (
     BeliefNode,
     ContradictionExplanation,
 )
+from .goal_contract import (
+    GoalContract,
+    GoalContractDiagnostic,
+    GoalContractResult,
+    GoalContractStatus,
+    build_branch_context,
+    evaluate_goal_contract,
+)
 
 __all__ = [
     # Quick API (string-based)
@@ -165,4 +173,11 @@ __all__ = [
     "BeliefEdge",
     "ContradictionExplanation",
     "BeliefGraph",
+    # Goal contracts (Tier 2 / Provisional)
+    "GoalContractStatus",
+    "GoalContractDiagnostic",
+    "GoalContract",
+    "GoalContractResult",
+    "build_branch_context",
+    "evaluate_goal_contract",
 ]

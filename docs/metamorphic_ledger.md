@@ -57,6 +57,8 @@ Each MR entry should include:
 | MR-PX02 | Independent node extension invariance | `proof_exchange` | core-semantics | add an independent valid node to bundle | bundle validity remains true | exact | active | `tests/test_metamorphic_proof_exchange.py::test_mr_px02_adding_independent_valid_node_preserves_validity` |
 | MR-BG01 | Support order invariance | `belief_graph` | core-semantics | reorder edge insertion for same support chain | minimal support set unchanged | exact | active | `tests/test_metamorphic_belief_graph.py::test_mr_bg01_support_order_invariance` |
 | MR-BG02 | Temporal shift consistency | `belief_graph` | session-safety | shift all timestamps and query time by same delta | stale dependency classification unchanged | exact | active | `tests/test_metamorphic_belief_graph.py::test_mr_bg02_temporal_shift_consistency` |
+| MR-GC01 | Equivalent clause formulation invariance | `goal_contract` | core-semantics | use equivalent invariant clauses (`sat` vs `!unsat`) | contract status unchanged | exact | active | `tests/test_metamorphic_goal_contract.py::test_mr_gc01_equivalent_clause_formulations_preserve_outcome` |
+| MR-GC02 | Clause order invariance | `goal_contract` | core-semantics | reorder precondition/invariant clauses | contract status unchanged | exact | active | `tests/test_metamorphic_goal_contract.py::test_mr_gc02_clause_order_invariance` |
 
 ## Maintenance Rule
 
