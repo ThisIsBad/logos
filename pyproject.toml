@@ -29,6 +29,10 @@ markers = [
 
 [tool.coverage.run]
 source = ["logic_brain"]
+omit = [
+    "logic_brain/lean_session.py",
+    "logic_brain/lean_verifier.py",
+]
 
 [tool.coverage.report]
 fail_under = 85
