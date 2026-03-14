@@ -53,6 +53,15 @@ from .action_policy import (
     PolicyDecision,
     PolicyViolationEvidence,
 )
+from .uncertainty import (
+    ConfidenceLevel,
+    ConfidenceRecord,
+    EscalationDecision,
+    EscalationResult,
+    RiskLevel,
+    UncertaintyCalibrator,
+    UncertaintyPolicy,
+)
 
 __all__ = [
     # Quick API (string-based)
@@ -117,4 +126,12 @@ __all__ = [
     "PolicyViolationEvidence",
     "ActionPolicyResult",
     "ActionPolicyEngine",
+    # Uncertainty calibration (Tier 2 / Provisional)
+    "ConfidenceLevel",
+    "RiskLevel",
+    "EscalationDecision",
+    "ConfidenceRecord",
+    "EscalationResult",
+    "UncertaintyPolicy",
+    "UncertaintyCalibrator",
 ]

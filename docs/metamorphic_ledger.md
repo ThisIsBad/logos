@@ -51,6 +51,8 @@ Each MR entry should include:
 | MR-CP02 | Replay idempotence | `counterfactual` | session-safety | replay the same branch repeatedly | replay classification unchanged | exact | active | `tests/test_metamorphic_counterfactual.py::test_mr_cp02_repeated_replay_preserves_classification` |
 | MR-AP01 | Policy removal monotonicity | `action_policy` | core-semantics | remove one active policy | no new violations and no stricter decision | exact | active | `tests/test_metamorphic_action_policy.py::test_mr_ap01_removing_policy_cannot_introduce_new_violations` |
 | MR-AP02 | Policy order invariance | `action_policy` | core-semantics | reorder policy registration order | final decision unchanged | exact | active | `tests/test_metamorphic_action_policy.py::test_mr_ap02_evaluation_order_does_not_change_decision` |
+| MR-U01 | Risk monotonicity | `uncertainty` | core-semantics | increase risk level for same confidence record | escalation strictness does not decrease | exact | active | `tests/test_metamorphic_uncertainty.py::test_mr_u01_increasing_risk_does_not_reduce_strictness` |
+| MR-U02 | Provenance order invariance | `uncertainty` | parser-robustness | reorder provenance entries | escalation decision unchanged | exact | active | `tests/test_metamorphic_uncertainty.py::test_mr_u02_provenance_order_does_not_change_escalation` |
 
 ## Maintenance Rule
 
