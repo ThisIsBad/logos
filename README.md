@@ -228,7 +228,7 @@ tools/                  # Benchmark generation & checking
 docs/
 ├── api/                # Generated API reference (pdoc)
 └── roadmap_v013_v020.md # Development roadmap
-tests/                  # 185+ tests (pytest)
+tests/                  # 227+ tests (pytest)
 ```
 
 ## Running Tests

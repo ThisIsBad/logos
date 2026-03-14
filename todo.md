@@ -9,9 +9,9 @@ Dieses Dokument verweist auf die aktuelle Planungsdokumentation.
 Die Roadmap `v0.1.3 -> v0.2.0` ist abgeschlossen (alle drei Phasen umgesetzt).
 
 Offene Follow-ups nach v0.2.0:
-- Coverage-Messung + Threshold in CI (`pytest --cov`)
-- mypy strict als CI-Gate
-- Restliche direkte Modul-Tests fuer volle KPI-Abdeckung
+- Post-v0.2.x Produkt-Roadmap definieren (Agent Runtime + Verifikations-Policy)
+- CONTRIBUTING.md anlegen (Bus-Faktor-Risiko senken)
+- Optionales PyPI-Release vorbereiten, sobald Release-Kriterien finalisiert sind
 
 ## Archiv
 

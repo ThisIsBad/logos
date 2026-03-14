@@ -10,6 +10,9 @@ __pycache__/
 coverage.xml
 htmlcov/
 
+# Local scratch notes
+tmp.md
+
 *.egg-info/
 dist/
 build/

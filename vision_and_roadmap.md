@@ -66,7 +66,7 @@ Fehler werden sofort erkannt. Kein Aufbauen auf falschen Annahmen.
 
 ## Implementierte Komponenten (v0.2.0)
 
-Die folgenden Kernkomponenten sind implementiert und getestet (185+ Tests):
+Die folgenden Kernkomponenten sind implementiert und getestet (227+ Tests):
 
 ### Lean REPL-Wrapper (`lean_session.py`)
 
@@ -132,9 +132,18 @@ print(problems[0]["ground_truth_valid"])
 
 - GitHub Actions CI (Python 3.10/3.11/3.12)
 - Ruff-Linting als Gate
+- mypy strict als Gate
+- Coverage-Gate (>=85%) + Coverage-Artefakt
+- Explizites Metamorphic-Test-Gate (`pytest -m metamorphic`)
 - Benchmark-Regression-Gate (`tools/check_results.py exam`)
 - Konsolidierte Benchmark-Tools unter `tools/`
 - Release-Playbook unter `docs/release_playbook.md`
+
+### Metamorphic Quality Layer
+
+Mit `docs/metamorphic_ledger.md` ist ein versionierter MR-Katalog eingefuehrt,
+der relationale Invarianten fuer Verifier, Parser und Z3Session als
+"Super-Axiome" dokumentiert und direkt auf konkrete Tests referenziert.
 
 ---
 

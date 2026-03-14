@@ -69,12 +69,12 @@ LogicBrain ist technisch solide. Der gesamte Wert der Library liegt im Versprech
 
 | KPI | Aktuell | Ziel v0.1.4 | Ziel v0.2.0 | Messmethode |
 |---|---|---|---|---|
-| **Test Count** | 185+ | 180+ | 200+ | `pytest --co -q` |
-| **Test Coverage** | nicht gemessen | ≥85% | ≥90% | `pytest --cov` in CI |
-| **Module mit direkten Tests** | 15/17 | 15/17 | 17/17 | Glob `tests/test_*.py` vs `logic_brain/*.py` |
+| **Test Count** | 227+ | 180+ | 200+ | `pytest --co -q` |
+| **Test Coverage** | 88% | ≥85% | ≥90% | `pytest --cov` in CI |
+| **Module mit direkten Tests** | 17/17 | 15/17 | 17/17 | Glob `tests/test_*.py` vs `logic_brain/*.py` |
 | **CI Pipeline-Dauer** | ~120s | <120s | <120s | GitHub Actions Timing |
 | **Linting-Fehler** | 0 | 0 | 0 | ruff in CI |
-| **mypy strict Fehler** | nicht aktiviert | 0 | 0 | mypy in CI |
+| **mypy strict Fehler** | 0 (Gate aktiv) | 0 | 0 | mypy in CI |
 | **Benchmark-Score (Exam)** | Gate aktiv | ≥ Baseline | ≥ Baseline | `tools/check_results.py exam` in CI |
 | **Time-to-Integration** | mit Beispiel erreichbar | — | <30 min | Manueller Test mit frischem Checkout |
 | **API-Breaking-Changes ohne Deprecation** | n/a | 0 | 0 | Review-Policy |
@@ -114,8 +114,8 @@ LogicBrain ist technisch solide. Der gesamte Wert der Library liegt im Versprech
 - [x] `tests/test_analyzer.py` — mind. 3 Tests (Report, Markdown-Output, leere Inputs)
 - [x] `tests/test_external.py` — mind. 2 Tests (SATBench/FOLIO Loader mit Fixture-Daten)
 - [x] `tests/test_lean_verifier.py` — mind. 2 Tests (conditional auf Lean-Verfuegbarkeit)
-- [ ] `pytest --cov` zeigt ≥85% Gesamtcoverage
-- [ ] CI-Step fuer Coverage mit Threshold
+- [x] `pytest --cov` zeigt ≥85% Gesamtcoverage
+- [x] CI-Step fuer Coverage mit Threshold
 
 ### Issue #4: CI Pipeline haerten
 
@@ -123,8 +123,8 @@ LogicBrain ist technisch solide. Der gesamte Wert der Library liegt im Versprech
 
 **Akzeptanzkriterien:**
 - [x] ruff-Linting als CI-Step (0 Fehler)
-- [ ] mypy strict als CI-Step (0 Fehler)
-- [ ] Coverage-Report als CI-Artefakt
+- [x] mypy strict als CI-Step (0 Fehler)
+- [x] Coverage-Report als CI-Artefakt
 - [x] Python 3.12 in CI-Matrix
 - [x] `tools/check_results.py exam` als CI-Step (Benchmark-Regression-Gate)
 - [x] CI-Dauer bleibt unter 3 Minuten
