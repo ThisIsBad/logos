@@ -49,6 +49,8 @@ Each MR entry should include:
 | MR-A02 | Retraction idempotence | `assumptions` | session-safety | repeat `retract()` on same assumption | lifecycle status unchanged after first retract | exact | active | `tests/test_metamorphic_assumptions.py::test_mr_a02_redundant_retraction_is_idempotent` |
 | MR-CP01 | Branch creation order invariance | `counterfactual` | session-safety | create sat/unsat branches in different order | branch classification unchanged | exact | active | `tests/test_metamorphic_counterfactual.py::test_mr_cp01_branch_creation_order_preserves_classification` |
 | MR-CP02 | Replay idempotence | `counterfactual` | session-safety | replay the same branch repeatedly | replay classification unchanged | exact | active | `tests/test_metamorphic_counterfactual.py::test_mr_cp02_repeated_replay_preserves_classification` |
+| MR-AP01 | Policy removal monotonicity | `action_policy` | core-semantics | remove one active policy | no new violations and no stricter decision | exact | active | `tests/test_metamorphic_action_policy.py::test_mr_ap01_removing_policy_cannot_introduce_new_violations` |
+| MR-AP02 | Policy order invariance | `action_policy` | core-semantics | reorder policy registration order | final decision unchanged | exact | active | `tests/test_metamorphic_action_policy.py::test_mr_ap02_evaluation_order_does_not_change_decision` |
 
 ## Maintenance Rule
 

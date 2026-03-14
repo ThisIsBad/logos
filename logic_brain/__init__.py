@@ -46,6 +46,13 @@ from .assumptions import (
     AssumptionStatus,
 )
 from .counterfactual import CounterfactualPlanner, PlanBranch, PlanResult, PlanState, VariableDecl
+from .action_policy import (
+    ActionPolicyEngine,
+    ActionPolicyResult,
+    ActionPolicyRule,
+    PolicyDecision,
+    PolicyViolationEvidence,
+)
 
 __all__ = [
     # Quick API (string-based)
@@ -104,4 +111,10 @@ __all__ = [
     "PlanBranch",
     "PlanResult",
     "CounterfactualPlanner",
+    # Action policy enforcement (Tier 2 / Provisional)
+    "PolicyDecision",
+    "ActionPolicyRule",
+    "PolicyViolationEvidence",
+    "ActionPolicyResult",
+    "ActionPolicyEngine",
 ]

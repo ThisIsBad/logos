@@ -1,0 +1,120 @@
+"""Tests for action policy enforcement (Issue #35)."""
+
+from __future__ import annotations
+
+from logic_brain import (
+    ActionPolicyEngine,
+    ActionPolicyRule,
+    PolicyDecision,
+)
+
+
+def _engine() -> ActionPolicyEngine:
+    return ActionPolicyEngine(
+        [
+            ActionPolicyRule(
+                name="test_coverage",
+                severity="error",
+                message="Public API changes require tests",
+                when_true=("target_is_public_api",),
+                when_false=("has_tests",),
+            ),
+            ActionPolicyRule(
+                name="dependency_review",
+                severity="warning",
+                message="New dependencies require review",
+                when_true=("adds_dependency",),
+            ),
+        ]
+    )
+
+
+def test_deterministic_outcome_for_identical_input() -> None:
+    engine = _engine()
+    action = {
+        "target_is_public_api": True,
+        "has_tests": False,
+        "adds_dependency": False,
+    }
+
+    first = engine.evaluate(action)
+    second = engine.evaluate(action)
+
+    assert first == second
+    assert first.decision is PolicyDecision.BLOCK
+
+
+def test_structured_violation_evidence_and_remediation() -> None:
+    engine = _engine()
+
+    result = engine.evaluate(
+        {
+            "target_is_public_api": True,
+            "has_tests": False,
+            "adds_dependency": True,
+        }
+    )
+
+    assert result.decision is PolicyDecision.BLOCK
+    assert len(result.violations) == 2
+    assert result.violations[0].policy_name
+    assert result.violations[0].triggered_fields
+    assert result.remediation_hints
+
+
+def test_review_required_when_only_warning_policies_trigger() -> None:
+    engine = _engine()
+
+    result = engine.evaluate(
+        {
+            "target_is_public_api": False,
+            "has_tests": False,
+            "adds_dependency": True,
+        }
+    )
+
+    assert result.decision is PolicyDecision.REVIEW_REQUIRED
+
+
+def test_allow_when_no_policy_triggers() -> None:
+    engine = _engine()
+
+    result = engine.evaluate(
+        {
+            "target_is_public_api": True,
+            "has_tests": True,
+            "adds_dependency": False,
+        }
+    )
+
+    assert result.decision is PolicyDecision.ALLOW
+    assert result.violations == []
+
+
+def test_legacy_policy_compatibility_loader() -> None:
+    engine = ActionPolicyEngine.from_legacy_policies(
+        [
+            {
+                "name": "legacy_rule",
+                "severity": "error",
+                "message": "Legacy block",
+                "when_true": ["x"],
+                "when_false": ["y"],
+            }
+        ]
+    )
+
+    result = engine.evaluate({"x": True, "y": False})
+    assert result.decision is PolicyDecision.BLOCK
+
+
+def test_serialization_roundtrip_preserves_policy_behavior() -> None:
+    engine = _engine()
+    restored = ActionPolicyEngine.from_json(engine.to_json())
+
+    action = {
+        "target_is_public_api": True,
+        "has_tests": False,
+        "adds_dependency": True,
+    }
+    assert engine.evaluate(action) == restored.evaluate(action)
