@@ -217,6 +217,18 @@ LogicBrain wird vom reaktiven Verifier zum **proaktiven Reasoning-Toolkit**:
 4. **v0.6 — Policy-Guided Search**: Formale Policies zum Pruning des Aktionsraums
 5. **v0.7 — Compositional Proof Orchestrator**: Komplexe Claims zerlegen und parallel verifizieren
 
+### Geplant: v0.8 -> v1.2 — AGI-Grade Reasoning Infrastructure
+
+**→ [`docs/roadmap_v080_v120.md`](docs/roadmap_v080_v120.md)**
+
+Weiterführung entlang von fünf Fähigkeiten:
+
+1. **v0.8 — Assumption & World-State Kernel**: Typisierte Annahmen mit Lifecycle und Konsistenzprüfung
+2. **v0.9 — Counterfactual Planner**: Verifizierte Alternative-Branches vor Aktionen
+3. **v1.0 — Verified Action Policies**: Harte Pre-Action-Gates für Richtlinien
+4. **v1.1 — Uncertainty Calibration Layer**: Explizite Unsicherheit + Eskalationsregeln
+5. **v1.2 — Composed Proof Exchange**: Zero-Trust Zertifikatsaustausch über Agent-/Tool-Grenzen
+
 ### Bewusst zurückgestellt
 
 - Logik-Erweiterungen (Modal/Temporal/Many-valued) — orthogonal zur Agent-Tooling-Roadmap, siehe `docs/logic_extensions_assessment.md`
@@ -228,6 +240,7 @@ LogicBrain wird vom reaktiven Verifier zum **proaktiven Reasoning-Toolkit**:
 ## Referenzen
 
 - Roadmap v0.3–v0.7: `docs/roadmap_v030_v070.md`
+- Roadmap v0.8–v1.2: `docs/roadmap_v080_v120.md`
 - Roadmap v0.1.3–v0.2.0 (abgeschlossen): `docs/roadmap_v013_v020.md`
 - Metamorphic Ledger: `docs/metamorphic_ledger.md`
 - Planning Brief: `docs/claude_opus_planning_brief.md`
