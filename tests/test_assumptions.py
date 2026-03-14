@@ -1,0 +1,120 @@
+"""Tests for assumption state management (Issue #33)."""
+
+from __future__ import annotations
+
+import pytest
+
+from logic_brain import AssumptionKind, AssumptionSet, AssumptionStatus
+
+
+def test_add_assumption_creates_active_entry() -> None:
+    assumptions = AssumptionSet()
+    entry = assumptions.add(
+        assumption_id="a1",
+        statement="x > 0",
+        kind=AssumptionKind.ASSUMPTION,
+        source="unit-test",
+    )
+
+    assert entry.status is AssumptionStatus.ACTIVE
+    assert assumptions.get("a1") == entry
+
+
+def test_duplicate_assumption_id_rejected() -> None:
+    assumptions = AssumptionSet()
+    assumptions.add("a1", "x > 0", AssumptionKind.FACT, "test")
+
+    with pytest.raises(ValueError, match="already exists"):
+        assumptions.add("a1", "x < 10", AssumptionKind.HYPOTHESIS, "test")
+
+
+def test_lifecycle_transitions_are_enforced() -> None:
+    assumptions = AssumptionSet()
+    assumptions.add("a1", "x > 0", AssumptionKind.FACT, "test")
+
+    expired = assumptions.expire("a1")
+    assert expired.status is AssumptionStatus.EXPIRED
+
+    activated = assumptions.activate("a1")
+    assert activated.status is AssumptionStatus.ACTIVE
+
+
+def test_invalid_lifecycle_transition_rejected() -> None:
+    assumptions = AssumptionSet()
+    assumptions.add("a1", "x > 0", AssumptionKind.FACT, "test")
+
+    with pytest.raises(ValueError, match="Only expired assumptions can be activated"):
+        assumptions.activate("a1")
+
+
+def test_retraction_is_idempotent() -> None:
+    assumptions = AssumptionSet()
+    assumptions.add("a1", "x > 0", AssumptionKind.ASSUMPTION, "test")
+
+    first = assumptions.retract("a1")
+    second = assumptions.retract("a1")
+
+    assert first.status is AssumptionStatus.RETRACTED
+    assert second.status is AssumptionStatus.RETRACTED
+
+
+def test_retracted_assumption_cannot_transition() -> None:
+    assumptions = AssumptionSet()
+    assumptions.add("a1", "x > 0", AssumptionKind.ASSUMPTION, "test")
+    assumptions.retract("a1")
+
+    with pytest.raises(ValueError, match="cannot change lifecycle state"):
+        assumptions.expire("a1")
+
+
+def test_active_entries_and_payload_only_include_active_items() -> None:
+    assumptions = AssumptionSet()
+    assumptions.add("a1", "x > 0", AssumptionKind.ASSUMPTION, "test")
+    assumptions.add("a2", "x < 10", AssumptionKind.ASSUMPTION, "test")
+    assumptions.expire("a2")
+
+    active = assumptions.active_entries()
+    payload = assumptions.belief_payload()
+
+    assert [entry.assumption_id for entry in active] == ["a1"]
+    assert payload == [{"label": "a1", "assertion": "x > 0"}]
+
+
+def test_snapshot_roundtrip_preserves_semantics() -> None:
+    assumptions = AssumptionSet()
+    assumptions.add("a1", "x > 0", AssumptionKind.FACT, "sensor")
+    assumptions.add("a2", "x < 0", AssumptionKind.HYPOTHESIS, "agent")
+    assumptions.expire("a2")
+
+    restored = AssumptionSet.from_json(assumptions.to_json())
+
+    assert restored.to_dict() == assumptions.to_dict()
+
+
+def test_reject_invalid_json_payload() -> None:
+    with pytest.raises(ValueError, match="Invalid assumptions JSON"):
+        AssumptionSet.from_json("{bad json")
+
+
+def test_reject_unsupported_schema_version() -> None:
+    payload = {
+        "schema_version": "9.9",
+        "assumptions": [],
+    }
+
+    with pytest.raises(ValueError, match="Unsupported assumption schema version"):
+        AssumptionSet.from_dict(payload)
+
+
+def test_consistency_hook_detects_contradiction() -> None:
+    assumptions = AssumptionSet()
+    assumptions.add("a1", "x > 0", AssumptionKind.ASSUMPTION, "test")
+    assumptions.add("a2", "x < 0", AssumptionKind.ASSUMPTION, "test")
+
+    def checker(statements: list[str]) -> bool:
+        return not ("x > 0" in statements and "x < 0" in statements)
+
+    result = assumptions.check_consistency(checker)
+
+    assert result.consistent is False
+    assert result.active_statements == ["x > 0", "x < 0"]

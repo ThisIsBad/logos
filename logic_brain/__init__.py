@@ -38,6 +38,13 @@ from .diagnostics import (
 )
 from .generator import ProblemGenerator, GeneratorConfig
 from .certificate import ProofCertificate, certify, verify_certificate
+from .assumptions import (
+    AssumptionConsistency,
+    AssumptionEntry,
+    AssumptionKind,
+    AssumptionSet,
+    AssumptionStatus,
+)
 
 __all__ = [
     # Quick API (string-based)
@@ -84,4 +91,10 @@ __all__ = [
     "ProofCertificate",
     "certify",
     "verify_certificate",
+    # Assumption state kernel (Tier 2 / Provisional)
+    "AssumptionKind",
+    "AssumptionStatus",
+    "AssumptionEntry",
+    "AssumptionConsistency",
+    "AssumptionSet",
 ]

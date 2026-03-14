@@ -45,6 +45,8 @@ Each MR entry should include:
 | MR-C01 | Certificate roundtrip invariance | `certificate` | core-semantics | `cert` -> `ProofCertificate.from_json(cert.to_json())` | `verify_certificate` remains true and `verified` unchanged | exact | active | `tests/test_metamorphic_certificate.py::test_mr_c1_certificate_roundtrip_preserves_reverification` |
 | MR-C02 | Equivalent argument invariance | `certificate` | core-semantics | rewrite argument with a logically equivalent form | certificate `verified` status unchanged | exact | active | `tests/test_metamorphic_certificate.py::test_mr_c2_equivalent_transforms_preserve_certificate_validity` |
 | MR-C03 | Redundant premise invariance | `certificate` | core-semantics | add duplicate premise | certificate `verified` status unchanged | exact | active | `tests/test_metamorphic_certificate.py::test_mr_c3_redundant_premises_preserve_certificate_validity` |
+| MR-A01 | Assumption order invariance | `assumptions` | core-semantics | reorder insertion order of contradictory assumptions | consistency classification unchanged | exact | active | `tests/test_metamorphic_assumptions.py::test_mr_a01_assumption_order_invariance_for_consistency` |
+| MR-A02 | Retraction idempotence | `assumptions` | session-safety | repeat `retract()` on same assumption | lifecycle status unchanged after first retract | exact | active | `tests/test_metamorphic_assumptions.py::test_mr_a02_redundant_retraction_is_idempotent` |
 
 ## Maintenance Rule
 
