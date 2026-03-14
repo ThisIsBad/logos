@@ -6,6 +6,7 @@ import pytest
 
 from logic_brain import (
     ProofBundle,
+    ProofCertificate,
     create_proof_bundle,
     certify,
     verify_proof_bundle,
@@ -28,6 +29,8 @@ def test_bundle_roundtrip_and_verification() -> None:
     assert result.valid_bundle is True
     assert result.complete is True
     assert result.invalid_nodes == []
+    assert result.invalid_roots == []
+    assert result.diagnostics == []
 
 
 def test_partial_bundle_is_reported_but_still_valid_if_nodes_verify() -> None:
@@ -43,6 +46,8 @@ def test_partial_bundle_is_reported_but_still_valid_if_nodes_verify() -> None:
     assert result.valid_bundle is True
     assert result.complete is False
     assert result.missing_dependencies == ["n2->n1"]
+    assert result.invalid_roots == []
+    assert any(item["code"] == "missing_dependency" for item in result.diagnostics)
 
 
 def test_tampered_certificate_is_flagged_invalid() -> None:
@@ -67,6 +72,38 @@ def test_tampered_certificate_is_flagged_invalid() -> None:
     result = verify_proof_bundle(bundle)
     assert result.valid_bundle is False
     assert result.invalid_nodes == ["n1"]
+    assert any(item["code"] == "certificate_mismatch" for item in result.diagnostics)
+
+
+def test_invalid_roots_are_reported_as_incomplete_bundle() -> None:
+    cert = certify("P |- P")
+    bundle = create_proof_bundle(nodes={"n1": cert}, roots=["missing_root"])
+
+    result = verify_proof_bundle(bundle)
+
+    assert result.valid_bundle is True
+    assert result.complete is False
+    assert result.invalid_roots == ["missing_root"]
+    assert any(item["code"] == "invalid_root" for item in result.diagnostics)
+
+
+def test_certificate_errors_are_reported_with_structured_diagnostics() -> None:
+    invalid_cert = ProofCertificate(
+        schema_version="1.0",
+        claim_type="unknown",
+        claim="P |- P",
+        method="none",
+        verified=True,
+        timestamp="2026-01-01T00:00:00+00:00",
+        verification_artifact={},
+    )
+    bundle = create_proof_bundle(nodes={"n1": invalid_cert}, roots=["n1"])
+
+    result = verify_proof_bundle(bundle)
+
+    assert result.valid_bundle is False
+    assert result.invalid_nodes == ["n1"]
+    assert any(item["code"] == "certificate_error" for item in result.diagnostics)
 
 
 def test_unsupported_schema_version_rejected() -> None:
@@ -83,3 +120,8 @@ def test_consumer_side_recheck_from_json_transport() -> None:
 
     assert consumer_result.valid_bundle is True
     assert consumer_result.complete is True
+
+
+def test_transport_corruption_is_rejected_during_json_parse() -> None:
+    with pytest.raises(ValueError, match="Invalid proof bundle JSON"):
+        ProofBundle.from_json("{corrupt json")

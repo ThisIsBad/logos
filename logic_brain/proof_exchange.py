@@ -109,7 +109,9 @@ class ProofExchangeResult:
     valid_bundle: bool
     complete: bool
     invalid_nodes: list[str]
+    invalid_roots: list[str]
     missing_dependencies: list[str]
+    diagnostics: list[dict[str, str]]
 
 
 def create_proof_bundle(
@@ -142,25 +144,68 @@ def verify_proof_bundle(bundle: ProofBundle) -> ProofExchangeResult:
         raise ValueError(f"Unsupported proof bundle schema version '{bundle.schema_version}'")
 
     invalid_nodes: list[str] = []
+    invalid_roots: list[str] = []
     missing_dependencies: list[str] = []
+    diagnostics: list[dict[str, str]] = []
+
+    for root_id in bundle.roots:
+        if root_id not in bundle.nodes:
+            invalid_roots.append(root_id)
+            diagnostics.append(
+                {
+                    "code": "invalid_root",
+                    "node_id": root_id,
+                    "message": f"Root '{root_id}' is missing from bundle nodes",
+                }
+            )
 
     for node_id, node in bundle.nodes.items():
         for dep in node.depends_on:
             if dep not in bundle.nodes:
                 missing_dependencies.append(f"{node_id}->{dep}")
+                diagnostics.append(
+                    {
+                        "code": "missing_dependency",
+                        "node_id": node_id,
+                        "message": f"Dependency '{dep}' required by '{node_id}' is missing",
+                    }
+                )
 
         try:
             if not verify_certificate(node.certificate):
                 invalid_nodes.append(node_id)
-        except Exception:
+                diagnostics.append(
+                    {
+                        "code": "certificate_mismatch",
+                        "node_id": node_id,
+                        "message": "Certificate verification returned False",
+                    }
+                )
+        except ValueError as exc:
             invalid_nodes.append(node_id)
+            diagnostics.append(
+                {
+                    "code": "certificate_error",
+                    "node_id": node_id,
+                    "message": str(exc),
+                }
+            )
 
     valid_bundle = len(invalid_nodes) == 0
-    complete = len(missing_dependencies) == 0
+    complete = len(missing_dependencies) == 0 and len(invalid_roots) == 0
 
     return ProofExchangeResult(
         valid_bundle=valid_bundle,
         complete=complete,
         invalid_nodes=sorted(invalid_nodes),
+        invalid_roots=sorted(invalid_roots),
         missing_dependencies=sorted(missing_dependencies),
+        diagnostics=sorted(
+            diagnostics,
+            key=lambda item: (
+                item["code"],
+                item["node_id"],
+                item["message"],
+            ),
+        ),
     )
