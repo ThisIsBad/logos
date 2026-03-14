@@ -96,6 +96,24 @@ result = verify("P -> Q, P |- Q")
 
 For a complete copy-paste example see [`examples/agent_integration.py`](examples/agent_integration.py).
 
+### Proof-Carrying Actions (v0.3)
+
+You can attach machine-checkable certificates to reasoning outputs:
+
+```python
+from logic_brain import ProofCertificate, certify, verify_certificate
+
+cert = certify("P -> Q, P |- Q")
+assert cert.verified is True
+assert verify_certificate(cert) is True
+
+cert_json = cert.to_json()
+restored = ProofCertificate.from_json(cert_json)
+assert verify_certificate(restored) is True
+```
+
+See [`examples/proof_carrying_actions.py`](examples/proof_carrying_actions.py) for an end-to-end workflow.
+
 ## First-Order Logic (Predicate Logic)
 
 For predicate logic with quantifiers, use the `PredicateVerifier`:
@@ -276,6 +294,7 @@ All benchmark tools live under `tools/`. Legacy root-level wrappers have been re
 python examples/quick_verify.py
 python examples/interactive_sessions.py
 python examples/agent_integration.py   # Full agent workflow demo
+python examples/proof_carrying_actions.py  # v0.3 proof-carrying demo
 ```
 
 Notebook demo:

@@ -163,7 +163,7 @@ def step_lean_session() -> None:
         proof = session.proof or ""
         # Sanitise for terminals that lack full Unicode support (Windows cp1252)
         safe = proof.encode("ascii", "replace").decode()
-        print(f"\n[LEAN] Proof complete!")
+        print("\n[LEAN] Proof complete!")
         print(f"  Proof:\n{safe}")
     elif not result.success:
         msg = (result.error_message or "unknown error").encode("ascii", "replace").decode()
