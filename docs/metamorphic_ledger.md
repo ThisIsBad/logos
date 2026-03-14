@@ -55,6 +55,8 @@ Each MR entry should include:
 | MR-U02 | Provenance order invariance | `uncertainty` | parser-robustness | reorder provenance entries | escalation decision unchanged | exact | active | `tests/test_metamorphic_uncertainty.py::test_mr_u02_provenance_order_does_not_change_escalation` |
 | MR-PX01 | Bundle node order invariance | `proof_exchange` | core-semantics | reorder node insertion order in bundle construction | verification result unchanged | exact | active | `tests/test_metamorphic_proof_exchange.py::test_mr_px01_node_order_invariance` |
 | MR-PX02 | Independent node extension invariance | `proof_exchange` | core-semantics | add an independent valid node to bundle | bundle validity remains true | exact | active | `tests/test_metamorphic_proof_exchange.py::test_mr_px02_adding_independent_valid_node_preserves_validity` |
+| MR-BG01 | Support order invariance | `belief_graph` | core-semantics | reorder edge insertion for same support chain | minimal support set unchanged | exact | active | `tests/test_metamorphic_belief_graph.py::test_mr_bg01_support_order_invariance` |
+| MR-BG02 | Temporal shift consistency | `belief_graph` | session-safety | shift all timestamps and query time by same delta | stale dependency classification unchanged | exact | active | `tests/test_metamorphic_belief_graph.py::test_mr_bg02_temporal_shift_consistency` |
 
 ## Maintenance Rule
 

@@ -71,6 +71,13 @@ from .proof_exchange import (
     create_proof_bundle,
     verify_proof_bundle,
 )
+from .belief_graph import (
+    BeliefEdge,
+    BeliefEdgeType,
+    BeliefGraph,
+    BeliefNode,
+    ContradictionExplanation,
+)
 
 __all__ = [
     # Quick API (string-based)
@@ -152,4 +159,10 @@ __all__ = [
     "ProofExchangeResult",
     "create_proof_bundle",
     "verify_proof_bundle",
+    # Causal belief graph (Tier 2 / Provisional)
+    "BeliefEdgeType",
+    "BeliefNode",
+    "BeliefEdge",
+    "ContradictionExplanation",
+    "BeliefGraph",
 ]
