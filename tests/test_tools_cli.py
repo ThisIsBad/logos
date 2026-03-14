@@ -157,3 +157,19 @@ def test_check_fol_results_tool_happy_path(tmp_path: Path):
 
     assert process.returncode == 0, process.stdout + process.stderr
     assert "Score: 1/1" in process.stdout
+
+
+def test_issue_autopilot_dry_run_with_overrides(tmp_path: Path):
+    known_titles = tmp_path / "known_titles.json"
+    known_titles.write_text("[]", encoding="utf-8")
+
+    process = _run_tool(
+        "tools/issue_autopilot.py",
+        "--open-count-override",
+        "0",
+        "--known-titles-file",
+        str(known_titles),
+    )
+
+    assert process.returncode == 0, process.stdout + process.stderr
+    assert "Dry-run mode" in process.stdout

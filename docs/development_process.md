@@ -34,6 +34,28 @@ For every phase or milestone:
 - Close issues only after validation is green.
 - Follow strict ordering: do not start the next issue before finishing the current one.
 
+### Auto-Issue Continuation (Backlog Refill)
+
+To keep delivery continuous, backlog refill is event-driven (not periodic by count):
+
+1. If `open issues < 2` and no issue is currently in progress, run the autopilot.
+2. Refill up to target (`open issues ~= 5`), max 5 new issues per run.
+3. New issues must follow the required issue template in this document.
+4. Avoid duplicates against existing open/closed titles.
+5. Resume strict `WIP=1` execution immediately after refill.
+
+Tooling command:
+
+```bash
+python tools/issue_autopilot.py --min-open 2 --target-open 5 --max-create 5
+```
+
+This command is dry-run by default. To create issues:
+
+```bash
+python tools/issue_autopilot.py --min-open 2 --target-open 5 --max-create 5 --execute
+```
+
 ### Required Issue Template
 
 Each issue must include:
