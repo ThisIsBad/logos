@@ -47,6 +47,8 @@ Each MR entry should include:
 | MR-C03 | Redundant premise invariance | `certificate` | core-semantics | add duplicate premise | certificate `verified` status unchanged | exact | active | `tests/test_metamorphic_certificate.py::test_mr_c3_redundant_premises_preserve_certificate_validity` |
 | MR-A01 | Assumption order invariance | `assumptions` | core-semantics | reorder insertion order of contradictory assumptions | consistency classification unchanged | exact | active | `tests/test_metamorphic_assumptions.py::test_mr_a01_assumption_order_invariance_for_consistency` |
 | MR-A02 | Retraction idempotence | `assumptions` | session-safety | repeat `retract()` on same assumption | lifecycle status unchanged after first retract | exact | active | `tests/test_metamorphic_assumptions.py::test_mr_a02_redundant_retraction_is_idempotent` |
+| MR-CP01 | Branch creation order invariance | `counterfactual` | session-safety | create sat/unsat branches in different order | branch classification unchanged | exact | active | `tests/test_metamorphic_counterfactual.py::test_mr_cp01_branch_creation_order_preserves_classification` |
+| MR-CP02 | Replay idempotence | `counterfactual` | session-safety | replay the same branch repeatedly | replay classification unchanged | exact | active | `tests/test_metamorphic_counterfactual.py::test_mr_cp02_repeated_replay_preserves_classification` |
 
 ## Maintenance Rule
 

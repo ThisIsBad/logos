@@ -45,6 +45,7 @@ from .assumptions import (
     AssumptionSet,
     AssumptionStatus,
 )
+from .counterfactual import CounterfactualPlanner, PlanBranch, PlanResult, PlanState, VariableDecl
 
 __all__ = [
     # Quick API (string-based)
@@ -97,4 +98,10 @@ __all__ = [
     "AssumptionEntry",
     "AssumptionConsistency",
     "AssumptionSet",
+    # Counterfactual planning (Tier 2 / Provisional)
+    "VariableDecl",
+    "PlanState",
+    "PlanBranch",
+    "PlanResult",
+    "CounterfactualPlanner",
 ]
