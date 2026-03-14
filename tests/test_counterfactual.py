@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from dataclasses import FrozenInstanceError
+
 import pytest
 
 from logic_brain import CounterfactualPlanner
@@ -65,8 +67,9 @@ def test_scoring_hooks_attach_scores() -> None:
 
     scored = planner.score_branch("b1", {"sat_score": sat_score})
 
-    assert scored is branch
+    assert scored is not branch
     assert scored.scores["sat_score"] == 1.0
+    assert "sat_score" not in branch.scores
 
 
 def test_unknown_parent_branch_rejected() -> None:
@@ -74,3 +77,24 @@ def test_unknown_parent_branch_rejected() -> None:
 
     with pytest.raises(ValueError, match="Unknown parent branch"):
         planner.branch("b1", parent_id="missing", additional_constraints=["x < 10"])
+
+
+def test_external_branch_mutation_is_rejected() -> None:
+    planner = _new_planner()
+    branch = planner.branch("b1", additional_constraints=["x < 10"])
+
+    with pytest.raises(FrozenInstanceError):
+        branch.status = "unsat"  # type: ignore[misc]
+
+    with pytest.raises(TypeError):
+        branch.scores["tamper"] = 1.0  # type: ignore[index]
+
+
+def test_result_snapshot_dict_mutation_does_not_affect_internal_state() -> None:
+    planner = _new_planner()
+    planner.branch("b1", additional_constraints=["x < 10"])
+
+    snapshot = planner.result()
+    snapshot.branches.pop("b1")
+
+    assert planner.get_branch("b1").status == "sat"

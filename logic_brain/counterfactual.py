@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Callable
+from types import MappingProxyType
+from typing import Callable, Mapping
 
 from logic_brain.certificate import ProofCertificate, certify, verify_certificate
 from logic_brain.z3_session import Z3Session
@@ -26,7 +27,7 @@ class PlanState:
     constraints: tuple[str, ...] = ()
 
 
-@dataclass
+@dataclass(frozen=True)
 class PlanBranch:
     """One branch in a counterfactual plan tree."""
 
@@ -37,7 +38,7 @@ class PlanBranch:
     satisfiable: bool | None
     certificate: ProofCertificate
     trace: tuple[str, ...] = ()
-    scores: dict[str, float] = field(default_factory=dict)
+    scores: Mapping[str, float] = field(default_factory=lambda: MappingProxyType({}))
 
 
 @dataclass(frozen=True)
@@ -98,6 +99,7 @@ class CounterfactualPlanner:
             satisfiable=result.satisfiable,
             certificate=result.certificate,
             trace=new_trace,
+            scores=_frozen_scores(),
         )
         self._branches[branch_id] = branch
         return branch
@@ -118,15 +120,28 @@ class CounterfactualPlanner:
             satisfiable=replay_result.satisfiable,
             certificate=replay_result.certificate,
             trace=branch.trace,
-            scores=dict(branch.scores),
+            scores=_frozen_scores(branch.scores),
         )
 
     def score_branch(self, branch_id: str, scorers: dict[str, Callable[[PlanBranch], float]]) -> PlanBranch:
         """Apply deterministic scoring hooks to a branch."""
         branch = self.get_branch(branch_id)
+        new_scores = dict(branch.scores)
         for score_name, scorer in scorers.items():
-            branch.scores[score_name] = scorer(branch)
-        return branch
+            new_scores[score_name] = scorer(branch)
+
+        updated = PlanBranch(
+            branch_id=branch.branch_id,
+            parent_id=branch.parent_id,
+            state=branch.state,
+            status=branch.status,
+            satisfiable=branch.satisfiable,
+            certificate=branch.certificate,
+            trace=branch.trace,
+            scores=_frozen_scores(new_scores),
+        )
+        self._branches[branch_id] = updated
+        return updated
 
     def verify_branch_certificate(self, branch_id: str) -> bool:
         """Independent re-check for a branch certificate."""
@@ -170,4 +185,9 @@ class CounterfactualPlanner:
             status=check_result.status,
             satisfiable=check_result.satisfiable,
             certificate=certificate,
+            scores=_frozen_scores(),
         )
+
+
+def _frozen_scores(scores: Mapping[str, float] | None = None) -> Mapping[str, float]:
+    return MappingProxyType(dict(scores or {}))
