@@ -192,26 +192,34 @@ LogicBrain ist das **Werkzeug**, nicht der **Arbeiter**.
 
 ## Roadmap-Status
 
-Die Roadmap `v0.1.3 -> v0.2.0` ist abgeschlossen.
-
-Die detaillierte Dokumentation mit Phasen, KPIs, Issue-Vorschlägen und Risikoanalyse liegt in:
+### Abgeschlossen: v0.1.3 -> v0.2.0
 
 **→ [`docs/roadmap_v013_v020.md`](docs/roadmap_v013_v020.md)**
-
-Abgeschlossene Phasen:
 
 1. **v0.1.3 — API Stabilization**: Stabilitätsvertrag, Deprecation-Policy, interne API-Grenzen, Root-Cleanup
 2. **v0.1.4 — Quality & Observability**: neue Test-Suites, Ruff + CI-Haertung, Benchmark-Regression-Gate
 3. **v0.2.0 — Integration & Documentation**: Agent-Integrationsbeispiel, API-Referenz, PEP-561 Marker, erweitertes Public API
 
-Post-v0.2.0 Follow-ups (offen):
-- Coverage-Messung und CI-Threshold (`pytest --cov`)
-- mypy strict als CI-Gate
-- Direkte Tests fuer verbleibende ungetestete Module
+Post-v0.2.0 Quality Gates (Issues #21–#28, alle CLOSED):
+- Coverage-Gate (85%), mypy strict Gate, 227 Tests
+- Metamorphic Testing Layer (24 MR-Tests, Ledger, CI-Gate)
+- Development Process Hardening (Issue-first, Dogfooding)
+
+### Aktiv: v0.3 -> v0.7 — Agent-Centric Deterministic Tooling
+
+**→ [`docs/roadmap_v030_v070.md`](docs/roadmap_v030_v070.md)**
+
+LogicBrain wird vom reaktiven Verifier zum **proaktiven Reasoning-Toolkit**:
+
+1. **v0.3 — Proof-Carrying Actions**: Maschinenprüfbare Zertifikate für Agent-Outputs
+2. **v0.4 — Reasoning Contracts**: Pre/Post-Conditions auf Reasoning-Schritten
+3. **v0.5 — Self-Consistency Checker**: Widersprüche in Agent-Beliefs erkennen
+4. **v0.6 — Policy-Guided Search**: Formale Policies zum Pruning des Aktionsraums
+5. **v0.7 — Compositional Proof Orchestrator**: Komplexe Claims zerlegen und parallel verifizieren
 
 ### Bewusst zurückgestellt
 
-- Logik-Erweiterungen (Modal/Temporal/Many-valued) — erst nach v0.2.0, siehe `docs/logic_extensions_assessment.md`
+- Logik-Erweiterungen (Modal/Temporal/Many-valued) — orthogonal zur Agent-Tooling-Roadmap, siehe `docs/logic_extensions_assessment.md`
 - Lemma-Cache — erst bei nachgewiesener Agent-Nutzung von LeanSession
 - PyPI-Release — erst nach stabilem API-Vertrag
 
@@ -219,8 +227,11 @@ Post-v0.2.0 Follow-ups (offen):
 
 ## Referenzen
 
-- Detaillierte Roadmap: `docs/roadmap_v013_v020.md`
+- Roadmap v0.3–v0.7: `docs/roadmap_v030_v070.md`
+- Roadmap v0.1.3–v0.2.0 (abgeschlossen): `docs/roadmap_v013_v020.md`
+- Metamorphic Ledger: `docs/metamorphic_ledger.md`
 - Planning Brief: `docs/claude_opus_planning_brief.md`
 - Extensions Assessment: `docs/logic_extensions_assessment.md`
 - Release Playbook: `docs/release_playbook.md`
+- Development Process: `docs/development_process.md`
 - Changelog: `CHANGELOG.md`
