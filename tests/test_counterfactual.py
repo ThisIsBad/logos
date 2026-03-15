@@ -25,7 +25,10 @@ def test_sibling_branches_are_isolated() -> None:
     branch_sat = planner.branch("b2", additional_constraints=["x < 10"])
 
     assert branch_unsat.status == "unsat"
+    assert branch_unsat.model is None
     assert branch_sat.status == "sat"
+    assert branch_sat.model is not None
+    assert "x" in branch_sat.model
 
 
 def test_branch_from_parent_inherits_state_without_mutating_parent() -> None:
@@ -49,6 +52,7 @@ def test_branch_replay_is_deterministic() -> None:
 
     assert replay_a.status == branch.status == replay_b.status
     assert replay_a.satisfiable is branch.satisfiable is replay_b.satisfiable
+    assert replay_a.model == branch.model == replay_b.model
 
 
 def test_branch_certificates_are_independently_reverifiable() -> None:

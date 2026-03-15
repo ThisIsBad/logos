@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from types import MappingProxyType
-from typing import Callable, Mapping
+from typing import Any, Callable, Mapping
 
 from logic_brain.certificate import (
     ProofCertificate,
@@ -40,6 +40,7 @@ class PlanBranch:
     state: PlanState
     status: str
     satisfiable: bool | None
+    model: Mapping[str, Any] | None
     certificate: ProofCertificate
     trace: tuple[str, ...] = ()
     scores: Mapping[str, float] = field(default_factory=lambda: MappingProxyType({}))
@@ -101,6 +102,7 @@ class CounterfactualPlanner:
             state=new_state,
             status=result.status,
             satisfiable=result.satisfiable,
+            model=_frozen_model(result.model),
             certificate=result.certificate,
             trace=new_trace,
             scores=_frozen_scores(),
@@ -122,6 +124,7 @@ class CounterfactualPlanner:
             state=branch.state,
             status=replay_result.status,
             satisfiable=replay_result.satisfiable,
+            model=_frozen_model(replay_result.model),
             certificate=replay_result.certificate,
             trace=branch.trace,
             scores=_frozen_scores(branch.scores),
@@ -140,6 +143,7 @@ class CounterfactualPlanner:
             state=branch.state,
             status=branch.status,
             satisfiable=branch.satisfiable,
+            model=_frozen_model(branch.model),
             certificate=branch.certificate,
             trace=branch.trace,
             scores=_frozen_scores(new_scores),
@@ -188,6 +192,7 @@ class CounterfactualPlanner:
             state=state,
             status=check_result.status,
             satisfiable=check_result.satisfiable,
+            model=_frozen_model(check_result.model),
             certificate=certificate,
             scores=_frozen_scores(),
         )
@@ -195,3 +200,9 @@ class CounterfactualPlanner:
 
 def _frozen_scores(scores: Mapping[str, float] | None = None) -> Mapping[str, float]:
     return MappingProxyType(dict(scores or {}))
+
+
+def _frozen_model(model: Mapping[str, Any] | None = None) -> Mapping[str, Any] | None:
+    if model is None:
+        return None
+    return MappingProxyType(dict(model))

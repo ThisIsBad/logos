@@ -90,6 +90,7 @@ def counterfactual_branch(payload: Mapping[str, object]) -> ToolResult:
             branch_results[branch_id] = {
                 "satisfiable": branch.satisfiable,
                 "status": branch.status,
+                "model": None if branch.model is None else dict(branch.model),
             }
 
         return {"branches": branch_results}

@@ -125,12 +125,17 @@ def test_counterfactual_branch_classifies_sat_and_unsat_branches() -> None:
         }
     )
 
-    assert result == {
-        "branches": {
-            "sat_branch": {"satisfiable": True, "status": "sat"},
-            "unsat_branch": {"satisfiable": False, "status": "unsat"},
-        }
-    }
+    branches = result["branches"]
+    assert isinstance(branches, dict)
+
+    sat_branch = branches["sat_branch"]
+    assert sat_branch["satisfiable"] is True
+    assert sat_branch["status"] == "sat"
+    assert isinstance(sat_branch["model"], dict)
+    assert "x" in sat_branch["model"]
+
+    unsat_branch = branches["unsat_branch"]
+    assert unsat_branch == {"satisfiable": False, "status": "unsat", "model": None}
 
 
 def test_counterfactual_branch_handles_empty_branches() -> None:
