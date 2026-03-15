@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from enum import Enum
+import re
 
 from logic_brain.schema_utils import (
     load_json_object,
@@ -13,6 +14,7 @@ from logic_brain.schema_utils import (
     require_list_of_str,
     require_str,
 )
+from logic_brain.z3_session import CheckResult
 
 SCHEMA_VERSION = "1.0"
 
@@ -108,6 +110,79 @@ class ActionPolicyEngine:
             violations=violations,
             remediation_hints=remediation_hints,
         )
+
+    def check_policy_consistency_z3(
+        self,
+        variables: dict[str, str] | None = None,
+        constraints: list[str] | None = None,
+        timeout_ms: int = 30000,
+    ) -> tuple[tuple[str, str], ...]:
+        """Return rule pairs whose trigger conditions are jointly UNSAT in Z3.
+
+        Mapping semantics:
+        - every name in ``when_true`` becomes a boolean literal
+        - every name in ``when_false`` becomes a negated boolean literal
+        - a rule triggers exactly when the conjunction of those literals holds
+
+        A pair is reported as contradictory when Z3 proves there is no boolean
+        assignment, optionally under the supplied extra constraints, that makes
+        both rules trigger at the same time.
+        """
+        contradictory_pairs: set[tuple[str, str]] = set()
+
+        for index, left_rule in enumerate(self._rules):
+            for right_rule in self._rules[index + 1 :]:
+                result = _check_policy_formulas(
+                    formulas=[_rule_trigger_formula(left_rule), _rule_trigger_formula(right_rule)],
+                    rules=[left_rule, right_rule],
+                    variables=variables,
+                    constraints=constraints,
+                    timeout_ms=timeout_ms,
+                )
+                if result.satisfiable is False:
+                    contradictory_pairs.add((left_rule.name, right_rule.name))
+
+        return tuple(sorted(contradictory_pairs))
+
+    def check_policy_subsumption_z3(
+        self,
+        rule_a: ActionPolicyRule,
+        rule_b: ActionPolicyRule,
+        variables: dict[str, str] | None = None,
+        constraints: list[str] | None = None,
+        timeout_ms: int = 30000,
+    ) -> bool:
+        """Return whether ``rule_a`` is strictly more restrictive than ``rule_b``.
+
+        The comparison is over rule trigger sets. ``rule_a`` subsumes ``rule_b``
+        when every assignment that triggers ``rule_b`` also triggers ``rule_a``,
+        and there exists at least one assignment that triggers ``rule_a`` without
+        triggering ``rule_b``.
+        """
+        rule_a.validate()
+        rule_b.validate()
+
+        formula_a = _rule_trigger_formula(rule_a)
+        formula_b = _rule_trigger_formula(rule_b)
+
+        implication_check = _check_policy_formulas(
+            formulas=[formula_b, f"not ({formula_a})"],
+            rules=[rule_a, rule_b],
+            variables=variables,
+            constraints=constraints,
+            timeout_ms=timeout_ms,
+        )
+        if implication_check.satisfiable is not False:
+            return False
+
+        strictness_check = _check_policy_formulas(
+            formulas=[formula_a, f"not ({formula_b})"],
+            rules=[rule_a, rule_b],
+            variables=variables,
+            constraints=constraints,
+            timeout_ms=timeout_ms,
+        )
+        return strictness_check.satisfiable is True
 
     def to_dict(self) -> dict[str, object]:
         """Serialize policy set to dictionary."""
@@ -222,3 +297,69 @@ def _build_remediation_hints(violations: list[PolicyViolationEvidence]) -> list[
         f"Resolve policy '{violation.policy_name}': {violation.message}"
         for violation in violations
     ]
+
+
+def _check_policy_formulas(
+    formulas: list[str],
+    rules: list[ActionPolicyRule],
+    variables: dict[str, str] | None,
+    constraints: list[str] | None,
+    timeout_ms: int,
+) -> CheckResult:
+    from logic_brain.z3_session import Z3Session
+
+    session = Z3Session(timeout_ms=timeout_ms)
+    _declare_policy_variables(session, rules=rules, variables=variables, constraints=constraints)
+
+    for constraint in constraints or []:
+        session.assert_constraint(constraint)
+    for formula in formulas:
+        session.assert_constraint(formula)
+
+    return session.check()
+
+
+def _declare_policy_variables(
+    session: object,
+    rules: list[ActionPolicyRule],
+    variables: dict[str, str] | None,
+    constraints: list[str] | None,
+) -> None:
+    declare = getattr(session, "declare")
+    if not callable(declare):
+        raise ValueError("session object must provide declare()")
+
+    rule_fields = {field for rule in rules for field in rule.when_true + rule.when_false}
+    declared_sorts = dict(variables or {})
+
+    for field in sorted(rule_fields):
+        explicit_sort = declared_sorts.get(field)
+        if explicit_sort is not None and explicit_sort.upper() != "BOOL":
+            raise ValueError(f"Policy field '{field}' must use Bool sort for Z3 checks")
+
+    for var_name in sorted(_infer_constraint_identifiers(constraints or [])):
+        declared_sorts.setdefault(var_name, "Bool")
+    for field in sorted(rule_fields):
+        declared_sorts.setdefault(field, "Bool")
+
+    for var_name, sort in sorted(declared_sorts.items()):
+        declare(var_name, sort)
+
+
+def _infer_constraint_identifiers(constraints: list[str]) -> set[str]:
+    identifiers: set[str] = set()
+    for constraint in constraints:
+        identifiers.update(_IDENTIFIER_PATTERN.findall(constraint))
+    return {name for name in identifiers if name not in _RESERVED_IDENTIFIERS}
+
+
+def _rule_trigger_formula(rule: ActionPolicyRule) -> str:
+    parts = [field for field in rule.when_true]
+    parts.extend(f"not ({field})" for field in rule.when_false)
+    if not parts:
+        return "True"
+    return " and ".join(f"({part})" for part in parts)
+
+
+_IDENTIFIER_PATTERN = re.compile(r"\b[A-Za-z_][A-Za-z0-9_]*\b")
+_RESERVED_IDENTIFIERS = {"True", "False", "and", "or", "not"}

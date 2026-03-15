@@ -66,7 +66,7 @@ guarantees depend on whether they are connected to Z3:
 | `certificate` | Yes (via `verify_certificate`) | Re-verification is sound: if it says the certificate is valid, it is. |
 | `counterfactual` | Yes (via `Z3Session`) | Branch sat/unsat classification inherits Z3 soundness. |
 | `assumptions` | **Partial** (`check_consistency` accepts external checker) | Only as strong as the checker you plug in. |
-| `action_policy` | **No** (boolean flag matching) | No formal reasoning. Correct iff flags are correct. |
+| `action_policy` | **Yes** (boolean policy formulas via Z3) | Boolean policy consistency and subsumption checks inherit Z3 soundness; runtime flag evaluation remains a structural fast path. |
 | `uncertainty` | **No** (classification heuristic) | Deterministic but not formally grounded. |
 | `belief_graph` | **No** (manual edge annotation) | Graph structure is correct; contradiction detection is manual, not Z3-derived. |
 | `goal_contract` | **No** (string clause matching) | Deterministic but not formally grounded. |
@@ -97,9 +97,10 @@ into formally grounded reasoning:
 3. **BeliefGraph + Z3**: Automatically detect contradictions by checking
    whether two belief statements are Z3-unsatisfiable together.
 
-4. **ActionPolicyEngine + Z3**: Express policy rules as Z3 constraints
-   and prove properties like "no two policies contradict" or "policy A
-   subsumes policy B".
+4. **ActionPolicyEngine + Z3**: Implemented for boolean policy formulas.
+   The engine can now prove properties like "no two policies contradict"
+   or "policy A subsumes policy B" while keeping the existing fast boolean
+   evaluation path.
 
 Each connection preserves the soundness guarantee: if Z3 says unsat,
 the contradiction/subsumption/violation is real.

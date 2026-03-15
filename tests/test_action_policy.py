@@ -118,3 +118,51 @@ def test_serialization_roundtrip_preserves_policy_behavior() -> None:
         "adds_dependency": True,
     }
     assert engine.evaluate(action) == restored.evaluate(action)
+
+
+def test_check_policy_consistency_z3_detects_contradictory_rules() -> None:
+    engine = ActionPolicyEngine(
+        [
+            ActionPolicyRule(
+                name="requires_manual_approval",
+                severity="error",
+                message="Manual approval required",
+                when_true=("manual_approval",),
+            ),
+            ActionPolicyRule(
+                name="forbids_manual_approval",
+                severity="error",
+                message="Manual approval must not be used",
+                when_false=("manual_approval",),
+            ),
+            ActionPolicyRule(
+                name="independent_warning",
+                severity="warning",
+                message="Log dependency changes",
+                when_true=("adds_dependency",),
+            ),
+        ]
+    )
+
+    contradictions = engine.check_policy_consistency_z3()
+
+    assert contradictions == (("requires_manual_approval", "forbids_manual_approval"),)
+
+
+def test_check_policy_subsumption_z3_proves_stricter_rule() -> None:
+    engine = ActionPolicyEngine()
+    broader_rule = ActionPolicyRule(
+        name="public_api_change",
+        severity="error",
+        message="Public API changes require review",
+        when_true=("target_is_public_api",),
+    )
+    narrower_rule = ActionPolicyRule(
+        name="public_api_dependency_change",
+        severity="error",
+        message="Dependency changes on public API require review",
+        when_true=("target_is_public_api", "adds_dependency"),
+    )
+
+    assert engine.check_policy_subsumption_z3(broader_rule, narrower_rule)
+    assert not engine.check_policy_subsumption_z3(narrower_rule, broader_rule)
