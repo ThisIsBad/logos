@@ -307,6 +307,44 @@ copy-paste-ready example showing how an AI coding agent can use LogicBrain:
 verify arguments, generate fresh problems, explore constraints with Z3, read
 structured diagnostics, and optionally build Lean 4 proofs.
 
+## Agent Integration (MCP)
+
+LogicBrain also ships an MCP server for Claude Code and other MCP-compatible
+agents. Install the optional dependency, register the server, and the 5 core
+reasoning tools will be available over stdio.
+
+Install:
+
+```powershell
+pip install -e ".[mcp]"
+```
+
+Config (`.claude/mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "logic-brain": {
+      "command": "python",
+      "args": ["-m", "logic_brain.mcp_server"],
+      "cwd": "<project-root>"
+    }
+  }
+}
+```
+
+Verify: start Claude Code in this repository; the LogicBrain tools should
+appear automatically.
+
+What an agent can do:
+- `verify_argument` - verify arguments and return proof-oriented summaries
+- `check_assumptions` - detect contradictory assumption sets via Z3
+- `counterfactual_branch` - classify feasible vs infeasible branches
+- `z3_check` - run direct satisfiability checks with models and unsat cores
+- `check_policy` - evaluate boolean action policies with remediation hints
+
+For the full setup and troubleshooting guide, see `docs/mcp_setup.md`.
+
 Further documentation:
 - **API reference:** `docs/api/logic_brain.html` (regenerate: `python -m pdoc logic_brain -o docs/api`)
 - Metamorphic relation ledger: `docs/metamorphic_ledger.md`

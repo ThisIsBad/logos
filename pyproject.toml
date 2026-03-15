@@ -20,6 +20,12 @@ dev = [
     "mypy>=1.10",
     "pdoc>=14.0",
 ]
+mcp = [
+    "mcp>=1.26,<2.0",
+]
+
+[project.scripts]
+logic-brain-mcp = "logic_brain.mcp_server:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

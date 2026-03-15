@@ -97,6 +97,20 @@ Use this skeleton when creating new issues:
 - Avoid forceful or destructive git operations.
 - Keep commit history readable and milestone-oriented.
 
+### Autonomous Commit and Push Policy
+
+Agents operating on this repository are **authorized to commit and push**
+without human approval, provided:
+
+1. All preflight gates pass (pytest, ruff, mypy strict, coverage >= 85%,
+   metamorphic tests).
+2. The commit message references the issue being closed.
+3. No force-push, no rebase of shared history, no destructive operations.
+
+The preflight gates are the approval mechanism. If gates are green, commit
+and push immediately. Do not wait for explicit human confirmation.
+Do not ask "should I commit?" — the answer is always yes if gates pass.
+
 ## Quality Gates
 
 Before moving to the next phase:
@@ -119,6 +133,14 @@ python -m pytest -q -m metamorphic
 ```
 
 If one gate fails, do not commit. Fix first.
+
+If an issue touches MCP integration (`logic_brain/mcp_server.py`, MCP config,
+or MCP setup docs), add a local MCP smoke check before commit:
+
+```bash
+python -c "import logic_brain.mcp_server"
+python -m pytest tests/test_mcp_server.py -q
+```
 
 ## Definition of Done (Issue Closure)
 
