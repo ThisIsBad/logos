@@ -32,6 +32,7 @@ def test_create_server_registers_expected_tools() -> None:
         "counterfactual_branch",
         "z3_check",
         "check_policy",
+        "z3_session",
     ]
 
 
@@ -81,6 +82,7 @@ def test_stdio_server_lists_tools_and_handles_calls() -> None:
                     "counterfactual_branch",
                     "z3_check",
                     "check_policy",
+                    "z3_session",
                 ]
 
                 verify_result = await session.call_tool(
@@ -98,5 +100,41 @@ def test_stdio_server_lists_tools_and_handles_calls() -> None:
                 assert error_result.isError is False
                 structured_error = cast(dict[str, object], error_result.structuredContent)
                 assert structured_error["error"] == "Invalid input"
+
+                create_result = await session.call_tool(
+                    "z3_session",
+                    {"action": "create", "session_id": "server-test"},
+                )
+                assert cast(dict[str, object], create_result.structuredContent)["session_id"] == "server-test"
+
+                await session.call_tool(
+                    "z3_session",
+                    {
+                        "action": "declare",
+                        "session_id": "server-test",
+                        "variables": {"x": "Int"},
+                    },
+                )
+                await session.call_tool(
+                    "z3_session",
+                    {
+                        "action": "assert",
+                        "session_id": "server-test",
+                        "constraints": ["x > 0", "x < 10"],
+                    },
+                )
+                check_result = await session.call_tool(
+                    "z3_session",
+                    {"action": "check", "session_id": "server-test"},
+                )
+                structured_check = cast(dict[str, object], check_result.structuredContent)
+                assert structured_check["satisfiable"] is True
+                assert isinstance(structured_check["model"], dict)
+
+                destroy_result = await session.call_tool(
+                    "z3_session",
+                    {"action": "destroy", "session_id": "server-test"},
+                )
+                assert cast(dict[str, object], destroy_result.structuredContent)["destroyed"] is True
 
     anyio.run(run)

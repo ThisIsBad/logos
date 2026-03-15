@@ -9,10 +9,18 @@ from logic_brain.action_policy import ActionPolicyEngine, ActionPolicyRule
 from logic_brain.assumptions import AssumptionKind, AssumptionSet
 from logic_brain.certificate import certify
 from logic_brain.counterfactual import CounterfactualPlanner
+from logic_brain.mcp_session_store import (
+    ExpiredSessionError,
+    SessionLimitError,
+    UnknownSessionError,
+    Z3SessionStore,
+)
 from logic_brain.parser import ParseError, verify
-from logic_brain.z3_session import Z3Session
+from logic_brain.z3_session import Z3Session as SolverSession
 
 ToolResult = dict[str, object]
+
+_SESSION_STORE = Z3SessionStore()
 
 
 def verify_argument(payload: Mapping[str, object]) -> ToolResult:
@@ -105,7 +113,7 @@ def z3_check(payload: Mapping[str, object]) -> ToolResult:
         variables = _require_variable_specs(data, "variables")
         constraints = _require_str_list(data, "constraints")
 
-        session = Z3Session(track_unsat_core=True)
+        session = SolverSession(track_unsat_core=True)
         for name, spec in variables.items():
             sort, size = spec
             session.declare(name, sort, size=size)
@@ -118,6 +126,50 @@ def z3_check(payload: Mapping[str, object]) -> ToolResult:
             "model": result.model,
             "unsat_core": result.unsat_core,
         }
+    except Exception as exc:  # pragma: no cover - exercised via tests
+        return _error_response(exc)
+
+
+def z3_session(payload: Mapping[str, object]) -> ToolResult:
+    """Manage a stateful Z3 session across multiple MCP tool calls."""
+    try:
+        data = _require_payload(payload)
+        action = _require_non_empty_str(data, "action")
+        session_id = _require_non_empty_str(data, "session_id")
+
+        if action == "create":
+            created = _SESSION_STORE.create(session_id)
+            return {"session_id": created}
+        if action == "destroy":
+            _SESSION_STORE.destroy(session_id)
+            return {"session_id": session_id, "destroyed": True}
+        if action == "declare":
+            variables = _require_variable_specs(data, "variables")
+            declared = _SESSION_STORE.declare(session_id, variables)
+            return {"session_id": session_id, "declared": declared}
+        if action == "assert":
+            constraints = _require_str_list(data, "constraints")
+            added = _SESSION_STORE.assert_constraints(session_id, constraints)
+            return {"session_id": session_id, "constraints_added": added}
+        if action == "check":
+            result = _SESSION_STORE.check(session_id)
+            return {
+                "session_id": session_id,
+                "satisfiable": result.satisfiable,
+                "model": result.model,
+                "unsat_core": result.unsat_core,
+            }
+        if action == "push":
+            depth = _SESSION_STORE.push(session_id)
+            return {"session_id": session_id, "scope_depth": depth}
+        if action == "pop":
+            count = _optional_positive_int(data.get("count"), default=1)
+            depth = _SESSION_STORE.pop(session_id, count=count)
+            return {"session_id": session_id, "scope_depth": depth}
+
+        raise ValueError(
+            "Field 'action' must be one of: create, declare, assert, check, push, pop, destroy"
+        )
     except Exception as exc:  # pragma: no cover - exercised via tests
         return _error_response(exc)
 
@@ -238,7 +290,7 @@ def _validate_constraints(
     variables: dict[str, tuple[str, int | None]],
     constraints: list[str],
 ) -> None:
-    session = Z3Session()
+    session = SolverSession()
     for name, (sort, size) in variables.items():
         session.declare(name, sort, size=size)
     for constraint in constraints:
@@ -305,6 +357,14 @@ def _require_bool_map(payload: dict[str, object], key: str) -> dict[str, bool]:
     return normalized
 
 
+def _optional_positive_int(value: object, default: int) -> int:
+    if value is None:
+        return default
+    if not isinstance(value, int) or value < 1:
+        raise ValueError("Field 'count' must be an integer >= 1")
+    return value
+
+
 def _build_policy_rule(value: object) -> ActionPolicyRule:
     if not isinstance(value, dict):
         raise ValueError("Policy rule entries must be objects")
@@ -346,6 +406,12 @@ def _certificate_id(serialized_certificate: str) -> str:
 
 
 def _error_response(exc: Exception) -> ToolResult:
+    if isinstance(exc, UnknownSessionError):
+        return {"error": "Unknown session", "details": str(exc)}
+    if isinstance(exc, ExpiredSessionError):
+        return {"error": "Expired session", "details": str(exc)}
+    if isinstance(exc, SessionLimitError):
+        return {"error": "Session limit reached", "details": str(exc)}
     if isinstance(exc, (ParseError, TypeError, ValueError)):
         return {"error": "Invalid input", "details": str(exc)}
     return {"error": exc.__class__.__name__, "details": str(exc)}

@@ -22,6 +22,7 @@ from logic_brain.mcp_tools import (
     counterfactual_branch,
     verify_argument,
     z3_check,
+    z3_session,
 )
 
 ToolHandler = Callable[[dict[str, object]], dict[str, object]]
@@ -69,6 +70,10 @@ _RULE_SCHEMA: dict[str, object] = {
     },
     "required": ["name", "severity", "message"],
     "additionalProperties": False,
+}
+_SESSION_ACTION_SCHEMA: dict[str, object] = {
+    "type": "string",
+    "enum": ["create", "declare", "assert", "check", "push", "pop", "destroy"],
 }
 
 
@@ -178,6 +183,30 @@ _TOOLS: tuple[ToolSpec, ...] = (
         },
         ["rules", "action"],
         check_policy,
+    ),
+    _tool(
+        "z3_session",
+        "Manage a stateful Z3 session across multiple MCP calls. Example: {'action': 'create', 'session_id': 'demo'}",
+        {
+            "action": _SESSION_ACTION_SCHEMA,
+            "session_id": {"type": "string", "description": "Stable session identifier."},
+            "variables": {
+                "type": "object",
+                "description": "Variables to declare for the 'declare' action.",
+                "additionalProperties": _VARIABLE_SPEC_SCHEMA,
+            },
+            "constraints": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "Constraints to assert for the 'assert' action.",
+            },
+            "count": {
+                "type": "integer",
+                "description": "Optional number of scopes to pop for the 'pop' action.",
+            },
+        },
+        ["action", "session_id"],
+        z3_session,
     ),
 )
 

@@ -2,12 +2,17 @@
 
 from __future__ import annotations
 
+import pytest
+
+import logic_brain.mcp_tools as mcp_tools
+from logic_brain.mcp_session_store import Z3SessionStore
 from logic_brain.mcp_tools import (
     check_assumptions,
     check_policy,
     counterfactual_branch,
     verify_argument,
     z3_check,
+    z3_session,
 )
 
 
@@ -176,6 +181,126 @@ def test_counterfactual_branch_rejects_malformed_constraints() -> None:
     assert "Failed to parse constraint" in str(result["details"])
 
 
+@pytest.fixture
+def isolated_session_store(monkeypatch: pytest.MonkeyPatch) -> Z3SessionStore:
+    store = Z3SessionStore(expiry_seconds=60.0, max_sessions=2)
+    monkeypatch.setattr(mcp_tools, "_SESSION_STORE", store)
+    return store
+
+
+def test_z3_session_lifecycle(isolated_session_store: Z3SessionStore) -> None:
+    assert z3_session({"action": "create", "session_id": "demo"}) == {"session_id": "demo"}
+
+    declare_result = z3_session(
+        {
+            "action": "declare",
+            "session_id": "demo",
+            "variables": {"x": "Int", "flag": "Bool"},
+        }
+    )
+    assert declare_result == {"session_id": "demo", "declared": ["flag", "x"]}
+
+    assert z3_session(
+        {
+            "action": "assert",
+            "session_id": "demo",
+            "constraints": ["x > 0", "flag"],
+        }
+    ) == {"session_id": "demo", "constraints_added": 2}
+
+    check_result = z3_session({"action": "check", "session_id": "demo"})
+    assert check_result["session_id"] == "demo"
+    assert check_result["satisfiable"] is True
+    assert isinstance(check_result["model"], dict)
+    assert check_result["unsat_core"] is None
+
+    assert z3_session({"action": "destroy", "session_id": "demo"}) == {
+        "session_id": "demo",
+        "destroyed": True,
+    }
+
+
+def test_z3_session_push_pop_scope_isolation(isolated_session_store: Z3SessionStore) -> None:
+    z3_session({"action": "create", "session_id": "scopes"})
+    z3_session({"action": "declare", "session_id": "scopes", "variables": {"x": "Int"}})
+    z3_session({"action": "assert", "session_id": "scopes", "constraints": ["x > 0"]})
+
+    assert z3_session({"action": "push", "session_id": "scopes"}) == {
+        "session_id": "scopes",
+        "scope_depth": 1,
+    }
+    z3_session({"action": "assert", "session_id": "scopes", "constraints": ["x < 0"]})
+
+    conflicted = z3_session({"action": "check", "session_id": "scopes"})
+    assert conflicted["session_id"] == "scopes"
+    assert conflicted["satisfiable"] is False
+    assert conflicted["model"] is None
+    assert isinstance(conflicted["unsat_core"], list)
+
+    assert z3_session({"action": "pop", "session_id": "scopes"}) == {
+        "session_id": "scopes",
+        "scope_depth": 0,
+    }
+    restored = z3_session({"action": "check", "session_id": "scopes"})
+    assert restored["satisfiable"] is True
+    assert isinstance(restored["model"], dict)
+
+
+def test_z3_session_reports_unknown_session(isolated_session_store: Z3SessionStore) -> None:
+    result = z3_session({"action": "check", "session_id": "missing"})
+
+    assert result == {
+        "error": "Unknown session",
+        "details": "Unknown session 'missing'",
+    }
+
+
+def test_z3_session_reports_expired_session(monkeypatch: pytest.MonkeyPatch) -> None:
+    current_time = 100.0
+
+    def fake_time() -> float:
+        return current_time
+
+    store = Z3SessionStore(expiry_seconds=1.0, max_sessions=2, time_fn=fake_time)
+    monkeypatch.setattr(mcp_tools, "_SESSION_STORE", store)
+
+    z3_session({"action": "create", "session_id": "soon-gone"})
+    current_time = 102.0
+
+    result = z3_session({"action": "check", "session_id": "soon-gone"})
+
+    assert result == {
+        "error": "Expired session",
+        "details": "Session 'soon-gone' expired due to inactivity",
+    }
+
+
+def test_z3_session_enforces_session_limit(isolated_session_store: Z3SessionStore) -> None:
+    z3_session({"action": "create", "session_id": "s1"})
+    z3_session({"action": "create", "session_id": "s2"})
+
+    result = z3_session({"action": "create", "session_id": "s3"})
+
+    assert result == {
+        "error": "Session limit reached",
+        "details": "Session limit reached (2)",
+    }
+
+
+def test_z3_session_rejects_invalid_action_and_pop_count(isolated_session_store: Z3SessionStore) -> None:
+    z3_session({"action": "create", "session_id": "demo"})
+
+    bad_action = z3_session({"action": "noop", "session_id": "demo"})
+    assert bad_action["error"] == "Invalid input"
+    assert "create, declare, assert, check, push, pop, destroy" in str(bad_action["details"])
+
+    bad_count = z3_session({"action": "pop", "session_id": "demo", "count": 0})
+    assert bad_count == {
+        "error": "Invalid input",
+        "details": "Field 'count' must be an integer >= 1",
+    }
+
+
 def test_z3_check_returns_model_for_sat_constraints() -> None:
     result = z3_check(
         {
@@ -311,6 +436,7 @@ def test_all_tools_return_structured_errors_for_bad_payload_types() -> None:
         counterfactual_branch,
         z3_check,
         check_policy,
+        z3_session,
     ]
 
     for tool in tools:
