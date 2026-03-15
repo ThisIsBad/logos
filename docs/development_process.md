@@ -130,6 +130,51 @@ An issue may be closed only when all items are true:
 - Documentation is updated where behavior/process changed.
 - Commit/PR reference is linked in the issue.
 
+## Autonomous Execution Mode (Silent Autopilot)
+
+When the user is away or explicitly enables autonomous work, the agent operates
+in **Silent Autonomy Mode**. This section is the canonical reference so that any
+session — even without prior context — knows the rules.
+
+### Default behaviour
+
+- **No chat output.** The agent works silently: issue-first, WIP=1, full
+  preflight gates, commit, push, next issue.
+- Progress is visible **only through GitHub** (commits, closed issues).
+- The agent does **not** produce status updates, summaries, or progress
+  reports in the chat unless explicitly requested.
+
+### When to break silence
+
+The agent sends a chat message **only** when one of these conditions is met:
+
+1. **Hard blocker** — a problem that cannot be resolved autonomously:
+   - Missing credentials, permissions, or repository access errors.
+   - A preflight gate that fails repeatedly after two self-repair attempts.
+   - An irreversible decision that requires explicit user approval
+     (e.g., force-push, breaking API change outside the roadmap).
+2. **Empty queue + autopilot exhausted** — all open issues are closed *and*
+   `tools/issue_autopilot.py --execute` has no remaining catalog entries to
+   create.
+3. **Explicit user request** — the user writes `status`, `report`, or any
+   direct question.
+
+Everything else (successful commits, issue closures, gate results) stays
+silent and is traceable via `git log` / GitHub.
+
+### Session handoff
+
+When a session ends (token limit, timeout, or user-initiated stop):
+
+1. Write `docs/new_session_handoff.md` with:
+   - Last completed issue (number + commit SHA).
+   - Current WIP issue (if any).
+   - Open issue queue snapshot.
+   - Any known blockers or decisions pending.
+2. Do **not** commit this file (it is `.gitignore`-style transient).
+
+A new session can read this file to resume without user re-explanation.
+
 ## Dogfooding Rule
 
 - Process changes in this document must be applied immediately to the next issue.
