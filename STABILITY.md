@@ -1,6 +1,6 @@
 # API Stability Contract
 
-Version: 1.0 | Effective from: v0.2.0
+Version: 1.1 | Effective from: Unreleased
 
 ---
 
@@ -55,6 +55,51 @@ The tier determines the guarantees you get when upgrading between releases.
 | `Z3DiagnosticParser` | `diagnostics` | Parser for Z3 error output |
 | `ProblemGenerator` | `generator` | Fresh logic problem generator |
 | `GeneratorConfig` | `generator` | Configuration for problem difficulty |
+| `ProofCertificate` | `certificate` | Serializable proof-carrying certificate |
+| `certify` | `certificate` | Create a certificate from propositional or FOL verification |
+| `certify_z3_session` | `certificate` | Create a certificate from a `Z3Session` check |
+| `verify_certificate` | `certificate` | Re-verify a proof certificate deterministically |
+| `AssumptionKind` | `assumptions` | Enum of typed assumption categories |
+| `AssumptionStatus` | `assumptions` | Enum of assumption lifecycle states |
+| `AssumptionEntry` | `assumptions` | Assumption record with provenance and lifecycle metadata |
+| `AssumptionConsistency` | `assumptions` | Consistency result over active assumptions |
+| `AssumptionSet` | `assumptions` | Deterministic typed assumption state manager |
+| `VariableDecl` | `counterfactual` | Variable declaration for planning state snapshots |
+| `PlanState` | `counterfactual` | Immutable state snapshot for a plan branch |
+| `PlanBranch` | `counterfactual` | Evaluated branch in a counterfactual plan tree |
+| `PlanResult` | `counterfactual` | Snapshot of counterfactual planner branches |
+| `CounterfactualPlanner` | `counterfactual` | Deterministic branch planner over `Z3Session` semantics |
+| `PolicyDecision` | `action_policy` | Enum of action policy enforcement outcomes |
+| `ActionPolicyRule` | `action_policy` | Policy rule with explicit trigger conditions |
+| `PolicyViolationEvidence` | `action_policy` | Structured evidence for a triggered policy rule |
+| `ActionPolicyResult` | `action_policy` | Deterministic policy evaluation result |
+| `ActionPolicyEngine` | `action_policy` | Deterministic pre-action policy evaluator |
+| `ConfidenceLevel` | `uncertainty` | Enum of calibrated confidence levels |
+| `RiskLevel` | `uncertainty` | Enum of escalation risk levels |
+| `EscalationDecision` | `uncertainty` | Enum of escalation policy outcomes |
+| `ConfidenceRecord` | `uncertainty` | Confidence record with provenance metadata |
+| `EscalationResult` | `uncertainty` | Result of applying uncertainty escalation policy |
+| `UncertaintyPolicy` | `uncertainty` | Risk-to-escalation mapping policy |
+| `UncertaintyCalibrator` | `uncertainty` | Deterministic confidence calibration engine |
+| `certificate_reference` | `uncertainty` | Create a stable certificate reference token |
+| `resolve_certificate_reference` | `uncertainty` | Resolve certificate references from a store |
+| `ProofExchangeNode` | `proof_exchange` | One proof bundle node with dependency links |
+| `ProofBundle` | `proof_exchange` | Versioned proof exchange bundle |
+| `ProofExchangeResult` | `proof_exchange` | Verification result for a received proof bundle |
+| `create_proof_bundle` | `proof_exchange` | Build a transport-safe proof bundle |
+| `verify_proof_bundle` | `proof_exchange` | Validate proof bundle integrity and dependencies |
+| `BeliefEdgeType` | `belief_graph` | Enum of typed belief graph edge labels |
+| `BeliefNode` | `belief_graph` | Belief node with temporal validity metadata |
+| `BeliefEdge` | `belief_graph` | Directed typed relation between beliefs |
+| `ContradictionExplanation` | `belief_graph` | Support-path explanation for a contradiction |
+| `BeliefGraph` | `belief_graph` | Deterministic causal and temporal belief graph |
+| `GoalContractStatus` | `goal_contract` | Enum of goal contract evaluation states |
+| `GoalContractDiagnostic` | `goal_contract` | Structured goal contract violation diagnostic |
+| `GoalContract` | `goal_contract` | Machine-checkable goal contract definition |
+| `GoalContractResult` | `goal_contract` | Deterministic goal contract evaluation result |
+| `build_branch_context` | `goal_contract` | Build contract context from a planner branch |
+| `evaluate_goal_contract` | `goal_contract` | Evaluate a goal contract against a context |
+| `verify_contract_preconditions_z3` | `goal_contract` | Check contract preconditions against Z3 constraints |
 
 ### Tier 3 — Internal
 
@@ -69,6 +114,7 @@ The tier determines the guarantees you get when upgrading between releases.
 | `lean_verifier` | Non-interactive Lean verification |
 | `loader` | Benchmark JSON loader |
 | `runner` | Benchmark runner |
+| `schema_utils` | Shared schema and JSON validation helpers |
 
 Within `parser.py`, the classes `Lexer`, `Parser`, and `Token` are implementation details. Do not import them directly.
 
@@ -138,4 +184,4 @@ If you integrate LogicBrain into an agent or tool:
 
 - Public API: `logic_brain/__init__.py`
 - Changelog: `CHANGELOG.md`
-- Roadmap: `docs/roadmap_v013_v020.md`
+- Roadmaps: `docs/roadmap_v013_v020.md`, `docs/roadmap_v030_v070.md`, `docs/roadmap_v080_v120.md`
