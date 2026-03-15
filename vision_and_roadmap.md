@@ -64,9 +64,9 @@ Fehler werden sofort erkannt. Kein Aufbauen auf falschen Annahmen.
 
 ---
 
-## Implementierte Komponenten (v0.2.0)
+## Implementierte Komponenten (aktueller Stand)
 
-Die folgenden Kernkomponenten sind implementiert und getestet (227+ Tests):
+Die folgenden Kernkomponenten sind implementiert und getestet (333 Tests, 90.33% Coverage, 47 Metamorphic-Tests):
 
 ### Lean REPL-Wrapper (`lean_session.py`)
 
@@ -128,6 +128,26 @@ problems = gen.generate_batch(3)
 print(problems[0]["ground_truth_valid"])
 ```
 
+### Erweiterte deterministische Reasoning-Module
+
+- `certificate.py`: Proof-Carrying Zertifikate fuer Verifier- und Z3-Ergebnisse
+- `assumptions.py`: typisierte Annahmen mit Lifecycle und Konsistenz-Schnittstellen
+- `counterfactual.py`: deterministische Branch-Planung ueber `Z3Session`
+- `action_policy.py`: harte Pre-Action-Policies mit strukturierten Violations
+- `uncertainty.py`: Confidence-Kalibrierung und Eskalationsregeln
+- `proof_exchange.py`: transport-sichere Proof-Bundles fuer Zero-Trust-Austausch
+- `belief_graph.py`: kausaler/temporaler Belief-Graph mit Widerspruchserklaerungen
+- `goal_contract.py`: Goal Contracts mit deterministischer Auswertung und Z3-Precondition-Checks
+
+### Support- und Infrastrukturmodule
+
+- `parser.py`, `models.py`, `verifier.py`, `predicate.py`, `predicate_models.py`: Kernlogik fuer propositionalen und praedikatenlogischen Verify-Flow
+- `cli.py`, `__main__.py`: CLI-Einstiegspunkte fuer direkte Nutzung
+- `lean_verifier.py`: nicht-interaktive Lean-Verifikation als Ergaenzung zu `LeanSession`
+- `analyzer.py`, `loader.py`, `runner.py`, `external.py`, `evaluate.py`: Benchmark-, Analyse- und Auswertungs-Tooling
+- `schema_utils.py`: gemeinsame Schema-/JSON-Helfer fuer die neueren Datentransportmodule
+- `__init__.py`: stabiler Public-API-Reexport ueber Tier-1- und Tier-2-Symbole
+
 ### CI & Tooling
 
 - GitHub Actions CI (Python 3.10/3.11/3.12)
@@ -144,6 +164,14 @@ print(problems[0]["ground_truth_valid"])
 Mit `docs/metamorphic_ledger.md` ist ein versionierter MR-Katalog eingefuehrt,
 der relationale Invarianten fuer Verifier, Parser und Z3Session als
 "Super-Axiome" dokumentiert und direkt auf konkrete Tests referenziert.
+
+### Formale Grenzen und Z3-Erdung
+
+Die formalen Garantien sind jetzt explizit in `docs/formal_guarantees.md`
+dokumentiert. Wichtig ist die Trennung zwischen:
+
+- **Z3-geerdeten Garantien** fuer `verifier`, `predicate`, `z3_session` sowie die bereits angebundenen Teile von `assumptions`, `belief_graph` und `goal_contract`
+- **strukturellen Garantien** fuer Module, die deterministisch und serialisierbar sind, aber noch keine vollstaendige formale Absicherung ueber Z3 haben
 
 ---
 
@@ -201,33 +229,39 @@ LogicBrain ist das **Werkzeug**, nicht der **Arbeiter**.
 3. **v0.2.0 — Integration & Documentation**: Agent-Integrationsbeispiel, API-Referenz, PEP-561 Marker, erweitertes Public API
 
 Post-v0.2.0 Quality Gates (Issues #21–#28, alle CLOSED):
-- Coverage-Gate (85%), mypy strict Gate, 227 Tests
-- Metamorphic Testing Layer (24 MR-Tests, Ledger, CI-Gate)
+- Coverage-Gate (85%), mypy strict Gate, 333 Tests, 90.33% Coverage
+- Metamorphic Testing Layer (47 MR-Tests, Ledger, CI-Gate)
 - Development Process Hardening (Issue-first, Dogfooding)
 
-### Aktiv: v0.3 -> v0.7 — Agent-Centric Deterministic Tooling
+### Implementiert nach v0.2.0
 
-**→ [`docs/roadmap_v030_v070.md`](docs/roadmap_v030_v070.md)**
+**→ [`docs/roadmap_v030_v070.md`](docs/roadmap_v030_v070.md), [`docs/roadmap_v080_v120.md`](docs/roadmap_v080_v120.md)**
 
-LogicBrain wird vom reaktiven Verifier zum **proaktiven Reasoning-Toolkit**:
+Tatsaechlich umgesetzt wurde kein linearer Ausbau entlang der alten "Aktiv"-Liste,
+sondern ein Sprung zu mehreren spaeteren Infrastrukturbausteinen. Der reale Stand:
 
-1. **v0.3 — Proof-Carrying Actions**: Maschinenprüfbare Zertifikate für Agent-Outputs
-2. **v0.4 — Reasoning Contracts**: Pre/Post-Conditions auf Reasoning-Schritten
-3. **v0.5 — Self-Consistency Checker**: Widersprüche in Agent-Beliefs erkennen
-4. **v0.6 — Policy-Guided Search**: Formale Policies zum Pruning des Aktionsraums
-5. **v0.7 — Compositional Proof Orchestrator**: Komplexe Claims zerlegen und parallel verifizieren
+1. **v0.3 — Proof-Carrying Actions**: implementiert als `certificate.py`
+2. **v0.8 — Assumption & World-State Kernel**: implementiert als `assumptions.py`; Z3-Erdung fuer Konsistenzpruefung inzwischen angebunden
+3. **v0.9 — Counterfactual Planner**: implementiert als `counterfactual.py`
+4. **v1.0 — Verified Action Policies**: initial implementiert als `action_policy.py`; aktuell deterministisch, aber noch nicht vollstaendig Z3-geerdet
+5. **v1.1 — Uncertainty Calibration Layer**: implementiert als `uncertainty.py`
+6. **v1.2 — Composed Proof Exchange**: implementiert als `proof_exchange.py`
+7. **v1.3 — Belief Graph**: implementiert als `belief_graph.py`; Widerspruchsarbeit inzwischen teilweise Z3-geerdet
+8. **v1.4 — Goal Contracts**: implementiert als `goal_contract.py`; Precondition-Verifikation inzwischen Z3-angebunden
 
-### Geplant: v0.8 -> v1.2 — AGI-Grade Reasoning Infrastructure
+### Superseded oder anders realisiert
 
-**→ [`docs/roadmap_v080_v120.md`](docs/roadmap_v080_v120.md)**
+- **v0.4 — Reasoning Contracts**: nicht als eigenes Modul gebaut; funktional spaeter in `goal_contract.py` aufgegangen
+- **v0.5 — Self-Consistency Checker**: nicht als separates Artefakt gebaut; Teile davon leben heute in `assumptions.py` und `belief_graph.py`
+- **v0.6 — Policy-Guided Search**: nur teilweise realisiert; `action_policy.py` existiert, voll formale Policy-Konsistenz steht noch aus
+- **v0.7 — Compositional Proof Orchestrator**: nicht als eigener Orchestrator gebaut; `proof_exchange.py` deckt den Austausch-Layer ab
 
-Weiterführung entlang von fünf Fähigkeiten:
+### Weiterhin geplant / noch nicht finalisiert
 
-1. **v0.8 — Assumption & World-State Kernel**: Typisierte Annahmen mit Lifecycle und Konsistenzprüfung
-2. **v0.9 — Counterfactual Planner**: Verifizierte Alternative-Branches vor Aktionen
-3. **v1.0 — Verified Action Policies**: Harte Pre-Action-Gates für Richtlinien
-4. **v1.1 — Uncertainty Calibration Layer**: Explizite Unsicherheit + Eskalationsregeln
-5. **v1.2 — Composed Proof Exchange**: Zero-Trust Zertifikatsaustausch über Agent-/Tool-Grenzen
+Die spaeteren Module existieren bereits, aber teilweise noch als erste
+Implementierungen. Insbesondere bei `action_policy.py` ist die vollstaendige
+Z3-Erdung noch offen; die Unterschiede zwischen formalen und strukturellen
+Garantien sind in `docs/formal_guarantees.md` festgehalten.
 
 ### Bewusst zurückgestellt
 
@@ -242,6 +276,7 @@ Weiterführung entlang von fünf Fähigkeiten:
 - Roadmap v0.3–v0.7: `docs/roadmap_v030_v070.md`
 - Roadmap v0.8–v1.2: `docs/roadmap_v080_v120.md`
 - Roadmap v0.1.3–v0.2.0 (abgeschlossen): `docs/roadmap_v013_v020.md`
+- Formale Garantien und Grenzen: `docs/formal_guarantees.md`
 - Metamorphic Ledger: `docs/metamorphic_ledger.md`
 - Planning Brief: `docs/claude_opus_planning_brief.md`
 - Extensions Assessment: `docs/logic_extensions_assessment.md`
