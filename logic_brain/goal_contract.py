@@ -239,3 +239,93 @@ def _evaluate_clause(clause: str, context: dict[str, bool]) -> bool:
         key = clause[1:]
         return not context.get(key, False)
     return context.get(clause, False)
+
+
+def verify_contract_preconditions_z3(
+    contract: GoalContract,
+    state_constraints: list[str],
+    variables: dict[str, str] | None = None,
+    timeout_ms: int = 30000,
+) -> GoalContractResult:
+    """Verify goal contract preconditions against Z3 state constraints.
+
+    Each precondition and state constraint is parsed as a Z3 formula.
+    The check asks: given the state constraints, are all preconditions
+    necessarily satisfied?
+
+    This uses proof-by-refutation: assert state constraints and the
+    negation of a precondition. If UNSAT, the precondition holds.
+
+    Parameters
+    ----------
+    contract : GoalContract
+        The contract whose preconditions to verify.
+    state_constraints : list[str]
+        Z3-parseable constraints describing the current state.
+    variables : dict[str, str] | None
+        Variable declarations as ``{name: sort}``.
+    timeout_ms : int
+        Z3 solver timeout.
+
+    Returns
+    -------
+    GoalContractResult
+        ACTIVE if all preconditions hold, BLOCKED if any fails.
+    """
+    from logic_brain.z3_session import Z3Session
+
+    diagnostics: list[GoalContractDiagnostic] = []
+
+    for precondition in contract.preconditions:
+        session = Z3Session(timeout_ms=timeout_ms)
+
+        if variables is not None:
+            for var_name, sort in variables.items():
+                session.declare(var_name, sort)
+        else:
+            _auto_declare_contract_variables(
+                session, state_constraints + [precondition]
+            )
+
+        for constraint in state_constraints:
+            session.assert_constraint(constraint)
+
+        # Negate the precondition — if UNSAT, precondition must hold
+        session.assert_constraint(f"not ({precondition})")
+
+        result = session.check()
+        if result.satisfiable is not False:
+            # SAT or unknown means precondition is not guaranteed
+            diagnostics.append(
+                GoalContractDiagnostic(
+                    code="z3_precondition_not_entailed",
+                    message=f"Precondition '{precondition}' is not entailed by state",
+                )
+            )
+
+    if diagnostics:
+        return GoalContractResult(
+            status=GoalContractStatus.BLOCKED,
+            diagnostics=tuple(diagnostics),
+        )
+
+    return GoalContractResult(
+        status=GoalContractStatus.ACTIVE,
+        diagnostics=(),
+    )
+
+
+def _auto_declare_contract_variables(
+    session: object, statements: list[str]
+) -> None:
+    """Best-effort auto-declare single-letter variables as Int."""
+    import re
+
+    declare = getattr(session, "declare")
+    declared: set[str] = set()
+    for statement in statements:
+        for match in re.finditer(r"\b([a-z])\b", statement):
+            name = match.group(1)
+            if name not in declared:
+                declare(name, "Int")
+                declared.add(name)

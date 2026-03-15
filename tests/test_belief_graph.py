@@ -48,6 +48,28 @@ def test_contradiction_frontier_and_explanation_are_explicit() -> None:
     assert explanation.right_support_path == ("right", "r2")
 
 
+def test_z3_contradiction_detection_finds_real_contradictions() -> None:
+    graph = BeliefGraph()
+    graph.add_belief("a", "x > 0")
+    graph.add_belief("b", "x < 0")
+    graph.add_belief("c", "x < 100")
+
+    contradictions = graph.detect_contradictions_z3(variables={"x": "Int"})
+
+    assert contradictions == (("a", "b"),)
+    assert graph.contradiction_frontier() == (("a", "b"),)
+
+
+def test_z3_contradiction_detection_with_no_contradictions() -> None:
+    graph = BeliefGraph()
+    graph.add_belief("a", "x > 0")
+    graph.add_belief("b", "x < 100")
+
+    contradictions = graph.detect_contradictions_z3(variables={"x": "Int"})
+
+    assert contradictions == ()
+
+
 def test_integration_hooks_with_assumptions_and_uncertainty() -> None:
     assumptions = AssumptionSet()
     assumptions.add("a1", "x > 0", AssumptionKind.ASSUMPTION, "sensor")

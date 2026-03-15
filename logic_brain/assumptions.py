@@ -147,11 +147,66 @@ class AssumptionSet:
     ) -> AssumptionConsistency:
         """Run an external consistency checker on active statements.
 
-        This hook allows wiring to v0.5 BeliefSet when available.
+        For a Z3-backed checker, use ``check_consistency_z3`` instead.
         """
         statements = self.active_statements()
         return AssumptionConsistency(
             consistent=checker(statements),
+            active_statements=statements,
+        )
+
+    def check_consistency_z3(
+        self,
+        variables: dict[str, str] | None = None,
+        timeout_ms: int = 30000,
+    ) -> AssumptionConsistency:
+        """Check active assumption consistency using Z3.
+
+        Each active statement is parsed as a Z3 constraint via
+        ``Z3Session.assert_constraint``. If the conjunction is
+        unsatisfiable, the assumptions are contradictory.
+
+        Parameters
+        ----------
+        variables : dict[str, str] | None
+            Variable declarations as ``{name: sort}`` pairs.
+            If ``None``, variables are inferred as ``Int`` from
+            single-letter identifiers found in the statements
+            (best-effort heuristic for simple cases).
+        timeout_ms : int
+            Z3 solver timeout in milliseconds.
+
+        Returns
+        -------
+        AssumptionConsistency
+            With ``consistent=True`` if all active statements can be
+            simultaneously satisfied, ``False`` if Z3 proves UNSAT.
+
+        Raises
+        ------
+        ValueError
+            If a statement cannot be parsed as a Z3 constraint.
+        """
+        from logic_brain.z3_session import Z3Session
+
+        statements = self.active_statements()
+        if not statements:
+            return AssumptionConsistency(consistent=True, active_statements=[])
+
+        session = Z3Session(timeout_ms=timeout_ms)
+
+        if variables is not None:
+            for var_name, sort in variables.items():
+                session.declare(var_name, sort)
+        else:
+            _auto_declare_variables(session, statements)
+
+        for statement in statements:
+            session.assert_constraint(statement)
+
+        result = session.check()
+        return AssumptionConsistency(
+            consistent=result.satisfiable is not False,
             active_statements=statements,
         )
 
@@ -277,3 +332,17 @@ class AssumptionSet:
 
 def _utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _auto_declare_variables(session: object, statements: list[str]) -> None:
+    """Best-effort auto-declare single-letter variables as Int."""
+    import re
+
+    declare = getattr(session, "declare")
+    declared: set[str] = set()
+    for statement in statements:
+        for match in re.finditer(r"\b([a-z])\b", statement):
+            name = match.group(1)
+            if name not in declared:
+                declare(name, "Int")
+                declared.add(name)

@@ -228,6 +228,61 @@ class BeliefGraph:
         self.get_belief(belief_id)
         return self._confidence.get(belief_id)
 
+    def detect_contradictions_z3(
+        self,
+        variables: dict[str, str] | None = None,
+        timeout_ms: int = 30000,
+    ) -> tuple[tuple[str, str], ...]:
+        """Detect contradictory belief pairs using Z3.
+
+        For every pair of active beliefs, checks whether their statements
+        are jointly unsatisfiable. If so, adds a CONTRADICTS edge and
+        includes the pair in the result.
+
+        Parameters
+        ----------
+        variables : dict[str, str] | None
+            Variable declarations as ``{name: sort}`` pairs.
+            If ``None``, single-letter identifiers are auto-declared as Int.
+        timeout_ms : int
+            Z3 solver timeout per pair check.
+
+        Returns
+        -------
+        tuple[tuple[str, str], ...]
+            Sorted pairs of belief ids that are Z3-contradictory.
+        """
+        from logic_brain.z3_session import Z3Session
+
+        nodes = list(self._nodes.values())
+        found: set[tuple[str, str]] = set()
+
+        for i in range(len(nodes)):
+            for j in range(i + 1, len(nodes)):
+                left, right = nodes[i], nodes[j]
+                session = Z3Session(timeout_ms=timeout_ms)
+
+                if variables is not None:
+                    for var_name, sort in variables.items():
+                        session.declare(var_name, sort)
+                else:
+                    _auto_declare_belief_variables(session, [left.statement, right.statement])
+
+                try:
+                    session.assert_constraint(left.statement)
+                    session.assert_constraint(right.statement)
+                except ValueError:
+                    continue
+
+                result = session.check()
+                if result.satisfiable is False:
+                    pair_sorted = sorted((left.belief_id, right.belief_id))
+                    pair = (pair_sorted[0], pair_sorted[1])
+                    found.add(pair)
+                    self.add_edge(left.belief_id, right.belief_id, BeliefEdgeType.CONTRADICTS)
+
+        return tuple(sorted(found))
+
     def _is_stale(self, node: BeliefNode, at_time: datetime) -> bool:
         valid_until = self._effective_valid_until(node)
         if valid_until is None:
@@ -260,3 +315,17 @@ class BeliefGraph:
             path.append(current)
 
         return tuple(path)
+
+
+def _auto_declare_belief_variables(session: object, statements: list[str]) -> None:
+    """Best-effort auto-declare single-letter variables as Int."""
+    import re
+
+    declare = getattr(session, "declare")
+    declared: set[str] = set()
+    for statement in statements:
+        for match in re.finditer(r"\b([a-z])\b", statement):
+            name = match.group(1)
+            if name not in declared:
+                declare(name, "Int")
+                declared.add(name)

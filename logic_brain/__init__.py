@@ -85,6 +85,7 @@ from .goal_contract import (
     GoalContractStatus,
     build_branch_context,
     evaluate_goal_contract,
+    verify_contract_preconditions_z3,
 )
 
 __all__ = [
@@ -180,4 +181,5 @@ __all__ = [
     "GoalContractResult",
     "build_branch_context",
     "evaluate_goal_contract",
+    "verify_contract_preconditions_z3",
 ]

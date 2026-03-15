@@ -118,3 +118,41 @@ def test_consistency_hook_detects_contradiction() -> None:
 
     assert result.consistent is False
     assert result.active_statements == ["x > 0", "x < 0"]
+
+
+def test_z3_consistency_detects_contradiction() -> None:
+    assumptions = AssumptionSet()
+    assumptions.add("a1", "x > 0", AssumptionKind.ASSUMPTION, "test")
+    assumptions.add("a2", "x < 0", AssumptionKind.ASSUMPTION, "test")
+
+    result = assumptions.check_consistency_z3(variables={"x": "Int"})
+
+    assert result.consistent is False
+
+
+def test_z3_consistency_passes_for_compatible_assumptions() -> None:
+    assumptions = AssumptionSet()
+    assumptions.add("a1", "x > 0", AssumptionKind.ASSUMPTION, "test")
+    assumptions.add("a2", "x < 10", AssumptionKind.ASSUMPTION, "test")
+
+    result = assumptions.check_consistency_z3(variables={"x": "Int"})
+
+    assert result.consistent is True
+
+
+def test_z3_consistency_with_auto_declared_variables() -> None:
+    assumptions = AssumptionSet()
+    assumptions.add("a1", "x > 0", AssumptionKind.ASSUMPTION, "test")
+    assumptions.add("a2", "x < 0", AssumptionKind.ASSUMPTION, "test")
+
+    result = assumptions.check_consistency_z3()
+
+    assert result.consistent is False
+
+
+def test_z3_consistency_empty_assumptions() -> None:
+    assumptions = AssumptionSet()
+
+    result = assumptions.check_consistency_z3()
+
+    assert result.consistent is True
