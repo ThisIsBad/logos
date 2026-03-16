@@ -523,25 +523,32 @@ MCP servers are discovered at Claude Code session startup. The fix (adding
 `.mcp.json`) requires starting a **new** Claude Code session for the tools
 to appear as native `mcp__logic-brain__*` tool calls.
 
-### Recommendation
+### Multi-Client Config Discovery
 
-For project setup instructions, document both methods:
+Each MCP client reads configuration from a different location. This caused
+the original failure (config was at `.claude/mcp.json` which nothing reads).
 
-```bash
-# Method 1: CLI registration (recommended)
-claude mcp add --scope project -t stdio logic-brain -- python -m logic_brain.mcp_server
+| Client | Config File | Scope |
+|---|---|---|
+| Claude Code v2.1+ | `.mcp.json` (project root) | per-project |
+| OpenCode | `.opencode.json` (project root) | per-project |
+| AntiGravity v1.107+ | `~/.gemini/antigravity/mcp_config.json` | user-global |
 
-# Method 2: Manual file creation
-# Create .mcp.json (NOT .claude/mcp.json) in project root
-```
+All three are now documented in `docs/mcp_setup.md`. The project ships
+checked-in config for Claude Code (`.mcp.json`) and OpenCode (`.opencode.json`).
+AntiGravity requires user-level registration via CLI or manual edit since its
+config lives outside the project.
 
 ## Acceptance Criteria Checklist
 
 - [x] `.mcp.json` has correct MCP server registration (was `.claude/mcp.json` -- fixed)
+- [x] `.opencode.json` has correct MCP server registration (already checked in)
+- [x] AntiGravity setup documented (`~/.gemini/antigravity/mcp_config.json`)
 - [x] `claude mcp list` shows `logic-brain: Connected`
 - [x] MCP server stdio round-trip verified (initialize + tools/list + tools/call)
 - [x] All 6 tools are discoverable (verified via `_TOOLS` registry and stdio protocol)
 - [x] Each tool can be called via natural language prompts (5/5 individual tests pass)
 - [x] Combined reasoning scenario works in a single conversation (4-tool chain passes)
 - [x] Results documented in `docs/mcp_smoke_test_results.md` (this section)
+- [x] Multi-client setup documented in `docs/mcp_setup.md`
 - [ ] Native `mcp__logic-brain__*` tool calls in live session (requires session restart)

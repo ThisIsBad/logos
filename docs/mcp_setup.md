@@ -1,8 +1,15 @@
 # MCP Setup
 
-This guide explains how to run LogicBrain as an MCP server for Claude Code.
+This guide explains how to run LogicBrain as an MCP server for AI coding
+agents. LogicBrain supports any MCP-compatible client via stdio transport.
 
-Tested against Claude Code MCP support as available on 2026-03-15.
+Tested clients:
+
+| Client | Version | Config file |
+|---|---|---|
+| Claude Code | 2.1.42 | `.mcp.json` (project root) |
+| OpenCode | 0.0.55 | `.opencode.json` (project root) |
+| AntiGravity | 1.107.0 | `~/.gemini/antigravity/mcp_config.json` (user-level) |
 
 ## Prerequisites
 
@@ -12,44 +19,118 @@ Tested against Claude Code MCP support as available on 2026-03-15.
 
 ## Quick Start
 
-1. Install the MCP extra:
+### 1. Install the MCP extra
 
-   ```powershell
-   pip install -e ".[mcp]"
-   ```
+```bash
+pip install -e ".[mcp]"
+```
 
-2. Register the MCP server with Claude Code:
+### 2. Register the server for your client
 
-   ```bash
-   claude mcp add --scope project -t stdio logic-brain -- python -m logic_brain.mcp_server
-   ```
+Pick your client below. All three use stdio transport to communicate with the
+same `python -m logic_brain.mcp_server` command.
 
-   This creates `.mcp.json` in the project root. You can verify with:
+#### Claude Code
 
-   ```bash
-   claude mcp list
-   # Expected: logic-brain: python -m logic_brain.mcp_server - Connected
-   ```
+```bash
+claude mcp add --scope project -t stdio logic-brain -- python -m logic_brain.mcp_server
+```
 
-3. Start (or restart) Claude Code in this repository. The LogicBrain tools
-   should appear as `mcp__logic-brain__verify_argument`, etc.
+This writes `.mcp.json` in the project root. Verify with:
 
-## Project-Level vs Global Config
+```bash
+claude mcp list
+# Expected: logic-brain: python -m logic_brain.mcp_server - Connected
+```
 
-- **Project-level (recommended):** `claude mcp add --scope project` writes `.mcp.json` in the repo root. This is auto-detected by Claude Code when opening a session in this directory.
-- **User-level:** `claude mcp add --scope user` registers the server globally so LogicBrain is available in any Claude Code session.
-- **Note:** `.claude/mcp.json` is NOT read by Claude Code v2.1+. Use `.mcp.json` in the project root instead.
+> **Note:** Claude Code reads `.mcp.json`, NOT `.claude/mcp.json`.
 
-## Verifying the Server
+#### OpenCode
 
-- Import check: `python -c "import logic_brain.mcp_server"`
-- Direct start: `python -m logic_brain.mcp_server`
-- Claude Code check: open a session and confirm these tools are listed:
-  - `verify_argument`
-  - `check_assumptions`
-  - `counterfactual_branch`
-  - `z3_check`
-  - `check_policy`
+OpenCode reads the `mcpServers` section from `.opencode.json` in the project
+root. This file is already checked in:
+
+```json
+{
+  "mcpServers": {
+    "logic-brain": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["-m", "logic_brain.mcp_server"],
+      "env": []
+    }
+  }
+}
+```
+
+No extra registration step is needed — just start OpenCode in this directory.
+
+#### AntiGravity
+
+AntiGravity stores MCP configuration at the user level, not per-project.
+
+**Option A — CLI:**
+
+```bash
+antigravity --add-mcp "{\"name\":\"logic-brain\",\"command\":\"python\",\"args\":[\"-m\",\"logic_brain.mcp_server\"]}"
+```
+
+**Option B — manual edit:**
+
+Edit `~/.gemini/antigravity/mcp_config.json` and add the `logic-brain` entry:
+
+```json
+{
+  "mcpServers": {
+    "logic-brain": {
+      "command": "python",
+      "args": ["-m", "logic_brain.mcp_server"]
+    }
+  }
+}
+```
+
+On Windows the full path is:
+
+```
+C:\Users\<username>\.gemini\antigravity\mcp_config.json
+```
+
+> **Note:** AntiGravity uses a global config, not a project-level file.
+> If you have multiple projects, the server will be available in all of them.
+> You may need to set the working directory or use an absolute path to the
+> Python executable if AntiGravity does not launch the server from the
+> project root.
+
+### 3. Restart your client
+
+All three clients discover MCP servers at session startup. After changing
+config you must restart the client (or start a new session).
+
+## Configuration Summary
+
+| | Claude Code | OpenCode | AntiGravity |
+|---|---|---|---|
+| Config file | `.mcp.json` | `.opencode.json` | `~/.gemini/antigravity/mcp_config.json` |
+| Scope | project | project | user (global) |
+| Checked in | yes | yes | no (user-specific) |
+| Registration | `claude mcp add` | automatic | `antigravity --add-mcp` or manual edit |
+| `type` field | `"stdio"` | `"stdio"` | not required (stdio is default) |
+| `env` field | `{}` (object) | `[]` (array) | `{}` (object) or omit |
+| Transport | stdio (newline-delimited JSON-RPC) | stdio | stdio |
+
+## Available Tools
+
+All clients see the same 6 tools once connected:
+
+| Tool | Description |
+|---|---|
+| `verify_argument` | Verify a propositional logic argument via Z3 |
+| `check_assumptions` | Check if assumptions are jointly satisfiable |
+| `counterfactual_branch` | Evaluate named branches against shared constraints |
+| `z3_check` | Run a direct Z3 satisfiability check |
+| `check_policy` | Evaluate an action against policy rules |
+| `z3_session` | Manage a stateful Z3 session across multiple calls |
 
 ## Tool Reference
 
@@ -116,8 +197,8 @@ Tested against Claude Code MCP support as available on 2026-03-15.
   ```json
   {
     "branches": {
-      "impossible": {"satisfiable": false, "status": "unsat"},
-      "safe": {"satisfiable": true, "status": "sat"}
+      "impossible": {"satisfiable": false, "status": "unsat", "model": null},
+      "safe": {"satisfiable": true, "status": "sat", "model": {"x": 1}}
     }
   }
   ```
@@ -179,9 +260,49 @@ Tested against Claude Code MCP support as available on 2026-03-15.
   }
   ```
 
+### `z3_session`
+
+- Create:
+
+  ```json
+  {"action": "create", "session_id": "demo"}
+  ```
+
+- Declare variables:
+
+  ```json
+  {"action": "declare", "session_id": "demo", "variables": {"x": "Int"}}
+  ```
+
+- Assert constraints:
+
+  ```json
+  {"action": "assert", "session_id": "demo", "constraints": ["x > 0", "x < 10"]}
+  ```
+
+- Check satisfiability:
+
+  ```json
+  {"action": "check", "session_id": "demo"}
+  ```
+
+- Push/pop scope:
+
+  ```json
+  {"action": "push", "session_id": "demo"}
+  {"action": "pop", "session_id": "demo"}
+  ```
+
+- Destroy:
+
+  ```json
+  {"action": "destroy", "session_id": "demo"}
+  ```
+
 ## Error Format
 
-All tools return structured validation/runtime errors instead of uncaught exceptions:
+All tools return structured validation/runtime errors instead of uncaught
+exceptions:
 
 ```json
 {
@@ -190,17 +311,54 @@ All tools return structured validation/runtime errors instead of uncaught except
 }
 ```
 
+## Verifying the Server
+
+### Import check
+
+```bash
+python -c "import logic_brain.mcp_server"
+```
+
+### Direct start
+
+```bash
+python -m logic_brain.mcp_server
+```
+
+The server communicates via newline-delimited JSON-RPC over stdio. It will
+appear to hang — that is normal (it is waiting for input on stdin).
+
+### Manual stdio test
+
+```bash
+echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}' | python -m logic_brain.mcp_server
+```
+
+You should see a JSON response with `serverInfo.name: "logic-brain"`.
+
 ## Troubleshooting
 
-- Server will not start:
-  - install the optional dependency: `pip install -e ".[mcp]"`
-  - verify import: `python -c "import logic_brain.mcp_server"`
-- Tools do not show up in Claude Code:
-  - run `claude mcp list` to verify the server is registered and connected
-  - if not registered, run `claude mcp add --scope project -t stdio logic-brain -- python -m logic_brain.mcp_server`
-  - **important:** `.mcp.json` must be in the project root (not `.claude/mcp.json`)
-  - restart Claude Code after changing MCP config (servers are discovered at session startup)
-  - run `python -m logic_brain.mcp_server` manually to catch import errors
-- Tool call fails with validation error:
-  - compare your payload to the examples above
-  - make sure all required fields are present and spelled exactly
+### Server will not start
+
+- Install the optional dependency: `pip install -e ".[mcp]"`
+- Verify import: `python -c "import logic_brain.mcp_server"`
+
+### Tools do not show up
+
+| Client | Check |
+|---|---|
+| Claude Code | Run `claude mcp list`. If empty, run the `claude mcp add` command above. |
+| OpenCode | Ensure `.opencode.json` is in the directory where you run `opencode`. |
+| AntiGravity | Check `~/.gemini/antigravity/mcp_config.json` contains the server entry. |
+
+Common issues:
+- **Wrong config file location:** Each client reads from a different path (see table above)
+- **Session restart needed:** MCP servers are discovered at session startup, not hot-reloaded
+- **Python not in PATH:** Use an absolute path to the Python executable if needed
+- **MCP SDK not installed:** Run `pip install -e ".[mcp]"` and verify with the import check
+
+### Tool call fails with validation error
+
+- Compare your payload to the examples above
+- Make sure all required fields are present and spelled exactly
+- Check the `error` and `details` fields in the response

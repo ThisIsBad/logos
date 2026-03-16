@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "logic-brain": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["-m", "logic_brain.mcp_server"],
+      "env": []
+    }
+  }
+}
