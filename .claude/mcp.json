@@ -3,7 +3,7 @@
     "logic-brain": {
       "command": "python",
       "args": ["-m", "logic_brain.mcp_server"],
-      "cwd": "<project-root>"
+      "cwd": "D:\\AgenticAI\\LogicBrain"
     }
   }
 }
