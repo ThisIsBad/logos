@@ -18,26 +18,27 @@ Tested against Claude Code MCP support as available on 2026-03-15.
    pip install -e ".[mcp]"
    ```
 
-2. Add the project-level MCP config in `.claude/mcp.json`:
+2. Register the MCP server with Claude Code:
 
-   ```json
-   {
-     "mcpServers": {
-       "logic-brain": {
-         "command": "python",
-         "args": ["-m", "logic_brain.mcp_server"],
-         "cwd": "<project-root>"
-       }
-     }
-   }
+   ```bash
+   claude mcp add --scope project -t stdio logic-brain -- python -m logic_brain.mcp_server
    ```
 
-3. Start Claude Code in this repository. The LogicBrain tools should appear.
+   This creates `.mcp.json` in the project root. You can verify with:
+
+   ```bash
+   claude mcp list
+   # Expected: logic-brain: python -m logic_brain.mcp_server - Connected
+   ```
+
+3. Start (or restart) Claude Code in this repository. The LogicBrain tools
+   should appear as `mcp__logic-brain__verify_argument`, etc.
 
 ## Project-Level vs Global Config
 
-- Project-level: keep `.claude/mcp.json` in the repository and set `cwd` to the repo root
-- Global: copy the same server block into your user-level Claude Code MCP config if you want LogicBrain available outside this repository
+- **Project-level (recommended):** `claude mcp add --scope project` writes `.mcp.json` in the repo root. This is auto-detected by Claude Code when opening a session in this directory.
+- **User-level:** `claude mcp add --scope user` registers the server globally so LogicBrain is available in any Claude Code session.
+- **Note:** `.claude/mcp.json` is NOT read by Claude Code v2.1+. Use `.mcp.json` in the project root instead.
 
 ## Verifying the Server
 
@@ -195,8 +196,10 @@ All tools return structured validation/runtime errors instead of uncaught except
   - install the optional dependency: `pip install -e ".[mcp]"`
   - verify import: `python -c "import logic_brain.mcp_server"`
 - Tools do not show up in Claude Code:
-  - confirm the `cwd` points at the LogicBrain repository root
-  - restart Claude Code after changing MCP config
+  - run `claude mcp list` to verify the server is registered and connected
+  - if not registered, run `claude mcp add --scope project -t stdio logic-brain -- python -m logic_brain.mcp_server`
+  - **important:** `.mcp.json` must be in the project root (not `.claude/mcp.json`)
+  - restart Claude Code after changing MCP config (servers are discovered at session startup)
   - run `python -m logic_brain.mcp_server` manually to catch import errors
 - Tool call fails with validation error:
   - compare your payload to the examples above

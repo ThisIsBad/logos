@@ -468,25 +468,80 @@ All 6 registered MCP tools confirmed discoverable via `logic_brain.mcp_server._T
 
 **Result:** PASS. All four tools were chained successfully in a single conversation. Results from earlier steps informed the interpretation of later steps.
 
-## Issues Observed
+## Issues Found and Resolved
 
-### MCP Tools Not Natively Visible
+### Root Cause: Wrong Config File Location
 
-In this Claude Code session, the LogicBrain MCP tools did not appear as separately invocable MCP tool calls (e.g., `mcp__logic-brain__verify_argument`). Instead, tool calls were made through Python imports and Bash execution. This may be due to:
-- The MCP server not being started as a background stdio process by this Claude Code version
-- A platform-specific (Windows) issue with stdio MCP server spawning
-- The session having been started before the MCP config was corrected
+Claude Code v2.1.42 reads MCP server configuration from **`.mcp.json`** in the
+project root, NOT from `.claude/mcp.json`. The original config was placed at
+`.claude/mcp.json`, which Claude Code silently ignores.
 
-Despite this, all tool functionality was fully validated through direct Python invocation of the same code paths that the MCP server exposes.
+**Diagnosis steps:**
+1. `claude mcp list` returned "No MCP servers configured"
+2. MCP server itself worked perfectly (verified via manual stdio round-trip)
+3. `claude mcp add --scope project` wrote to `.mcp.json` (not `.claude/mcp.json`)
+
+**Fix applied:**
+
+```bash
+claude mcp add --scope project -t stdio logic-brain -- python -m logic_brain.mcp_server
+```
+
+This creates `.mcp.json` in the project root:
+
+```json
+{
+  "mcpServers": {
+    "logic-brain": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["-m", "logic_brain.mcp_server"],
+      "env": {}
+    }
+  }
+}
+```
+
+After registration, `claude mcp list` confirms:
+
+```
+logic-brain: python -m logic_brain.mcp_server - Connected
+```
+
+### MCP Server Stdio Protocol
+
+The MCP server uses **newline-delimited JSON-RPC** over stdio (not HTTP
+Content-Length framing). A full round-trip was verified:
+
+1. `initialize` -- server responds with capabilities and tool listing support
+2. `tools/list` -- server returns all 6 tools with correct JSON Schema
+3. `tools/call` -- `verify_argument` returns correct structured result
+
+### Session Restart Required
+
+MCP servers are discovered at Claude Code session startup. The fix (adding
+`.mcp.json`) requires starting a **new** Claude Code session for the tools
+to appear as native `mcp__logic-brain__*` tool calls.
 
 ### Recommendation
 
-For future sessions, verify that `python -m logic_brain.mcp_server` is spawned by Claude Code at session startup and that tools appear in the tool list with the `mcp__logic-brain__` prefix. If not, investigate Claude Code's MCP server lifecycle on Windows.
+For project setup instructions, document both methods:
+
+```bash
+# Method 1: CLI registration (recommended)
+claude mcp add --scope project -t stdio logic-brain -- python -m logic_brain.mcp_server
+
+# Method 2: Manual file creation
+# Create .mcp.json (NOT .claude/mcp.json) in project root
+```
 
 ## Acceptance Criteria Checklist
 
-- [x] `.claude/mcp.json` has correct project root path (`D:\AgenticAI\LogicBrain`)
-- [x] All 6 tools are discoverable (verified via `_TOOLS` registry)
+- [x] `.mcp.json` has correct MCP server registration (was `.claude/mcp.json` -- fixed)
+- [x] `claude mcp list` shows `logic-brain: Connected`
+- [x] MCP server stdio round-trip verified (initialize + tools/list + tools/call)
+- [x] All 6 tools are discoverable (verified via `_TOOLS` registry and stdio protocol)
 - [x] Each tool can be called via natural language prompts (5/5 individual tests pass)
 - [x] Combined reasoning scenario works in a single conversation (4-tool chain passes)
 - [x] Results documented in `docs/mcp_smoke_test_results.md` (this section)
+- [ ] Native `mcp__logic-brain__*` tool calls in live session (requires session restart)
