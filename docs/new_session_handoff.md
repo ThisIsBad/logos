@@ -1,114 +1,65 @@
 # Session Handoff
 
-Last updated: 2026-03-15
+Last updated: 2026-03-16
 
 ## Last Completed Work
 
-Issues #55-#59 (MCP Agent Integration) — all implemented and validated.
+Issues #60-#62 completed and pushed.
 
 What was done:
-- #55: MCP tool layer (`logic_brain/mcp_tools.py`) with 5 core tools
-- #56: Unit tests for all 5 tools (happy path + error path)
-- #57: MCP server with stdio transport (`logic_brain/mcp_server.py`)
-- #58: MCP documentation (`docs/mcp_setup.md`, README update, `.claude/mcp.json`)
-- #59: Smoke test by Claude Opus 4.6 — all 4 scenarios passed
-- Smoke test results documented in `docs/mcp_smoke_test_results.md`
-- 363 tests, 90.30% coverage, mypy strict clean — all gates green
+- #60: Added satisfying models to `counterfactual_branch` MCP results
+- #61: Added stateful `z3_session` MCP tool with session store and tests
+- #62: Completed live Claude Code MCP validation and documented results
+- Fixed Claude Code MCP config path: `.mcp.json` in project root (not `.claude/mcp.json`)
+- Added multi-client MCP setup docs for Claude Code, OpenCode, and AntiGravity
+- Checked in `.mcp.json` for Claude Code and `.opencode.json` for OpenCode
+- Documented AntiGravity MCP config path: `~/.gemini/antigravity/mcp_config.json`
+- Preflight gates green: `369` tests, `90%+` coverage, mypy strict clean, metamorphic tests passing
 
-Note: #55-#58 code is implemented but not yet committed (files are unstaged).
-Commit all changes before starting new work.
+Recent commits:
+- `a853f0c` — "Add multi-client MCP setup for Claude Code, OpenCode, and AntiGravity"
+- `5a9e585` — "Fix MCP config location: .claude/mcp.json -> .mcp.json (closes #62)"
+- `93ed936` — "Add live Claude Code MCP integration test results (closes #62)"
+- `ad83194` — "Add stateful MCP Z3 session tool (closes #61)"
+- `9179e92` — "Add satisfying models to counterfactual branch results (closes #60)"
 
 ## Current WIP
 
-None. Ready to start next issue.
+None.
 
-## Issue Queue (execute in this order)
+## Issue Queue
 
-### Uncommitted work from #55-#58
+Open issues visible in GitHub now:
 
-Before starting new issues, commit the existing unstaged work:
+1. **#50** — Vision: v1.8 Autonomous Recovery Protocols for Failed Proof Paths
+2. **#49** — Vision: v1.9 Federated Trust Domains and Cross-Agent Proof Ledger
+3. **#48** — Vision: v2.0 Verified Agent Runtime (Closed-Loop Deterministic Core)
+4. **#47** — Vision: v1.7 Cost-Risk-Utility Planner with Formal Tradeoff Bounds
+5. **#45** — Vision: v1.5 Adversarial Self-Play and Red-Team Reasoning Harness
+6. **#43** — Vision: v1.6 Proof-Carrying Multi-Tool Execution Bus
 
-```bash
-git add .
-git commit -m "Add MCP agent integration layer with 5 tools and stdio server (closes #55, closes #56, closes #57, closes #58)"
-git push
-```
+These are roadmap / vision issues. There is no next concrete implementation issue queued in the handoff after #62.
 
-### MCP improvements (from smoke test findings)
+Recommended next step:
+- Confirm which vision issue should be converted into the next implementable issue, or create a concrete follow-up issue from the MCP findings.
 
-These issues address gaps found during the smoke test (#59):
+## MCP Status
 
-1. **#60** — Add model output to counterfactual branch results (P2)
-   - When a branch is sat, include concrete variable assignments in result
-   - Currently only returns `{"satisfiable": true, "status": "sat"}`
-   - The planner already has the Z3 model, it just isn't surfaced
-   - Straightforward change in `counterfactual.py` + `mcp_tools.py`
+- **Claude Code:** uses `.mcp.json` in the project root
+- **OpenCode:** uses `.opencode.json` in the project root
+- **AntiGravity:** uses `~/.gemini/antigravity/mcp_config.json`
+- **Server transport:** stdio with newline-delimited JSON-RPC
+- **Exposed tools:** `verify_argument`, `check_assumptions`, `counterfactual_branch`, `z3_check`, `check_policy`, `z3_session`
 
-2. **#61** — Add stateful Z3 session tool for multi-step reasoning (P2)
-   - New `z3_session` tool with sub-commands: create/declare/assert/check/push/pop/destroy
-   - Avoids re-declaring variables and constraints across multiple tool calls
-   - In-memory session store with auto-expiry and concurrent session cap
-   - More complex than #60; do this second
+## Important Notes
 
-3. **#62** — Live MCP server integration test with Claude Code (P1)
-   - Manual test: register server in `.claude/mcp.json`, start Claude Code
-     session, call all 5 tools via natural language prompts
-   - Requires human to start session and provide prompts
-   - Claude Opus 4.6 will be the agent; human observes
-   - Prerequisite: fix `<project-root>` placeholder in `.claude/mcp.json`
-
-Recommended order: commit unstaged work → **#60** → **#61** → **#62** (manual)
-
-### Parked (do NOT work on these until MCP integration is fully validated)
-
-- #43, #45, #47, #48, #49, #50 — Vision issues (v1.5-v2.0).
-  Will be re-prioritized based on findings from #62.
+- Do not use `.claude/mcp.json` for Claude Code v2.1+; it is ignored
+- AntiGravity stores MCP config outside the repo, so that setup cannot be fully checked in
+- Untracked local files may exist (`AGENTS.md`, `CLAUDE.md`, `claude_mcp_debug.log`, `nul`); do not commit them unless explicitly requested
 
 ## Process Rules
 
-- Read `docs/development_process.md` for full process (issue-first, WIP=1,
-  preflight gates, silent autopilot mode).
-- One issue at a time. Full preflight gates before every commit.
-
-### Git Autonomy (explicit permission)
-
-You are authorized and expected to commit and push autonomously after each
-completed issue. The full cycle is:
-
-1. Implement the issue.
-2. Run all preflight gates (pytest, ruff, mypy strict, coverage >= 85%, metamorphic).
-3. If all gates pass: `git add`, `git commit` with a message referencing the issue
-   (e.g. "Add MCP tool layer with 5 core tools (closes #55)"), then `git push`.
-4. Move to the next issue.
-
-Do NOT wait for human approval between issues. Do NOT ask "should I commit?".
-The preflight gates ARE the approval gate. If gates pass, commit and push.
-If gates fail, fix and retry — do not commit broken code.
-
-- Silent autonomy: no chat output unless hard blocker, empty queue + no
-  autopilot candidates, or user asks for status.
-
-## Architecture Context
-
-- Read `docs/formal_guarantees.md` to understand what Z3 can and cannot prove.
-- The core strength is Z3-backed verification. Modules that are not connected
-  to Z3 provide structural guarantees only (determinism, serialization) —
-  not logical guarantees.
-- `examples/full_reasoning_loop.py` demonstrates the full stack and labels
-  which checks are Z3-backed vs structural.
-- The MCP tool layer is intentionally thin — `mcp_tools.py` contains
-  dict-in/dict-out wrappers, `mcp_server.py` is pure wiring. All real
-  logic lives in the existing modules.
-- Smoke test results and known gaps: `docs/mcp_smoke_test_results.md`
-
-## Role Split
-
-- **Claude Opus 4.6**: Reviews code, writes issues, plans architecture.
-  Does not write implementation code. First agent consumer for MCP tools.
-- **GPT-5.4**: Implements issues, runs gates, commits, pushes.
-  Follows issue instructions literally.
-
-## Known Blockers
-
-- `.claude/mcp.json` contains placeholder `<project-root>` — must be
-  replaced with the actual path before #62 (live session test).
+- Read `docs/development_process.md` for the full workflow
+- One issue at a time, with full preflight gates before each commit
+- If implementing a new issue: run pytest, ruff, mypy strict, coverage gate, and metamorphic tests before commit
+- Commit and push autonomously once gates pass
