@@ -21,11 +21,11 @@ Latest completed implementation work in the repository:
 
 Recent commits:
 
+- `4f4f89d` - "Add federated trust-domain proof ledger (closes #49)"
 - `83ed013` - "Update roadmap and handoff after closing #50"
 - `ac5b299` - "Add deterministic recovery protocols for failed proof paths (closes #50)"
 - `d96292c` - "Update session handoff after closing #47"
 - `6a99316` - "Add cost-risk-utility planner ranking (closes #47)"
-- `9202e8a` - "Clean repo MCP artifacts and local ignores"
 
 Latest local validation seen in this session:
 
@@ -33,25 +33,24 @@ Latest local validation seen in this session:
 - `python -m pytest -q tests/test_recovery.py tests/test_metamorphic_recovery.py` -> `10 passed`
 - `python -m pytest -q tests/test_counterfactual.py tests/test_metamorphic_counterfactual.py` -> `15 passed`
 - `python -m pytest -q tests/test_integration_full_loop.py tests/test_mcp_server.py` -> `4 passed`
-- `python -m pytest -q` -> `442 passed`
+- `python -m pytest -q` -> `448 passed`
 - `python -m ruff check logic_brain tests tools` -> clean
 - `python -m mypy --strict logic_brain` -> clean
-- `python -m pytest --cov=logic_brain --cov-report=term-missing --cov-fail-under=85` -> `89.26%`
-- `python -m pytest -q -m metamorphic` -> `53 passed`
-- GitHub Actions CI run `23357507862` on `main` -> green
+- `python -m pytest --cov=logic_brain --cov-report=term-missing --cov-fail-under=85` -> `89.27%`
+- `python -m pytest -q -m metamorphic` -> `54 passed`
+- GitHub Actions CI run `23357768063` on `main` -> green
 
 ## Current WIP
 
-- Issue `#49` is in progress: current slice adds explicit trust-domain policies, deterministic acceptance/rejection, revocation/expiry blocking, and audit queries on top of `proof_exchange`.
-- Local uncommitted code/docs changes exist for `logic_brain/trust_ledger.py`, trust-ledger tests, and roadmap/handoff updates.
+- No implementation issue is currently in progress.
+- Local uncommitted docs sync exists in this handoff file only.
 
 ## Issue Queue
 
 Open issues visible in GitHub now:
 
-1. **#49** - Vision: v1.9 Federated Trust Domains and Cross-Agent Proof Ledger (in progress)
-2. **#48** - Vision: v2.0 Verified Agent Runtime (Closed-Loop Deterministic Core)
-3. **#45** - Vision: v1.5 Adversarial Self-Play and Red-Team Reasoning Harness
+1. **#48** - Vision: v2.0 Verified Agent Runtime (Closed-Loop Deterministic Core)
+2. **#45** - Vision: v1.5 Adversarial Self-Play and Red-Team Reasoning Harness
 
 Queue assessment:
 
@@ -59,12 +58,12 @@ Queue assessment:
 - `#43` is closed and its core acceptance criteria are now covered by the execution-bus code, MCP integration, metamorphic tests, and green CI.
 - `#47` is closed: transparent branch scoring, hard safety dominance, deterministic replay-compatible ranking, and affine-scaling metamorphic coverage are implemented in the planner core.
 - `#50` is closed: failure taxonomy unification, deterministic allowed protocols, retry guards, auditable recovery certificates, and metamorphic coverage are implemented.
-- `#49` is now underway; the current slice covers explicit trust-policy enforcement, deterministic revocation/expiry blocking, and queryable cross-domain diagnostics.
-- Remaining likely follow-ups for `#49` are richer trust-policy ranges and optional server/API exposure if needed.
+- `#49` is closed: explicit trust-policy enforcement, deterministic revocation/expiry blocking, machine-readable cross-domain diagnostics, and policy-order metamorphic coverage are implemented.
+- The next priority by roadmap fit is now `#48`, with `#45` still remaining as an evaluation/hardening track.
 
 Recommended next step:
 
-- Finish validation for the current `#49` slice, then close the issue if no additional integration surface is required, or split any remaining trust-ledger hooks into a follow-up issue.
+- Start `#48` with a scoped first slice around a deterministic verified runtime loop that composes planning, contracts, policy, recovery, and proof-carrying execution into one auditable state machine.
 
 ## MCP Status
 
