@@ -173,7 +173,7 @@ Based on what's implemented vs. what's missing:
 | 3 | **Verified memory retrieval API** — query proof certificates by claim/source/date | v1.3 | 4 | ~2 weeks |
 | 4 | **Cross-agent proof exchange E2E test** — Agent A -> proof bundle -> Agent B verification | v1.3 | 4 | ~1 week |
 | 5 | **Cost-risk-utility planning layer** — extend planner scoring and safety bounds in line with Issue `#47` | v1.4+ | 4 | Done |
-| 6 | **Autonomous recovery protocols** — unify failure taxonomy and deterministic recovery actions in line with Issue `#50` | v1.5 | 4 | In progress |
+| 6 | **Autonomous recovery protocols** — unify failure taxonomy and deterministic recovery actions in line with Issue `#50` | v1.5 | 4 | Done |
 
 ---
 

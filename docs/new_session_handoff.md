@@ -19,49 +19,48 @@ Latest completed implementation work in the repository:
 
 Recent commits:
 
+- `ac5b299` - "Add deterministic recovery protocols for failed proof paths (closes #50)"
 - `d96292c` - "Update session handoff after closing #47"
 - `6a99316` - "Add cost-risk-utility planner ranking (closes #47)"
 - `9202e8a` - "Clean repo MCP artifacts and local ignores"
 - `e1471b9` - "Sync handoff and completion process requirements"
-- `48f45dd` - "Include examples package in editable installs"
 
 Latest local validation seen in this session:
 
 - `python -m pytest -q tests/test_recovery.py tests/test_metamorphic_recovery.py` -> `10 passed`
 - `python -m pytest -q tests/test_counterfactual.py tests/test_metamorphic_counterfactual.py` -> `15 passed`
 - `python -m pytest -q tests/test_integration_full_loop.py tests/test_mcp_server.py` -> `4 passed`
-- `python -m pytest -q` -> `432 passed`
+- `python -m pytest -q` -> `442 passed`
 - `python -m ruff check logic_brain tests tools` -> clean
 - `python -m mypy --strict logic_brain` -> clean
-- `python -m pytest --cov=logic_brain --cov-report=term-missing --cov-fail-under=85` -> `90.35%`
-- `python -m pytest -q -m metamorphic` -> `51 passed`
-- GitHub Actions CI run `23357113163` on `main` -> green
+- `python -m pytest --cov=logic_brain --cov-report=term-missing --cov-fail-under=85` -> `89.26%`
+- `python -m pytest -q -m metamorphic` -> `53 passed`
+- GitHub Actions CI run `23357507862` on `main` -> green
 
 ## Current WIP
 
-- Issue `#50` is in progress: current slice adds deterministic recovery selection, failure taxonomy unification, retry guards, and auditable certificates.
-- Local uncommitted code/docs changes exist for `logic_brain/recovery.py`, recovery tests, and roadmap/handoff updates.
+- No implementation issue is currently in progress.
+- Local uncommitted docs sync exists in this handoff file only.
 
 ## Issue Queue
 
 Open issues visible in GitHub now:
 
-1. **#50** - Vision: v1.8 Autonomous Recovery Protocols for Failed Proof Paths (in progress)
-2. **#49** - Vision: v1.9 Federated Trust Domains and Cross-Agent Proof Ledger
-3. **#48** - Vision: v2.0 Verified Agent Runtime (Closed-Loop Deterministic Core)
-4. **#45** - Vision: v1.5 Adversarial Self-Play and Red-Team Reasoning Harness
+1. **#49** - Vision: v1.9 Federated Trust Domains and Cross-Agent Proof Ledger
+2. **#48** - Vision: v2.0 Verified Agent Runtime (Closed-Loop Deterministic Core)
+3. **#45** - Vision: v1.5 Adversarial Self-Play and Red-Team Reasoning Harness
 
 Queue assessment:
 
 - There is still no concrete next implementation issue broken out beneath the remaining vision issues.
 - `#43` is closed and its core acceptance criteria are now covered by the execution-bus code, MCP integration, metamorphic tests, and green CI.
 - `#47` is closed: transparent branch scoring, hard safety dominance, deterministic replay-compatible ranking, and affine-scaling metamorphic coverage are implemented in the planner core.
-- `#50` is now underway; the current slice covers failure taxonomy unification, deterministic allowed protocols, retry guards, and auditable recovery certificates.
-- Remaining likely follow-ups for `#50` are explicit integration with policy engines and optional MCP/server exposure if needed.
+- `#50` is closed: failure taxonomy unification, deterministic allowed protocols, retry guards, auditable recovery certificates, and metamorphic coverage are implemented.
+- The next priority from the AGI-roadmap fit is `#49`, followed by `#48`, with `#45` remaining important but less central to the core architecture.
 
 Recommended next step:
 
-- Finish validation for the current `#50` slice, then close the issue if no additional integration surface is required, or split any remaining hooks into a follow-up issue.
+- Start `#49` with a scoped first slice around verifiable cross-agent proof-ledger primitives on top of the existing `proof_exchange` stack.
 
 ## MCP Status
 
