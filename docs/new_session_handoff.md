@@ -23,11 +23,11 @@ Latest completed implementation work in the repository:
 
 Recent commits:
 
+- `d5b6afb` - "Add closed-loop verified agent runtime (closes #48)"
 - `8c2ce50` - "Update roadmap and handoff after closing #49"
 - `4f4f89d` - "Add federated trust-domain proof ledger (closes #49)"
 - `83ed013` - "Update roadmap and handoff after closing #50"
 - `ac5b299` - "Add deterministic recovery protocols for failed proof paths (closes #50)"
-- `d96292c` - "Update session handoff after closing #47"
 
 Latest local validation seen in this session:
 
@@ -36,24 +36,23 @@ Latest local validation seen in this session:
 - `python -m pytest -q tests/test_recovery.py tests/test_metamorphic_recovery.py` -> `10 passed`
 - `python -m pytest -q tests/test_counterfactual.py tests/test_metamorphic_counterfactual.py` -> `15 passed`
 - `python -m pytest -q tests/test_integration_full_loop.py tests/test_mcp_server.py` -> `4 passed`
-- `python -m pytest -q` -> `448 passed`
+- `python -m pytest -q` -> `454 passed`
 - `python -m ruff check logic_brain tests tools` -> clean
 - `python -m mypy --strict logic_brain` -> clean
-- `python -m pytest --cov=logic_brain --cov-report=term-missing --cov-fail-under=85` -> `89.27%`
+- `python -m pytest --cov=logic_brain --cov-report=term-missing --cov-fail-under=85` -> `89.37%`
 - `python -m pytest -q -m metamorphic` -> `54 passed`
-- GitHub Actions CI run `23357768063` on `main` -> green
+- GitHub Actions CI run `23358338953` on `main` -> green
 
 ## Current WIP
 
-- Issue `#48` is in progress: current slice adds a deterministic verified runtime loop with explicit phases, replayable event logs, recovery integration, and end-to-end action gating.
-- Local uncommitted code/docs changes exist for `logic_brain/verified_runtime.py`, runtime tests, and roadmap/handoff updates.
+- No implementation issue is currently in progress.
+- Local uncommitted docs sync exists in this handoff file only.
 
 ## Issue Queue
 
 Open issues visible in GitHub now:
 
-1. **#48** - Vision: v2.0 Verified Agent Runtime (Closed-Loop Deterministic Core) (in progress)
-2. **#45** - Vision: v1.5 Adversarial Self-Play and Red-Team Reasoning Harness
+1. **#45** - Vision: v1.5 Adversarial Self-Play and Red-Team Reasoning Harness
 
 Queue assessment:
 
@@ -62,12 +61,12 @@ Queue assessment:
 - `#47` is closed: transparent branch scoring, hard safety dominance, deterministic replay-compatible ranking, and affine-scaling metamorphic coverage are implemented in the planner core.
 - `#50` is closed: failure taxonomy unification, deterministic allowed protocols, retry guards, auditable recovery certificates, and metamorphic coverage are implemented.
 - `#49` is closed: explicit trust-policy enforcement, deterministic revocation/expiry blocking, machine-readable cross-domain diagnostics, and policy-order metamorphic coverage are implemented.
-- `#48` is now underway; the current slice covers a replayable runtime state machine with integrated planning, contract, uncertainty, execution, and recovery gates.
-- Remaining likely follow-ups for `#48` are richer runtime serialization/session persistence and broader benchmark suites if needed.
+- `#48` is closed: the repo now contains a replayable runtime state machine with integrated planning, contract, uncertainty, execution, recovery gates, long-horizon sequence coverage, and an adversarial policy-block scenario.
+- The remaining open vision issue is `#45`, which is more evaluation/hardening oriented than core architecture.
 
 Recommended next step:
 
-- Finish validation for the current `#48` slice, then close the issue if no additional integration surface is required, or split any remaining runtime persistence/benchmark work into a follow-up issue.
+- Start `#45` with a scoped adversarial and red-team reasoning harness that stress-tests the now broader runtime/verifier stack under controlled failure injections.
 
 ## MCP Status
 
