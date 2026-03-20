@@ -107,6 +107,18 @@ The tier determines the guarantees you get when upgrading between releases.
 | `PostconditionCheck` | `execution_bus` | Expected postcondition check over an action result |
 | `ActionBusResult` | `execution_bus` | Structured execution-bus result with trace and diagnostics |
 | `execute_action_envelope` | `execution_bus` | Execute a proof-carrying action envelope via registered adapters |
+| `FailureCategory` | `recovery` | Unified failure taxonomy across planner/proof/policy modules |
+| `RecoveryProtocol` | `recovery` | Deterministic recovery actions after failure |
+| `FailureContext` | `recovery` | Auditable failure input used for protocol selection |
+| `RecoveryCertificate` | `recovery` | Deterministic evidence that a recovery decision was compliant |
+| `RecoveryDecision` | `recovery` | Selected recovery protocol with audit trace |
+| `failure_context_from_dict` | `recovery` | Deserialize a failure context |
+| `choose_recovery` | `recovery` | Select allowed recovery protocols deterministically |
+| `verify_recovery_certificate` | `recovery` | Re-check recovery certificate consistency |
+| `classify_action_bus_failure` | `recovery` | Normalize action-bus failures into the shared taxonomy |
+| `classify_claim_failure` | `recovery` | Normalize orchestrator claim failures into the shared taxonomy |
+| `classify_plan_failure` | `recovery` | Normalize planner branch failures into the shared taxonomy |
+| `classify_goal_contract_failure` | `recovery` | Normalize goal-contract failures into the shared taxonomy |
 
 ### Tier 3 — Internal
 

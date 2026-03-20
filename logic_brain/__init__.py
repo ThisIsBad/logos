@@ -98,6 +98,20 @@ from .goal_contract import (
 )
 from .execution_bus import ActionBusResult, ActionEnvelope, PostconditionCheck, execute_action_envelope
 from .orchestrator import Claim, ClaimStatus, OrchestrationStatus, ProofOrchestrator
+from .recovery import (
+    FailureCategory,
+    FailureContext,
+    RecoveryCertificate,
+    RecoveryDecision,
+    RecoveryProtocol,
+    choose_recovery,
+    classify_action_bus_failure,
+    classify_claim_failure,
+    classify_goal_contract_failure,
+    classify_plan_failure,
+    failure_context_from_dict,
+    verify_recovery_certificate,
+)
 
 __all__ = [
     # Quick API (string-based)
@@ -206,4 +220,17 @@ __all__ = [
     "Claim",
     "OrchestrationStatus",
     "ProofOrchestrator",
+    # Recovery protocols (Tier 2 / Provisional)
+    "FailureCategory",
+    "RecoveryProtocol",
+    "FailureContext",
+    "RecoveryCertificate",
+    "RecoveryDecision",
+    "failure_context_from_dict",
+    "choose_recovery",
+    "verify_recovery_certificate",
+    "classify_action_bus_failure",
+    "classify_claim_failure",
+    "classify_plan_failure",
+    "classify_goal_contract_failure",
 ]

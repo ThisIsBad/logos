@@ -6,6 +6,8 @@ Last updated: 2026-03-20
 
 Latest completed implementation work in the repository:
 
+- Added `logic_brain/recovery.py` with unified failure taxonomy, deterministic recovery protocol selection, retry-loop guards, and auditable recovery certificates.
+- Added recovery classification hooks for execution-bus, orchestrator, planner, and goal-contract failures plus coverage in `tests/test_recovery.py` and `tests/test_metamorphic_recovery.py`.
 - Added cost-risk-utility branch ranking to `logic_brain/counterfactual.py` with explicit `UtilityModel`, hard `SafetyBound` caps, and explainable `RankedBranch` outputs.
 - Added ranking and metamorphic coverage in `tests/test_counterfactual.py` and `tests/test_metamorphic_counterfactual.py` so planner replay and affine utility scaling preserve expected order.
 - Cleaned repo hygiene around MCP/client artifacts: removed obsolete `.claude/mcp.json`, archived `docs/implementation_brief_v07_mcp.md`, and updated `.gitignore` for local scratch/config files.
@@ -17,14 +19,15 @@ Latest completed implementation work in the repository:
 
 Recent commits:
 
+- `d96292c` - "Update session handoff after closing #47"
 - `6a99316` - "Add cost-risk-utility planner ranking (closes #47)"
 - `9202e8a` - "Clean repo MCP artifacts and local ignores"
 - `e1471b9` - "Sync handoff and completion process requirements"
 - `48f45dd` - "Include examples package in editable installs"
-- `d0b372c` - "Fix CI test dependencies and example package imports"
 
 Latest local validation seen in this session:
 
+- `python -m pytest -q tests/test_recovery.py tests/test_metamorphic_recovery.py` -> `10 passed`
 - `python -m pytest -q tests/test_counterfactual.py tests/test_metamorphic_counterfactual.py` -> `15 passed`
 - `python -m pytest -q tests/test_integration_full_loop.py tests/test_mcp_server.py` -> `4 passed`
 - `python -m pytest -q` -> `432 passed`
@@ -36,14 +39,14 @@ Latest local validation seen in this session:
 
 ## Current WIP
 
-- No implementation issue is currently in progress.
-- Local uncommitted docs sync exists in this handoff file only.
+- Issue `#50` is in progress: current slice adds deterministic recovery selection, failure taxonomy unification, retry guards, and auditable certificates.
+- Local uncommitted code/docs changes exist for `logic_brain/recovery.py`, recovery tests, and roadmap/handoff updates.
 
 ## Issue Queue
 
 Open issues visible in GitHub now:
 
-1. **#50** - Vision: v1.8 Autonomous Recovery Protocols for Failed Proof Paths
+1. **#50** - Vision: v1.8 Autonomous Recovery Protocols for Failed Proof Paths (in progress)
 2. **#49** - Vision: v1.9 Federated Trust Domains and Cross-Agent Proof Ledger
 3. **#48** - Vision: v2.0 Verified Agent Runtime (Closed-Loop Deterministic Core)
 4. **#45** - Vision: v1.5 Adversarial Self-Play and Red-Team Reasoning Harness
@@ -53,11 +56,12 @@ Queue assessment:
 - There is still no concrete next implementation issue broken out beneath the remaining vision issues.
 - `#43` is closed and its core acceptance criteria are now covered by the execution-bus code, MCP integration, metamorphic tests, and green CI.
 - `#47` is closed: transparent branch scoring, hard safety dominance, deterministic replay-compatible ranking, and affine-scaling metamorphic coverage are implemented in the planner core.
-- The next natural product step is no longer planner ranking itself, but whichever remaining vision issue should follow in priority order.
+- `#50` is now underway; the current slice covers failure taxonomy unification, deterministic allowed protocols, retry guards, and auditable recovery certificates.
+- Remaining likely follow-ups for `#50` are explicit integration with policy engines and optional MCP/server exposure if needed.
 
 Recommended next step:
 
-- Pick the next concrete implementation target beneath the remaining open vision issues, most likely a scoped slice under `#45`, `#48`, `#49`, or `#50`.
+- Finish validation for the current `#50` slice, then close the issue if no additional integration surface is required, or split any remaining hooks into a follow-up issue.
 
 ## MCP Status
 
