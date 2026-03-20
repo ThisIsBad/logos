@@ -129,6 +129,11 @@ The tier determines the guarantees you get when upgrading between releases.
 | `RuntimeRequest` | `verified_runtime` | Inputs for one verified runtime iteration |
 | `RuntimeOutcome` | `verified_runtime` | Deterministic runtime result with trace and recovery state |
 | `VerifiedAgentRuntime` | `verified_runtime` | Closed-loop runtime composing planning, contracts, uncertainty, and execution |
+| `AttackTemplate` | `adversarial_harness` | Deterministic adversarial attack families |
+| `DefensiveScore` | `adversarial_harness` | Explainable defense score decomposition |
+| `SelfPlayEpisode` | `adversarial_harness` | One reproducible adversarial episode |
+| `SelfPlayReport` | `adversarial_harness` | Regression artifact for adversarial campaigns |
+| `AdversarialSelfPlayHarness` | `adversarial_harness` | Deterministic self-play/red-team harness over the runtime stack |
 
 ### Tier 3 — Internal
 

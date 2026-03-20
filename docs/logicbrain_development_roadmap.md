@@ -176,6 +176,7 @@ Based on what's implemented vs. what's missing:
 | 6 | **Autonomous recovery protocols** — unify failure taxonomy and deterministic recovery actions in line with Issue `#50` | v1.5 | 4 | Done |
 | 7 | **Federated trust-domain proof ledger** — explicit trust policies, revocation, expiry, and audit queries in line with Issue `#49` | v1.6 | 4 | Done |
 | 8 | **Verified runtime loop** — closed-loop state machine integrating planning, contracts, uncertainty, execution, and recovery in line with Issue `#48` | v2.0 | 5 | Done |
+| 9 | **Adversarial self-play harness** — deterministic red-team episodes, defense scoring, and regression artifacts in line with Issue `#45` | v2.0+ | 5 | In progress |
 
 ---
 

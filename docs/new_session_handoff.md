@@ -6,6 +6,8 @@ Last updated: 2026-03-20
 
 Latest completed implementation work in the repository:
 
+- Added `logic_brain/adversarial_harness.py` with deterministic self-play episodes, contradiction/stale-proof/policy-bypass attacks, defensive scoring, and regression-ready report artifacts.
+- Added adversarial harness coverage in `tests/test_adversarial_harness.py`, including fixed-seed reproducibility and stable campaign scoring.
 - Added `logic_brain/verified_runtime.py` with a deterministic runtime phase machine that composes planning, contract checks, uncertainty enforcement, proof-carrying execution, recovery, and replayable event traces.
 - Added runtime coverage in `tests/test_verified_runtime.py`, including successful closed-loop execution, replay stability, recovery-path handling, long-horizon multi-step execution, and an adversarial policy-block case.
 - Added `logic_brain/trust_ledger.py` with explicit `TrustPolicy`, `FederatedProofLedger`, revocation/expiry handling, and queryable acceptance diagnostics for cross-domain proof reuse.
@@ -23,14 +25,15 @@ Latest completed implementation work in the repository:
 
 Recent commits:
 
+- `2c2df82` - "Update roadmap and handoff after closing #48"
 - `d5b6afb` - "Add closed-loop verified agent runtime (closes #48)"
 - `8c2ce50` - "Update roadmap and handoff after closing #49"
 - `4f4f89d` - "Add federated trust-domain proof ledger (closes #49)"
 - `83ed013` - "Update roadmap and handoff after closing #50"
-- `ac5b299` - "Add deterministic recovery protocols for failed proof paths (closes #50)"
 
 Latest local validation seen in this session:
 
+- `python -m pytest -q tests/test_adversarial_harness.py` -> `5 passed`
 - `python -m pytest -q tests/test_verified_runtime.py` -> `6 passed`
 - `python -m pytest -q tests/test_trust_ledger.py tests/test_metamorphic_trust_ledger.py` -> `6 passed`
 - `python -m pytest -q tests/test_recovery.py tests/test_metamorphic_recovery.py` -> `10 passed`
@@ -45,14 +48,14 @@ Latest local validation seen in this session:
 
 ## Current WIP
 
-- No implementation issue is currently in progress.
-- Local uncommitted docs sync exists in this handoff file only.
+- Issue `#45` is in progress: current slice adds a deterministic adversarial self-play harness with stable seeds, explicit attack templates, and regression-ready defense scoring.
+- Local uncommitted code/docs changes exist for `logic_brain/adversarial_harness.py`, adversarial harness tests, and roadmap/handoff updates.
 
 ## Issue Queue
 
 Open issues visible in GitHub now:
 
-1. **#45** - Vision: v1.5 Adversarial Self-Play and Red-Team Reasoning Harness
+1. **#45** - Vision: v1.5 Adversarial Self-Play and Red-Team Reasoning Harness (in progress)
 
 Queue assessment:
 
@@ -62,11 +65,12 @@ Queue assessment:
 - `#50` is closed: failure taxonomy unification, deterministic allowed protocols, retry guards, auditable recovery certificates, and metamorphic coverage are implemented.
 - `#49` is closed: explicit trust-policy enforcement, deterministic revocation/expiry blocking, machine-readable cross-domain diagnostics, and policy-order metamorphic coverage are implemented.
 - `#48` is closed: the repo now contains a replayable runtime state machine with integrated planning, contract, uncertainty, execution, recovery gates, long-horizon sequence coverage, and an adversarial policy-block scenario.
-- The remaining open vision issue is `#45`, which is more evaluation/hardening oriented than core architecture.
+- `#45` is now underway; the current slice covers reproducible adversarial episodes, contradiction/stale-proof/policy-bypass templates, and explainable defensive scoring.
+- Remaining likely follow-ups for `#45` are richer campaign catalogs and optional persisted CI artifact export if needed.
 
 Recommended next step:
 
-- Start `#45` with a scoped adversarial and red-team reasoning harness that stress-tests the now broader runtime/verifier stack under controlled failure injections.
+- Finish validation for the current `#45` slice, then close the issue if no additional artifact/export surface is required, or split broader campaign expansion into a follow-up issue.
 
 ## MCP Status
 

@@ -121,6 +121,13 @@ from .verified_runtime import (
     RuntimeTrace,
     VerifiedAgentRuntime,
 )
+from .adversarial_harness import (
+    AdversarialSelfPlayHarness,
+    AttackTemplate,
+    DefensiveScore,
+    SelfPlayEpisode,
+    SelfPlayReport,
+)
 
 __all__ = [
     # Quick API (string-based)
@@ -254,4 +261,10 @@ __all__ = [
     "RuntimeRequest",
     "RuntimeOutcome",
     "VerifiedAgentRuntime",
+    # Adversarial harness (Tier 2 / Provisional)
+    "AttackTemplate",
+    "DefensiveScore",
+    "SelfPlayEpisode",
+    "SelfPlayReport",
+    "AdversarialSelfPlayHarness",
 ]
