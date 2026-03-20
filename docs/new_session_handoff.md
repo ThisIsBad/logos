@@ -6,6 +6,8 @@ Last updated: 2026-03-20
 
 Latest completed implementation work in the repository:
 
+- Added cost-risk-utility branch ranking to `logic_brain/counterfactual.py` with explicit `UtilityModel`, hard `SafetyBound` caps, and explainable `RankedBranch` outputs.
+- Added ranking and metamorphic coverage in `tests/test_counterfactual.py` and `tests/test_metamorphic_counterfactual.py` so planner replay and affine utility scaling preserve expected order.
 - Cleaned repo hygiene around MCP/client artifacts: removed obsolete `.claude/mcp.json`, archived `docs/implementation_brief_v07_mcp.md`, and updated `.gitignore` for local scratch/config files.
 - Updated `docs/mcp_smoke_test_results.md` so the setup section reflects `.mcp.json` as the active Claude Code project config.
 - Added `logic_brain/execution_bus.py` with proof-carrying action envelopes, certified precondition checks, postcondition validation, action traces, rollback recommendations, and proof-bundle compatibility.
@@ -15,14 +17,15 @@ Latest completed implementation work in the repository:
 
 Recent commits:
 
+- `9202e8a` - "Clean repo MCP artifacts and local ignores"
 - `e1471b9` - "Sync handoff and completion process requirements"
 - `48f45dd` - "Include examples package in editable installs"
 - `d0b372c` - "Fix CI test dependencies and example package imports"
 - `6b900df` - "Fix CI mypy handling for optional MCP imports"
-- `dfb7d59` - "Add proof-carrying action bus for MCP workflows (closes #43)"
 
 Latest local validation seen in this session:
 
+- `python -m pytest -q tests/test_counterfactual.py tests/test_metamorphic_counterfactual.py` -> `15 passed`
 - `python -m pytest -q tests/test_integration_full_loop.py tests/test_mcp_server.py` -> `4 passed`
 - `python -m pytest -q` -> `428 passed`
 - `python -m ruff check logic_brain tests tools` -> clean
@@ -33,8 +36,8 @@ Latest local validation seen in this session:
 
 ## Current WIP
 
-- No implementation issue is currently in progress.
-- Local uncommitted cleanup/docs sync exists in `.gitignore`, `docs/mcp_smoke_test_results.md`, and this handoff file.
+- Issue `#47` is in progress: first planner slice adds deterministic utility ranking, hard safety caps, and explainable decomposition directly in `CounterfactualPlanner`.
+- Local uncommitted code/docs changes exist for `logic_brain/counterfactual.py`, `tests/test_counterfactual.py`, `tests/test_metamorphic_counterfactual.py`, and roadmap/handoff updates.
 
 ## Issue Queue
 
@@ -43,18 +46,19 @@ Open issues visible in GitHub now:
 1. **#50** - Vision: v1.8 Autonomous Recovery Protocols for Failed Proof Paths
 2. **#49** - Vision: v1.9 Federated Trust Domains and Cross-Agent Proof Ledger
 3. **#48** - Vision: v2.0 Verified Agent Runtime (Closed-Loop Deterministic Core)
-4. **#47** - Vision: v1.7 Cost-Risk-Utility Planner with Formal Tradeoff Bounds
+4. **#47** - Vision: v1.7 Cost-Risk-Utility Planner with Formal Tradeoff Bounds (in progress)
 5. **#45** - Vision: v1.5 Adversarial Self-Play and Red-Team Reasoning Harness
 
 Queue assessment:
 
 - There is still no concrete next implementation issue broken out beneath the remaining vision issues.
 - `#43` is closed and its core acceptance criteria are now covered by the execution-bus code, MCP integration, metamorphic tests, and green CI.
-- `#47` looks like the most natural next implementation track because it extends existing planner/orchestration primitives instead of introducing a larger new system boundary.
+- `#47` is now underway; the current slice covers transparent branch scoring, hard safety dominance, and deterministic ranking behavior in the planner core.
+- Remaining likely follow-ups for `#47` are MCP exposure and richer integration with uncertainty/contract layers if needed.
 
 Recommended next step:
 
-- Break `#47` into a concrete implementation issue or start directly with a scoped cost-risk-utility planning slice tied to the current planner/policy stack.
+- Finish validation for the current `#47` slice, then close the issue if no further integration surface is required, or split the remaining MCP/integration work into a follow-up issue.
 
 ## MCP Status
 

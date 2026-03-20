@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 import pytest
 
-from logic_brain import CounterfactualPlanner
+from logic_brain import CounterfactualPlanner, SafetyBound, UtilityModel
 from logic_brain.z3_session import Z3Session
 
 
@@ -118,3 +118,60 @@ def test_branch_evaluation_calls_solver_check_once() -> None:
         planner.branch("b1", additional_constraints=["x < 10"])
 
     assert wrapped_check.call_count == 1
+
+
+def test_rank_branches_orders_feasible_branches_by_total_score() -> None:
+    planner = _new_planner()
+    planner.branch("high", additional_constraints=["x < 10"])
+    planner.branch("low", additional_constraints=["x < 20"])
+    planner.branch("blocked", additional_constraints=["x < 0"])
+
+    ranked = planner.rank_branches(
+        {
+            "high": UtilityModel(expected_value=10.0, execution_cost=2.0, risk_penalty=1.0, confidence_weight=1.0),
+            "low": UtilityModel(expected_value=7.0, execution_cost=2.0, risk_penalty=1.0, confidence_weight=1.0),
+            "blocked": UtilityModel(expected_value=100.0, execution_cost=0.0, risk_penalty=0.0, confidence_weight=1.0),
+        }
+    )
+
+    assert [item.branch_id for item in ranked] == ["high", "low", "blocked"]
+    assert ranked[0].rank == 1
+    assert ranked[0].decomposition["total_score"] == 7.0
+    assert ranked[2].admissible is False
+    assert ranked[2].safety_violations == ("branch_not_feasible",)
+
+
+def test_rank_branches_hard_safety_caps_dominate_utility() -> None:
+    planner = _new_planner()
+    planner.branch("fast", additional_constraints=["x < 10"])
+    planner.branch("risky", additional_constraints=["x < 20"])
+
+    ranked = planner.rank_branches(
+        {
+            "fast": UtilityModel(expected_value=8.0, execution_cost=3.0, risk_penalty=1.0, confidence_weight=1.0),
+            "risky": UtilityModel(expected_value=100.0, execution_cost=2.0, risk_penalty=20.0, confidence_weight=1.0),
+        },
+        safety_bounds=SafetyBound(max_risk_penalty=5.0),
+    )
+
+    assert [item.branch_id for item in ranked] == ["fast", "risky"]
+    assert ranked[0].rank == 1
+    assert ranked[1].rank is None
+    assert ranked[1].safety_violations == ("risk_penalty_exceeds_cap",)
+
+
+def test_rank_branches_replay_preserves_ranking_order() -> None:
+    planner = _new_planner()
+    planner.branch("a", additional_constraints=["x < 10"])
+    planner.branch("b", additional_constraints=["x < 20"])
+    utility_models = {
+        "a": UtilityModel(expected_value=8.0, execution_cost=2.0, risk_penalty=1.0, confidence_weight=1.0),
+        "b": UtilityModel(expected_value=9.0, execution_cost=3.0, risk_penalty=1.0, confidence_weight=1.0),
+    }
+
+    first = planner.rank_branches(utility_models)
+    replayed = planner.replay("a")
+    assert replayed.status == "sat"
+    second = planner.rank_branches(utility_models)
+
+    assert [(item.branch_id, item.rank) for item in first] == [(item.branch_id, item.rank) for item in second]

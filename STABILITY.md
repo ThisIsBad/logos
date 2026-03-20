@@ -69,6 +69,9 @@ The tier determines the guarantees you get when upgrading between releases.
 | `PlanBranch` | `counterfactual` | Evaluated branch in a counterfactual plan tree |
 | `PlanResult` | `counterfactual` | Snapshot of counterfactual planner branches |
 | `CounterfactualPlanner` | `counterfactual` | Deterministic branch planner over `Z3Session` semantics |
+| `UtilityModel` | `counterfactual` | Explicit expected-value/cost/risk/confidence utility terms |
+| `SafetyBound` | `counterfactual` | Hard safety caps for planner ranking |
+| `RankedBranch` | `counterfactual` | Explainable ranking record with utility decomposition |
 | `PolicyDecision` | `action_policy` | Enum of action policy enforcement outcomes |
 | `ActionPolicyRule` | `action_policy` | Policy rule with explicit trigger conditions |
 | `PolicyViolationEvidence` | `action_policy` | Structured evidence for a triggered policy rule |

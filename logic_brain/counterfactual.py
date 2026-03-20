@@ -53,6 +53,53 @@ class PlanResult:
     branches: dict[str, PlanBranch]
 
 
+@dataclass(frozen=True)
+class UtilityModel:
+    """Explicit utility terms for branch ranking."""
+
+    expected_value: float = 0.0
+    execution_cost: float = 0.0
+    risk_penalty: float = 0.0
+    confidence_weight: float = 1.0
+
+    def total(self) -> float:
+        """Return the deterministic utility score before safety filtering."""
+        return self.confidence_weight * self.expected_value - self.execution_cost - self.risk_penalty
+
+    def scaled(self, factor: float) -> "UtilityModel":
+        """Return an affine scaling of the additive utility terms."""
+        return UtilityModel(
+            expected_value=self.expected_value * factor,
+            execution_cost=self.execution_cost * factor,
+            risk_penalty=self.risk_penalty * factor,
+            confidence_weight=self.confidence_weight,
+        )
+
+
+@dataclass(frozen=True)
+class SafetyBound:
+    """Hard admissibility caps that dominate utility optimization."""
+
+    max_execution_cost: float | None = None
+    max_risk_penalty: float | None = None
+    min_confidence_weight: float | None = None
+
+
+@dataclass(frozen=True)
+class RankedBranch:
+    """Explainable ranking record for one branch."""
+
+    branch_id: str
+    rank: int | None
+    admissible: bool
+    utility_model: UtilityModel
+    total_score: float | None
+    decomposition: Mapping[str, float]
+    safety_violations: tuple[str, ...]
+    status: str
+    satisfiable: bool | None
+
+
 class CounterfactualPlanner:
     """Deterministic counterfactual planner over Z3Session semantics."""
 
@@ -151,6 +198,62 @@ class CounterfactualPlanner:
         self._branches[branch_id] = updated
         return updated
 
+    def rank_branches(
+        self,
+        utility_models: Mapping[str, UtilityModel],
+        *,
+        safety_bounds: SafetyBound | None = None,
+    ) -> tuple[RankedBranch, ...]:
+        """Rank feasible branches under explicit utility and hard safety caps."""
+        ranked_records: list[RankedBranch] = []
+
+        for branch_id in sorted(self._branches):
+            branch = self._branches[branch_id]
+            utility_model = utility_models.get(branch_id, UtilityModel())
+            admissible, safety_violations = _evaluate_safety(branch, utility_model, safety_bounds)
+            total_score = utility_model.total() if admissible else None
+            ranked_records.append(
+                RankedBranch(
+                    branch_id=branch_id,
+                    rank=None,
+                    admissible=admissible,
+                    utility_model=utility_model,
+                    total_score=total_score,
+                    decomposition=_frozen_ranking_terms(utility_model),
+                    safety_violations=safety_violations,
+                    status=branch.status,
+                    satisfiable=branch.satisfiable,
+                )
+            )
+
+        admissible_records = sorted(
+            (record for record in ranked_records if record.admissible),
+            key=lambda record: (-_require_score(record.total_score), record.branch_id),
+        )
+        rank_lookup = {record.branch_id: index for index, record in enumerate(admissible_records, start=1)}
+
+        return tuple(
+            RankedBranch(
+                branch_id=record.branch_id,
+                rank=rank_lookup.get(record.branch_id),
+                admissible=record.admissible,
+                utility_model=record.utility_model,
+                total_score=record.total_score,
+                decomposition=record.decomposition,
+                safety_violations=record.safety_violations,
+                status=record.status,
+                satisfiable=record.satisfiable,
+            )
+            for record in sorted(
+                ranked_records,
+                key=lambda record: (
+                    record.branch_id not in rank_lookup,
+                    rank_lookup.get(record.branch_id, 10**9),
+                    record.branch_id,
+                ),
+            )
+        )
+
     def verify_branch_certificate(self, branch_id: str) -> bool:
         """Independent re-check for a branch certificate."""
         branch = self.get_branch(branch_id)
@@ -200,6 +303,54 @@ class CounterfactualPlanner:
 
 def _frozen_scores(scores: Mapping[str, float] | None = None) -> Mapping[str, float]:
     return MappingProxyType(dict(scores or {}))
+
+
+def _frozen_ranking_terms(model: UtilityModel) -> Mapping[str, float]:
+    return MappingProxyType(
+        {
+            "expected_value": model.expected_value,
+            "execution_cost": model.execution_cost,
+            "risk_penalty": model.risk_penalty,
+            "confidence_weight": model.confidence_weight,
+            "total_score": model.total(),
+        }
+    )
+
+
+def _evaluate_safety(
+    branch: PlanBranch,
+    utility_model: UtilityModel,
+    safety_bounds: SafetyBound | None,
+) -> tuple[bool, tuple[str, ...]]:
+    violations: list[str] = []
+
+    if branch.satisfiable is not True:
+        violations.append("branch_not_feasible")
+
+    if safety_bounds is not None:
+        if (
+            safety_bounds.max_execution_cost is not None
+            and utility_model.execution_cost > safety_bounds.max_execution_cost
+        ):
+            violations.append("execution_cost_exceeds_cap")
+        if (
+            safety_bounds.max_risk_penalty is not None
+            and utility_model.risk_penalty > safety_bounds.max_risk_penalty
+        ):
+            violations.append("risk_penalty_exceeds_cap")
+        if (
+            safety_bounds.min_confidence_weight is not None
+            and utility_model.confidence_weight < safety_bounds.min_confidence_weight
+        ):
+            violations.append("confidence_weight_below_floor")
+
+    return (len(violations) == 0, tuple(violations))
+
+
+def _require_score(score: float | None) -> float:
+    if score is None:
+        raise ValueError("Admissible ranking records must have a numeric score")
+    return score
 
 
 def _frozen_model(model: Mapping[str, Any] | None = None) -> Mapping[str, Any] | None:

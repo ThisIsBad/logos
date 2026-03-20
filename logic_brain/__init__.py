@@ -45,7 +45,16 @@ from .assumptions import (
     AssumptionSet,
     AssumptionStatus,
 )
-from .counterfactual import CounterfactualPlanner, PlanBranch, PlanResult, PlanState, VariableDecl
+from .counterfactual import (
+    CounterfactualPlanner,
+    PlanBranch,
+    PlanResult,
+    PlanState,
+    RankedBranch,
+    SafetyBound,
+    UtilityModel,
+    VariableDecl,
+)
 from .action_policy import (
     ActionPolicyEngine,
     ActionPolicyResult,
@@ -148,6 +157,9 @@ __all__ = [
     "PlanBranch",
     "PlanResult",
     "CounterfactualPlanner",
+    "UtilityModel",
+    "SafetyBound",
+    "RankedBranch",
     # Action policy enforcement (Tier 2 / Provisional)
     "PolicyDecision",
     "ActionPolicyRule",
