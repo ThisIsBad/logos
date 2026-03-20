@@ -6,35 +6,32 @@ Last updated: 2026-03-20
 
 Latest completed implementation work in the repository:
 
-- Added `ProofOrchestrator` in `logic_brain/orchestrator.py` for compositional proof trees with claim tracking, composition rules, propagation, and serialization.
-- Added MCP Stage 3 orchestration support via `orchestrate_proof` in `logic_brain/mcp_tools.py` and registered it in `logic_brain/mcp_server.py`.
-- Added certificate and MCP coverage for the newer reasoning stack, including `certify_claim`, `check_beliefs`, and `check_contract` support in the server surface.
-- Added direct tests for orchestrator behavior and MCP orchestration flows in `tests/test_orchestrator.py`, `tests/test_mcp_orchestrate.py`, `tests/test_mcp_certify.py`, `tests/test_mcp_beliefs.py`, `tests/test_mcp_contract.py`, and `tests/test_metamorphic_orchestrator.py`.
-
-Latest local uncommitted work in this session:
-
 - Added `logic_brain/execution_bus.py` with proof-carrying action envelopes, certified precondition checks, postcondition validation, action traces, rollback recommendations, and proof-bundle compatibility.
-- Added the `proof_carrying_action` MCP tool and tests in `tests/test_execution_bus.py`, `tests/test_mcp_action_bus.py`, and `tests/test_metamorphic_execution_bus.py`.
+- Added the `proof_carrying_action` MCP tool in `logic_brain/mcp_tools.py` and `logic_brain/mcp_server.py`.
+- Added execution-bus tests in `tests/test_execution_bus.py`, `tests/test_mcp_action_bus.py`, `tests/test_metamorphic_execution_bus.py`, and extended MCP server coverage in `tests/test_mcp_server.py`.
+- Fixed CI portability issues by aligning optional MCP typing handling, adding required dev dependencies in `pyproject.toml`, and including the `examples` package in editable installs.
 
 Recent commits:
 
+- `48f45dd` - "Include examples package in editable installs"
+- `d0b372c` - "Fix CI test dependencies and example package imports"
+- `6b900df` - "Fix CI mypy handling for optional MCP imports"
+- `dfb7d59` - "Add proof-carrying action bus for MCP workflows (closes #43)"
 - `3bfde65` - "Add proof orchestrator and MCP Stage 3 tools"
-- `a6229f4` - "Add implementation brief for v0.7 ProofOrchestrator + MCP Stage 3 tools"
-- `be22039` - "Add polished AGI roadmap, Gemini review, and unified LogicBrain development roadmap"
-- `af22c6f` - "docs: add independent Gemini review of AGI roadmap"
-- `a833373` - "Update session handoff after MCP milestone completion"
 
 Latest local validation seen in this session:
 
 - `python -m pytest -q` -> `428 passed`
 - `python -m ruff check logic_brain tests tools` -> clean
 - `python -m mypy --strict logic_brain` -> clean
+- `python -m pytest --cov=logic_brain --cov-report=term-missing --cov-fail-under=85` -> `90.29%`
 - `python -m pytest -q -m metamorphic` -> `50 passed`
+- GitHub Actions CI run `23356169627` on `main` -> green
 
 ## Current WIP
 
 - No implementation issue is currently in progress.
-- Local uncommitted docs/process/code changes exist for the handoff workflow and proof-carrying action bus.
+- Local uncommitted process/docs sync exists in `docs/development_process.md` and this handoff file.
 
 ## Issue Queue
 
@@ -45,17 +42,16 @@ Open issues visible in GitHub now:
 3. **#48** - Vision: v2.0 Verified Agent Runtime (Closed-Loop Deterministic Core)
 4. **#47** - Vision: v1.7 Cost-Risk-Utility Planner with Formal Tradeoff Bounds
 5. **#45** - Vision: v1.5 Adversarial Self-Play and Red-Team Reasoning Harness
-6. **#43** - Vision: v1.6 Proof-Carrying Multi-Tool Execution Bus
 
 Queue assessment:
 
 - There is still no concrete next implementation issue broken out beneath the remaining vision issues.
-- `#43` now appears very close to implemented in code: action envelopes, precondition certificate enforcement, postcondition diagnostics, traces, and proof-bundle compatibility exist, but the issue is still open and should be reconciled formally against its acceptance criteria before starting a different vision item.
-- If `#43` is considered complete after review, `#47` looks like the most natural next implementation track because it extends existing planner/orchestration primitives instead of introducing a larger new system boundary.
+- `#43` is closed and its core acceptance criteria are now covered by the execution-bus code, MCP integration, metamorphic tests, and green CI.
+- `#47` looks like the most natural next implementation track because it extends existing planner/orchestration primitives instead of introducing a larger new system boundary.
 
 Recommended next step:
 
-- Review `#43` against the current codebase and new execution-bus tests, close it if fully satisfied, or split any remaining gaps into concrete follow-up implementation issues.
+- Break `#47` into a concrete implementation issue or start directly with a scoped cost-risk-utility planning slice tied to the current planner/policy stack.
 
 ## MCP Status
 

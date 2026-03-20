@@ -26,6 +26,8 @@ For every phase or milestone:
 6. Run validation (`pytest -q`, plus relevant tooling checks).
 7. Commit with a message that explains intent and outcome.
 8. Push to GitHub (`git push`).
+9. Monitor the related CI pipeline until it finishes green; if it fails, fix the issue, rerun local validation, and push a follow-up commit until CI is green.
+10. Synchronize GitHub status for the finished work item: close the issue if complete, or update it with the remaining gap and concrete next action if not.
 
 ## GitHub Issue Workflow
 
@@ -112,11 +114,27 @@ The preflight gates are the approval mechanism. If gates are green, commit
 and push immediately. Do not wait for explicit human confirmation.
 Do not ask "should I commit?" — the answer is always yes if gates pass.
 
+After pushing, the agent must still verify that the corresponding CI run
+finishes green. A local green preflight is necessary but not sufficient for
+completion; any CI regression must be treated as part of the same work item
+and fixed immediately.
+
+Administrative synchronization is part of completion, not optional
+housekeeping. For every finished work item, the agent must:
+
+- update `docs/new_session_handoff.md` to the real repo state,
+- verify the pushed CI run is green,
+- synchronize the GitHub issue state with reality,
+- and only then treat the work item as done.
+
 ## Quality Gates
 
 Before moving to the next phase:
 
 - Tests pass.
+- The pushed CI pipeline for the work is green.
+- `docs/new_session_handoff.md` reflects the final committed state.
+- GitHub issue status matches reality.
 - Public API impact is documented.
 - Roadmap/progress docs are updated.
 - Open technical risks are captured.
@@ -150,6 +168,8 @@ An issue may be closed only when all items are true:
 - Acceptance criteria are fully met.
 - Local preflight is green.
 - CI is green for the related commit/PR.
+- `docs/new_session_handoff.md` is updated to the final state.
+- The GitHub issue is closed or explicitly updated with the remaining gap.
 - Documentation is updated where behavior/process changed.
 - Commit/PR reference is linked in the issue.
 
