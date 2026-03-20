@@ -119,6 +119,10 @@ The tier determines the guarantees you get when upgrading between releases.
 | `classify_claim_failure` | `recovery` | Normalize orchestrator claim failures into the shared taxonomy |
 | `classify_plan_failure` | `recovery` | Normalize planner branch failures into the shared taxonomy |
 | `classify_goal_contract_failure` | `recovery` | Normalize goal-contract failures into the shared taxonomy |
+| `TrustPolicy` | `trust_ledger` | Explicit trust-domain policy for cross-domain proof acceptance |
+| `LedgerRecord` | `trust_ledger` | One accepted or rejected cross-domain proof decision |
+| `LedgerQueryResult` | `trust_ledger` | Explainable answer to why a bundle is accepted or rejected |
+| `FederatedProofLedger` | `trust_ledger` | Deterministic ledger for trust-scoped proof exchange |
 
 ### Tier 3 — Internal
 

@@ -6,6 +6,8 @@ Last updated: 2026-03-20
 
 Latest completed implementation work in the repository:
 
+- Added `logic_brain/trust_ledger.py` with explicit `TrustPolicy`, `FederatedProofLedger`, revocation/expiry handling, and queryable acceptance diagnostics for cross-domain proof reuse.
+- Added federated-ledger coverage in `tests/test_trust_ledger.py` and `tests/test_metamorphic_trust_ledger.py`, including trust-policy reorder invariance.
 - Added `logic_brain/recovery.py` with unified failure taxonomy, deterministic recovery protocol selection, retry-loop guards, and auditable recovery certificates.
 - Added recovery classification hooks for execution-bus, orchestrator, planner, and goal-contract failures plus coverage in `tests/test_recovery.py` and `tests/test_metamorphic_recovery.py`.
 - Added cost-risk-utility branch ranking to `logic_brain/counterfactual.py` with explicit `UtilityModel`, hard `SafetyBound` caps, and explainable `RankedBranch` outputs.
@@ -19,14 +21,15 @@ Latest completed implementation work in the repository:
 
 Recent commits:
 
+- `83ed013` - "Update roadmap and handoff after closing #50"
 - `ac5b299` - "Add deterministic recovery protocols for failed proof paths (closes #50)"
 - `d96292c` - "Update session handoff after closing #47"
 - `6a99316` - "Add cost-risk-utility planner ranking (closes #47)"
 - `9202e8a` - "Clean repo MCP artifacts and local ignores"
-- `e1471b9` - "Sync handoff and completion process requirements"
 
 Latest local validation seen in this session:
 
+- `python -m pytest -q tests/test_trust_ledger.py tests/test_metamorphic_trust_ledger.py` -> `6 passed`
 - `python -m pytest -q tests/test_recovery.py tests/test_metamorphic_recovery.py` -> `10 passed`
 - `python -m pytest -q tests/test_counterfactual.py tests/test_metamorphic_counterfactual.py` -> `15 passed`
 - `python -m pytest -q tests/test_integration_full_loop.py tests/test_mcp_server.py` -> `4 passed`
@@ -39,14 +42,14 @@ Latest local validation seen in this session:
 
 ## Current WIP
 
-- No implementation issue is currently in progress.
-- Local uncommitted docs sync exists in this handoff file only.
+- Issue `#49` is in progress: current slice adds explicit trust-domain policies, deterministic acceptance/rejection, revocation/expiry blocking, and audit queries on top of `proof_exchange`.
+- Local uncommitted code/docs changes exist for `logic_brain/trust_ledger.py`, trust-ledger tests, and roadmap/handoff updates.
 
 ## Issue Queue
 
 Open issues visible in GitHub now:
 
-1. **#49** - Vision: v1.9 Federated Trust Domains and Cross-Agent Proof Ledger
+1. **#49** - Vision: v1.9 Federated Trust Domains and Cross-Agent Proof Ledger (in progress)
 2. **#48** - Vision: v2.0 Verified Agent Runtime (Closed-Loop Deterministic Core)
 3. **#45** - Vision: v1.5 Adversarial Self-Play and Red-Team Reasoning Harness
 
@@ -56,11 +59,12 @@ Queue assessment:
 - `#43` is closed and its core acceptance criteria are now covered by the execution-bus code, MCP integration, metamorphic tests, and green CI.
 - `#47` is closed: transparent branch scoring, hard safety dominance, deterministic replay-compatible ranking, and affine-scaling metamorphic coverage are implemented in the planner core.
 - `#50` is closed: failure taxonomy unification, deterministic allowed protocols, retry guards, auditable recovery certificates, and metamorphic coverage are implemented.
-- The next priority from the AGI-roadmap fit is `#49`, followed by `#48`, with `#45` remaining important but less central to the core architecture.
+- `#49` is now underway; the current slice covers explicit trust-policy enforcement, deterministic revocation/expiry blocking, and queryable cross-domain diagnostics.
+- Remaining likely follow-ups for `#49` are richer trust-policy ranges and optional server/API exposure if needed.
 
 Recommended next step:
 
-- Start `#49` with a scoped first slice around verifiable cross-agent proof-ledger primitives on top of the existing `proof_exchange` stack.
+- Finish validation for the current `#49` slice, then close the issue if no additional integration surface is required, or split any remaining trust-ledger hooks into a follow-up issue.
 
 ## MCP Status
 

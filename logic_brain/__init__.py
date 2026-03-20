@@ -112,6 +112,7 @@ from .recovery import (
     failure_context_from_dict,
     verify_recovery_certificate,
 )
+from .trust_ledger import FederatedProofLedger, LedgerQueryResult, LedgerRecord, TrustPolicy
 
 __all__ = [
     # Quick API (string-based)
@@ -233,4 +234,9 @@ __all__ = [
     "classify_claim_failure",
     "classify_plan_failure",
     "classify_goal_contract_failure",
+    # Federated trust ledger (Tier 2 / Provisional)
+    "TrustPolicy",
+    "LedgerRecord",
+    "LedgerQueryResult",
+    "FederatedProofLedger",
 ]
