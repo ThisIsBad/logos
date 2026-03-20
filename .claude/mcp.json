@@ -1,9 +1,0 @@
-{
-  "mcpServers": {
-    "logic-brain": {
-      "command": "python",
-      "args": ["-m", "logic_brain.mcp_server"],
-      "cwd": "D:\\AgenticAI\\LogicBrain"
-    }
-  }
-}

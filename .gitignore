@@ -6,12 +6,21 @@ __pycache__/
 .venv/
 .pytest_cache/
 .hypothesis/
+.mypy_cache/
+.ruff_cache/
 .coverage
 coverage.xml
 htmlcov/
 
 # Local scratch notes
 tmp.md
+AGENTS.md
+CLAUDE.md
+architektur-stefano.md
+claude_mcp_debug.log
+docs/gemini_review_prompt_de.md
+nul
+.claude/
 
 *.egg-info/
 dist/

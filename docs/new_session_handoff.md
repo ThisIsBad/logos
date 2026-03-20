@@ -6,6 +6,8 @@ Last updated: 2026-03-20
 
 Latest completed implementation work in the repository:
 
+- Cleaned repo hygiene around MCP/client artifacts: removed obsolete `.claude/mcp.json`, archived `docs/implementation_brief_v07_mcp.md`, and updated `.gitignore` for local scratch/config files.
+- Updated `docs/mcp_smoke_test_results.md` so the setup section reflects `.mcp.json` as the active Claude Code project config.
 - Added `logic_brain/execution_bus.py` with proof-carrying action envelopes, certified precondition checks, postcondition validation, action traces, rollback recommendations, and proof-bundle compatibility.
 - Added the `proof_carrying_action` MCP tool in `logic_brain/mcp_tools.py` and `logic_brain/mcp_server.py`.
 - Added execution-bus tests in `tests/test_execution_bus.py`, `tests/test_mcp_action_bus.py`, `tests/test_metamorphic_execution_bus.py`, and extended MCP server coverage in `tests/test_mcp_server.py`.
@@ -13,14 +15,15 @@ Latest completed implementation work in the repository:
 
 Recent commits:
 
+- `e1471b9` - "Sync handoff and completion process requirements"
 - `48f45dd` - "Include examples package in editable installs"
 - `d0b372c` - "Fix CI test dependencies and example package imports"
 - `6b900df` - "Fix CI mypy handling for optional MCP imports"
 - `dfb7d59` - "Add proof-carrying action bus for MCP workflows (closes #43)"
-- `3bfde65` - "Add proof orchestrator and MCP Stage 3 tools"
 
 Latest local validation seen in this session:
 
+- `python -m pytest -q tests/test_integration_full_loop.py tests/test_mcp_server.py` -> `4 passed`
 - `python -m pytest -q` -> `428 passed`
 - `python -m ruff check logic_brain tests tools` -> clean
 - `python -m mypy --strict logic_brain` -> clean
@@ -31,7 +34,7 @@ Latest local validation seen in this session:
 ## Current WIP
 
 - No implementation issue is currently in progress.
-- Local uncommitted process/docs sync exists in `docs/development_process.md` and this handoff file.
+- Local uncommitted cleanup/docs sync exists in `.gitignore`, `docs/mcp_smoke_test_results.md`, and this handoff file.
 
 ## Issue Queue
 
@@ -65,7 +68,7 @@ Recommended next step:
 
 - Do not use `.claude/mcp.json` for Claude Code v2.1+; it is ignored.
 - AntiGravity stores MCP config outside the repo, so that setup cannot be fully checked in.
-- Untracked local files currently present include `AGENTS.md`, `CLAUDE.md`, `architektur-stefano.md`, `claude_mcp_debug.log`, `docs/gemini_review_prompt_de.md`, and `nul`; do not commit them unless explicitly requested.
+- `.gitignore` now suppresses common local scratch/config files such as `AGENTS.md`, `CLAUDE.md`, `architektur-stefano.md`, `claude_mcp_debug.log`, `docs/gemini_review_prompt_de.md`, `nul`, and `.claude/`.
 
 ## Process Rules
 

@@ -9,7 +9,8 @@ Validated with:
 
 ## Setup
 
-- Project config present at `.claude/mcp.json`
+- Active project config now lives at `.mcp.json`; the earlier `.claude/mcp.json`
+  attempt is preserved in this document only as migration history.
 - Claude was run in print mode with permission bypass for repeatable local validation
 - Debug logging was enabled for the combined scenario to confirm actual MCP tool execution order
 
