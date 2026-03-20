@@ -1,5 +1,7 @@
 """MCP stdio server exposing LogicBrain tools."""
 
+# mypy: disable-error-code="import-not-found,no-untyped-call"
+
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -373,7 +375,7 @@ def create_server() -> Server[object, object]:
 
     list_tools_decorator = cast(
         Callable[[Callable[[], object]], Callable[[], object]],
-        server.list_tools(),  # type: ignore[no-untyped-call]
+        server.list_tools(),
     )
 
     @list_tools_decorator
