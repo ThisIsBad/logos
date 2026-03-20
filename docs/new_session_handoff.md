@@ -25,11 +25,11 @@ Latest completed implementation work in the repository:
 
 Recent commits:
 
+- `f31bf89` - "Add deterministic adversarial self-play harness (closes #45)"
 - `2c2df82` - "Update roadmap and handoff after closing #48"
 - `d5b6afb` - "Add closed-loop verified agent runtime (closes #48)"
 - `8c2ce50` - "Update roadmap and handoff after closing #49"
 - `4f4f89d` - "Add federated trust-domain proof ledger (closes #49)"
-- `83ed013` - "Update roadmap and handoff after closing #50"
 
 Latest local validation seen in this session:
 
@@ -39,23 +39,23 @@ Latest local validation seen in this session:
 - `python -m pytest -q tests/test_recovery.py tests/test_metamorphic_recovery.py` -> `10 passed`
 - `python -m pytest -q tests/test_counterfactual.py tests/test_metamorphic_counterfactual.py` -> `15 passed`
 - `python -m pytest -q tests/test_integration_full_loop.py tests/test_mcp_server.py` -> `4 passed`
-- `python -m pytest -q` -> `454 passed`
+- `python -m pytest -q` -> `459 passed`
 - `python -m ruff check logic_brain tests tools` -> clean
 - `python -m mypy --strict logic_brain` -> clean
-- `python -m pytest --cov=logic_brain --cov-report=term-missing --cov-fail-under=85` -> `89.37%`
+- `python -m pytest --cov=logic_brain --cov-report=term-missing --cov-fail-under=85` -> `89.63%`
 - `python -m pytest -q -m metamorphic` -> `54 passed`
-- GitHub Actions CI run `23358338953` on `main` -> green
+- GitHub Actions CI run `23358610033` on `main` -> green
 
 ## Current WIP
 
-- Issue `#45` is in progress: current slice adds a deterministic adversarial self-play harness with stable seeds, explicit attack templates, and regression-ready defense scoring.
-- Local uncommitted code/docs changes exist for `logic_brain/adversarial_harness.py`, adversarial harness tests, and roadmap/handoff updates.
+- No implementation issue is currently in progress.
+- Local uncommitted docs sync exists in this handoff file only.
 
 ## Issue Queue
 
 Open issues visible in GitHub now:
 
-1. **#45** - Vision: v1.5 Adversarial Self-Play and Red-Team Reasoning Harness (in progress)
+- No open vision issues remain from the current queue.
 
 Queue assessment:
 
@@ -65,12 +65,12 @@ Queue assessment:
 - `#50` is closed: failure taxonomy unification, deterministic allowed protocols, retry guards, auditable recovery certificates, and metamorphic coverage are implemented.
 - `#49` is closed: explicit trust-policy enforcement, deterministic revocation/expiry blocking, machine-readable cross-domain diagnostics, and policy-order metamorphic coverage are implemented.
 - `#48` is closed: the repo now contains a replayable runtime state machine with integrated planning, contract, uncertainty, execution, recovery gates, long-horizon sequence coverage, and an adversarial policy-block scenario.
-- `#45` is now underway; the current slice covers reproducible adversarial episodes, contradiction/stale-proof/policy-bypass templates, and explainable defensive scoring.
-- Remaining likely follow-ups for `#45` are richer campaign catalogs and optional persisted CI artifact export if needed.
+- `#45` is closed: the repo now contains reproducible adversarial episodes, contradiction/stale-proof/policy-bypass templates, explainable defensive scoring, and regression-ready campaign artifacts.
+- The current queue from the active AGI-roadmap issue set is empty; the next step is to define the next wave of issues or benchmark expansions.
 
 Recommended next step:
 
-- Finish validation for the current `#45` slice, then close the issue if no additional artifact/export surface is required, or split broader campaign expansion into a follow-up issue.
+- Open the next concrete issue batch, likely around benchmark expansion, persisted runtime artifacts, or richer trust/recovery integrations.
 
 ## MCP Status
 
