@@ -28,11 +28,15 @@ def test_create_server_registers_expected_tools() -> None:
 
     assert anyio.run(run) == [
         "verify_argument",
+        "certify_claim",
         "check_assumptions",
+        "check_beliefs",
         "counterfactual_branch",
         "z3_check",
+        "check_contract",
         "check_policy",
         "z3_session",
+        "orchestrate_proof",
     ]
 
 
@@ -78,12 +82,23 @@ def test_stdio_server_lists_tools_and_handles_calls() -> None:
                 tools = await session.list_tools()
                 assert [tool.name for tool in tools.tools] == [
                     "verify_argument",
+                    "certify_claim",
                     "check_assumptions",
+                    "check_beliefs",
                     "counterfactual_branch",
                     "z3_check",
+                    "check_contract",
                     "check_policy",
                     "z3_session",
+                    "orchestrate_proof",
                 ]
+
+                certify_result = await session.call_tool(
+                    "certify_claim",
+                    {"argument": "P -> Q, P |- Q"},
+                )
+                structured_certify = cast(dict[str, object], certify_result.structuredContent)
+                assert structured_certify["verified"] is True
 
                 verify_result = await session.call_tool(
                     "verify_argument",
@@ -136,5 +151,19 @@ def test_stdio_server_lists_tools_and_handles_calls() -> None:
                     {"action": "destroy", "session_id": "server-test"},
                 )
                 assert cast(dict[str, object], destroy_result.structuredContent)["destroyed"] is True
+
+                orchestration_result = await session.call_tool(
+                    "orchestrate_proof",
+                    {
+                        "action": "create_root",
+                        "session_id": "proof-test",
+                        "claim_id": "root",
+                        "description": "Main claim",
+                    },
+                )
+                structured_orchestration = cast(
+                    dict[str, object], orchestration_result.structuredContent
+                )
+                assert structured_orchestration["status"] == "created"
 
     anyio.run(run)

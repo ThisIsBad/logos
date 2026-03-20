@@ -17,9 +17,13 @@ except ImportError as exc:  # pragma: no cover
     ) from exc
 
 from logic_brain.mcp_tools import (
+    certify_claim,
     check_assumptions,
+    check_beliefs,
+    check_contract,
     check_policy,
     counterfactual_branch,
+    orchestrate_proof,
     verify_argument,
     z3_check,
     z3_session,
@@ -75,6 +79,28 @@ _SESSION_ACTION_SCHEMA: dict[str, object] = {
     "type": "string",
     "enum": ["create", "declare", "assert", "check", "push", "pop", "destroy"],
 }
+_BELIEF_SCHEMA: dict[str, object] = {
+    "type": "object",
+    "properties": {
+        "id": {"type": "string"},
+        "statement": {"type": "string"},
+    },
+    "required": ["id", "statement"],
+    "additionalProperties": False,
+}
+_ORCHESTRATOR_ACTION_SCHEMA: dict[str, object] = {
+    "type": "string",
+    "enum": [
+        "create_root",
+        "add_sub_claim",
+        "verify_leaf",
+        "attach_certificate",
+        "mark_failed",
+        "propagate",
+        "status",
+        "get_tree",
+    ],
+}
 
 
 def _tool(
@@ -106,6 +132,14 @@ _TOOLS: tuple[ToolSpec, ...] = (
         verify_argument,
     ),
     _tool(
+        "certify_claim",
+        "Verify a logical argument and return a serializable proof certificate. "
+        "Example: {'argument': 'P -> Q, P |- Q'}",
+        {"argument": {"type": "string", "description": "Argument to certify."}},
+        ["argument"],
+        certify_claim,
+    ),
+    _tool(
         "check_assumptions",
         "Check whether assumptions are jointly satisfiable via Z3. "
         "Example: {'assumptions': [{'id': 'a1', 'statement': 'x > 0', "
@@ -124,6 +158,26 @@ _TOOLS: tuple[ToolSpec, ...] = (
         },
         ["assumptions"],
         check_assumptions,
+    ),
+    _tool(
+        "check_beliefs",
+        "Check a set of beliefs for Z3 consistency and identify contradictions. "
+        "Example: {'beliefs': [{'id': 'b1', 'statement': 'x > 0'}, "
+        "{'id': 'b2', 'statement': 'x < -5'}], 'variables': {'x': 'Int'}}",
+        {
+            "beliefs": {
+                "type": "array",
+                "description": "Beliefs to check for consistency.",
+                "items": _BELIEF_SCHEMA,
+            },
+            "variables": {
+                "type": "object",
+                "description": "Optional Z3 sorts keyed by variable name.",
+                "additionalProperties": {"type": "string"},
+            },
+        },
+        ["beliefs"],
+        check_beliefs,
     ),
     _tool(
         "counterfactual_branch",
@@ -169,6 +223,39 @@ _TOOLS: tuple[ToolSpec, ...] = (
         z3_check,
     ),
     _tool(
+        "check_contract",
+        "Verify goal contract preconditions against Z3 state constraints. "
+        "Example: {'contract': {'contract_id': 'c1', 'preconditions': ['x > 0']}, "
+        "'state_constraints': ['x == 5'], 'variables': {'x': 'Int'}}",
+        {
+            "contract": {
+                "type": "object",
+                "description": "Goal contract with preconditions, invariants, etc.",
+                "properties": {
+                    "contract_id": {"type": "string"},
+                    "preconditions": {"type": "array", "items": {"type": "string"}},
+                    "invariants": {"type": "array", "items": {"type": "string"}},
+                    "completion_criteria": {"type": "array", "items": {"type": "string"}},
+                    "abort_criteria": {"type": "array", "items": {"type": "string"}},
+                    "permitted_strategies": {"type": "array", "items": {"type": "string"}},
+                },
+                "required": ["contract_id"],
+            },
+            "state_constraints": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "Z3-parseable state constraints.",
+            },
+            "variables": {
+                "type": "object",
+                "description": "Optional Z3 sorts keyed by variable name.",
+                "additionalProperties": {"type": "string"},
+            },
+        },
+        ["contract", "state_constraints"],
+        check_contract,
+    ),
+    _tool(
         "check_policy",
         "Evaluate an action against policy rules. Example: {'rules': "
         "[{'name': 'needs_tests', 'severity': 'error', 'message': 'Add tests'}], "
@@ -207,6 +294,25 @@ _TOOLS: tuple[ToolSpec, ...] = (
         },
         ["action", "session_id"],
         z3_session,
+    ),
+    _tool(
+        "orchestrate_proof",
+        "Manage a compositional proof tree. Create claims, verify sub-claims, "
+        "propagate results. Example: {'action': 'create_root', 'session_id': "
+        "'demo', 'claim_id': 'main', 'description': 'Main claim'}",
+        {
+            "action": _ORCHESTRATOR_ACTION_SCHEMA,
+            "session_id": {"type": "string", "description": "Stable orchestrator session ID."},
+            "claim_id": {"type": "string", "description": "Claim identifier."},
+            "parent_id": {"type": "string", "description": "Parent claim ID for sub-claims."},
+            "description": {"type": "string", "description": "Human-readable claim description."},
+            "expression": {"type": "string", "description": "Logical expression to verify (for verify_leaf)."},
+            "composition_rule": {"type": "string", "description": "Boolean rule over sub-claim IDs."},
+            "certificate_json": {"type": "string", "description": "Serialized ProofCertificate JSON."},
+            "reason": {"type": "string", "description": "Failure reason (for mark_failed)."},
+        },
+        ["action", "session_id"],
+        orchestrate_proof,
     ),
 )
 

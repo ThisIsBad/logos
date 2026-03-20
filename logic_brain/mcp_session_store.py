@@ -8,9 +8,12 @@ from threading import Lock
 from time import monotonic
 from typing import TypeVar
 
+from logic_brain.orchestrator import ProofOrchestrator
 from logic_brain.z3_session import CheckResult, Z3Session
 
 T = TypeVar("T")
+
+ORCHESTRATOR_STORE: dict[str, ProofOrchestrator] = {}
 
 
 class UnknownSessionError(Exception):

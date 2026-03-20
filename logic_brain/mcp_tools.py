@@ -7,14 +7,22 @@ import hashlib
 
 from logic_brain.action_policy import ActionPolicyEngine, ActionPolicyRule
 from logic_brain.assumptions import AssumptionKind, AssumptionSet
-from logic_brain.certificate import certify
+from logic_brain.belief_graph import BeliefGraph
+from logic_brain.certificate import ProofCertificate, certify
 from logic_brain.counterfactual import CounterfactualPlanner
+from logic_brain.goal_contract import (
+    SCHEMA_VERSION as GOAL_CONTRACT_SCHEMA_VERSION,
+    GoalContract,
+    verify_contract_preconditions_z3,
+)
 from logic_brain.mcp_session_store import (
+    ORCHESTRATOR_STORE,
     ExpiredSessionError,
     SessionLimitError,
     UnknownSessionError,
     Z3SessionStore,
 )
+from logic_brain.orchestrator import ProofOrchestrator
 from logic_brain.parser import ParseError, verify
 from logic_brain.z3_session import Z3Session as SolverSession
 
@@ -169,6 +177,177 @@ def z3_session(payload: Mapping[str, object]) -> ToolResult:
 
         raise ValueError(
             "Field 'action' must be one of: create, declare, assert, check, push, pop, destroy"
+        )
+    except Exception as exc:  # pragma: no cover - exercised via tests
+        return _error_response(exc)
+
+
+def certify_claim(payload: Mapping[str, object]) -> ToolResult:
+    """Verify a logical claim and return a serialized certificate."""
+    try:
+        data = _require_payload(payload)
+        argument = _require_non_empty_str(data, "argument")
+        cert = certify(argument)
+        serialized = cert.to_json()
+        return {
+            "status": "certified" if cert.verified else "refuted",
+            "verified": cert.verified,
+            "method": cert.method,
+            "certificate_json": serialized,
+            "certificate_id": _certificate_id(argument),
+        }
+    except Exception as exc:  # pragma: no cover - exercised via tests
+        return _error_response(exc)
+
+
+def check_beliefs(payload: Mapping[str, object]) -> ToolResult:
+    """Check a set of beliefs for Z3 contradictions and explanations."""
+    try:
+        data = _require_payload(payload)
+        beliefs_raw = _require_list(data, "beliefs")
+        variables = _optional_variables(data.get("variables"))
+
+        graph = BeliefGraph()
+        for belief_data in beliefs_raw:
+            if not isinstance(belief_data, dict):
+                raise ValueError("Each belief must be an object")
+            belief_id = belief_data.get("id")
+            statement = belief_data.get("statement")
+            if not isinstance(belief_id, str) or not isinstance(statement, str):
+                raise ValueError("Belief requires string fields 'id' and 'statement'")
+            graph.add_belief(belief_id=belief_id, statement=statement)
+
+        contradictions = graph.detect_contradictions_z3(variables=variables)
+        explanations = []
+        for left_id, right_id in contradictions:
+            explanation = graph.explain_contradiction(left_id, right_id)
+            explanations.append(
+                {
+                    "left_id": explanation.left_id,
+                    "right_id": explanation.right_id,
+                    "left_support_path": list(explanation.left_support_path),
+                    "right_support_path": list(explanation.right_support_path),
+                }
+            )
+
+        return {
+            "status": "consistent" if not contradictions else "contradictions_found",
+            "belief_count": len(beliefs_raw),
+            "contradiction_count": len(contradictions),
+            "contradictions": [{"left": left_id, "right": right_id} for left_id, right_id in contradictions],
+            "explanations": explanations,
+        }
+    except Exception as exc:  # pragma: no cover - exercised via tests
+        return _error_response(exc)
+
+
+def check_contract(payload: Mapping[str, object]) -> ToolResult:
+    """Verify goal contract preconditions against Z3 state constraints."""
+    try:
+        data = _require_payload(payload)
+        contract_raw = _require_dict(data, "contract")
+        state_constraints = _require_str_list(data, "state_constraints")
+        variables = _optional_variables(data.get("variables"))
+
+        if "schema_version" not in contract_raw:
+            contract_raw = {"schema_version": GOAL_CONTRACT_SCHEMA_VERSION, **contract_raw}
+        contract = GoalContract.from_dict(contract_raw)
+        result = verify_contract_preconditions_z3(contract, state_constraints, variables=variables)
+
+        return {
+            "status": result.status.value,
+            "diagnostics": [
+                {"code": diagnostic.code, "message": diagnostic.message}
+                for diagnostic in result.diagnostics
+            ],
+        }
+    except Exception as exc:  # pragma: no cover - exercised via tests
+        return _error_response(exc)
+
+
+def orchestrate_proof(payload: Mapping[str, object]) -> ToolResult:
+    """Manage a stateful compositional proof tree across MCP calls."""
+    try:
+        data = _require_payload(payload)
+        action = _require_non_empty_str(data, "action")
+        session_id = _require_non_empty_str(data, "session_id")
+
+        if action == "create_root":
+            claim_id = _require_non_empty_str(data, "claim_id")
+            description = _require_non_empty_str(data, "description")
+            orchestrator = ProofOrchestrator()
+            orchestrator.claim(claim_id, description)
+            ORCHESTRATOR_STORE[session_id] = orchestrator
+            return {"status": "created", "session_id": session_id, "root_claim_id": claim_id}
+
+        existing_orchestrator = ORCHESTRATOR_STORE.get(session_id)
+        if existing_orchestrator is None:
+            raise ValueError(f"Unknown orchestrator session '{session_id}'")
+        orchestrator = existing_orchestrator
+
+        if action == "add_sub_claim":
+            claim_id = _require_non_empty_str(data, "claim_id")
+            parent_id = _require_non_empty_str(data, "parent_id")
+            description = _require_non_empty_str(data, "description")
+            orchestrator.sub_claim(claim_id, parent_id, description)
+            composition_rule = data.get("composition_rule")
+            if isinstance(composition_rule, str) and composition_rule.strip():
+                orchestrator.set_composition(parent_id, composition_rule)
+            return {"status": "added", "claim_id": claim_id, "parent_id": parent_id}
+
+        if action == "verify_leaf":
+            claim_id = _require_non_empty_str(data, "claim_id")
+            expression = _require_non_empty_str(data, "expression")
+            cert = orchestrator.verify_leaf(claim_id, expression)
+            return {
+                "status": "verified" if cert.verified else "refuted",
+                "claim_id": claim_id,
+                "verified": cert.verified,
+                "certificate_id": _certificate_id(cert.to_json()),
+            }
+
+        if action == "attach_certificate":
+            claim_id = _require_non_empty_str(data, "claim_id")
+            certificate_json = _require_non_empty_str(data, "certificate_json")
+            certificate = ProofCertificate.from_json(certificate_json)
+            orchestrator.attach_certificate(claim_id, certificate)
+            return {"status": "attached", "claim_id": claim_id}
+
+        if action == "mark_failed":
+            claim_id = _require_non_empty_str(data, "claim_id")
+            reason = str(data.get("reason", ""))
+            orchestrator.mark_failed(claim_id, reason)
+            return {"status": "marked_failed", "claim_id": claim_id}
+
+        if action == "propagate":
+            orchestrator.propagate()
+            snapshot = orchestrator.status()
+            return {
+                "status": "propagated",
+                "total": snapshot.total_claims,
+                "verified": snapshot.verified,
+                "failed": snapshot.failed,
+                "pending": snapshot.pending,
+                "is_complete": snapshot.is_complete,
+            }
+
+        if action == "status":
+            snapshot = orchestrator.status()
+            return {
+                "status": "ok",
+                "total": snapshot.total_claims,
+                "verified": snapshot.verified,
+                "failed": snapshot.failed,
+                "pending": snapshot.pending,
+                "is_complete": snapshot.is_complete,
+            }
+
+        if action == "get_tree":
+            return {"status": "ok", "tree": orchestrator.to_dict()}
+
+        raise ValueError(
+            "Field 'action' must be one of: create_root, add_sub_claim, "
+            "verify_leaf, attach_certificate, mark_failed, propagate, status, get_tree"
         )
     except Exception as exc:  # pragma: no cover - exercised via tests
         return _error_response(exc)

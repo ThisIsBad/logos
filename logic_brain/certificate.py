@@ -31,6 +31,7 @@ SCHEMA_VERSION = "1.0"
 PROPOSITIONAL_CLAIM = "propositional"
 FOL_CLAIM = "fol"
 Z3_SESSION_CLAIM = "z3_session"
+COMPOSED_CLAIM = "composed"
 
 
 @dataclass(frozen=True)
@@ -207,6 +208,21 @@ def verify_certificate(certificate: ProofCertificate) -> bool:
             raise ValueError("Z3 session claim must be an object")
         session = _deserialize_session_claim(certificate.claim)
         return (session.check().satisfiable is True) == certificate.verified
+
+    if certificate.claim_type == COMPOSED_CLAIM:
+        if not isinstance(certificate.claim, dict):
+            raise ValueError("Composed claim must be an object")
+        sub_certs_data = certificate.claim.get("sub_certificates")
+        if not isinstance(sub_certs_data, list):
+            raise ValueError("Composed claim requires 'sub_certificates' list")
+        all_valid = all(
+            verify_certificate(ProofCertificate.from_dict(sub_cert))
+            for sub_cert in sub_certs_data
+            if isinstance(sub_cert, dict)
+        )
+        if len(sub_certs_data) != sum(1 for sub_cert in sub_certs_data if isinstance(sub_cert, dict)):
+            raise ValueError("Composed claim sub_certificates must contain only objects")
+        return all_valid == certificate.verified
 
     raise ValueError(f"Unknown certificate claim_type '{certificate.claim_type}'")
 
