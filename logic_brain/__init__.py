@@ -113,6 +113,14 @@ from .recovery import (
     verify_recovery_certificate,
 )
 from .trust_ledger import FederatedProofLedger, LedgerQueryResult, LedgerRecord, TrustPolicy
+from .verified_runtime import (
+    RuntimeEvent,
+    RuntimeOutcome,
+    RuntimePhase,
+    RuntimeRequest,
+    RuntimeTrace,
+    VerifiedAgentRuntime,
+)
 
 __all__ = [
     # Quick API (string-based)
@@ -239,4 +247,11 @@ __all__ = [
     "LedgerRecord",
     "LedgerQueryResult",
     "FederatedProofLedger",
+    # Verified runtime loop (Tier 2 / Provisional)
+    "RuntimePhase",
+    "RuntimeEvent",
+    "RuntimeTrace",
+    "RuntimeRequest",
+    "RuntimeOutcome",
+    "VerifiedAgentRuntime",
 ]

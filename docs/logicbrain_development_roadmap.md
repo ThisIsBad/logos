@@ -175,6 +175,7 @@ Based on what's implemented vs. what's missing:
 | 5 | **Cost-risk-utility planning layer** — extend planner scoring and safety bounds in line with Issue `#47` | v1.4+ | 4 | Done |
 | 6 | **Autonomous recovery protocols** — unify failure taxonomy and deterministic recovery actions in line with Issue `#50` | v1.5 | 4 | Done |
 | 7 | **Federated trust-domain proof ledger** — explicit trust policies, revocation, expiry, and audit queries in line with Issue `#49` | v1.6 | 4 | Done |
+| 8 | **Verified runtime loop** — closed-loop state machine integrating planning, contracts, uncertainty, execution, and recovery in line with Issue `#48` | v2.0 | 5 | In progress |
 
 ---
 

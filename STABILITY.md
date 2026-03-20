@@ -123,6 +123,12 @@ The tier determines the guarantees you get when upgrading between releases.
 | `LedgerRecord` | `trust_ledger` | One accepted or rejected cross-domain proof decision |
 | `LedgerQueryResult` | `trust_ledger` | Explainable answer to why a bundle is accepted or rejected |
 | `FederatedProofLedger` | `trust_ledger` | Deterministic ledger for trust-scoped proof exchange |
+| `RuntimePhase` | `verified_runtime` | Deterministic phase labels for the closed-loop runtime |
+| `RuntimeEvent` | `verified_runtime` | One auditable runtime event |
+| `RuntimeTrace` | `verified_runtime` | Ordered event log for one runtime cycle |
+| `RuntimeRequest` | `verified_runtime` | Inputs for one verified runtime iteration |
+| `RuntimeOutcome` | `verified_runtime` | Deterministic runtime result with trace and recovery state |
+| `VerifiedAgentRuntime` | `verified_runtime` | Closed-loop runtime composing planning, contracts, uncertainty, and execution |
 
 ### Tier 3 — Internal
 

@@ -6,6 +6,8 @@ Last updated: 2026-03-20
 
 Latest completed implementation work in the repository:
 
+- Added `logic_brain/verified_runtime.py` with a deterministic runtime phase machine that composes planning, contract checks, uncertainty enforcement, proof-carrying execution, recovery, and replayable event traces.
+- Added runtime coverage in `tests/test_verified_runtime.py`, including successful closed-loop execution, replay stability, recovery-path handling, long-horizon multi-step execution, and an adversarial policy-block case.
 - Added `logic_brain/trust_ledger.py` with explicit `TrustPolicy`, `FederatedProofLedger`, revocation/expiry handling, and queryable acceptance diagnostics for cross-domain proof reuse.
 - Added federated-ledger coverage in `tests/test_trust_ledger.py` and `tests/test_metamorphic_trust_ledger.py`, including trust-policy reorder invariance.
 - Added `logic_brain/recovery.py` with unified failure taxonomy, deterministic recovery protocol selection, retry-loop guards, and auditable recovery certificates.
@@ -21,14 +23,15 @@ Latest completed implementation work in the repository:
 
 Recent commits:
 
+- `8c2ce50` - "Update roadmap and handoff after closing #49"
 - `4f4f89d` - "Add federated trust-domain proof ledger (closes #49)"
 - `83ed013` - "Update roadmap and handoff after closing #50"
 - `ac5b299` - "Add deterministic recovery protocols for failed proof paths (closes #50)"
 - `d96292c` - "Update session handoff after closing #47"
-- `6a99316` - "Add cost-risk-utility planner ranking (closes #47)"
 
 Latest local validation seen in this session:
 
+- `python -m pytest -q tests/test_verified_runtime.py` -> `6 passed`
 - `python -m pytest -q tests/test_trust_ledger.py tests/test_metamorphic_trust_ledger.py` -> `6 passed`
 - `python -m pytest -q tests/test_recovery.py tests/test_metamorphic_recovery.py` -> `10 passed`
 - `python -m pytest -q tests/test_counterfactual.py tests/test_metamorphic_counterfactual.py` -> `15 passed`
@@ -42,14 +45,14 @@ Latest local validation seen in this session:
 
 ## Current WIP
 
-- No implementation issue is currently in progress.
-- Local uncommitted docs sync exists in this handoff file only.
+- Issue `#48` is in progress: current slice adds a deterministic verified runtime loop with explicit phases, replayable event logs, recovery integration, and end-to-end action gating.
+- Local uncommitted code/docs changes exist for `logic_brain/verified_runtime.py`, runtime tests, and roadmap/handoff updates.
 
 ## Issue Queue
 
 Open issues visible in GitHub now:
 
-1. **#48** - Vision: v2.0 Verified Agent Runtime (Closed-Loop Deterministic Core)
+1. **#48** - Vision: v2.0 Verified Agent Runtime (Closed-Loop Deterministic Core) (in progress)
 2. **#45** - Vision: v1.5 Adversarial Self-Play and Red-Team Reasoning Harness
 
 Queue assessment:
@@ -59,11 +62,12 @@ Queue assessment:
 - `#47` is closed: transparent branch scoring, hard safety dominance, deterministic replay-compatible ranking, and affine-scaling metamorphic coverage are implemented in the planner core.
 - `#50` is closed: failure taxonomy unification, deterministic allowed protocols, retry guards, auditable recovery certificates, and metamorphic coverage are implemented.
 - `#49` is closed: explicit trust-policy enforcement, deterministic revocation/expiry blocking, machine-readable cross-domain diagnostics, and policy-order metamorphic coverage are implemented.
-- The next priority by roadmap fit is now `#48`, with `#45` still remaining as an evaluation/hardening track.
+- `#48` is now underway; the current slice covers a replayable runtime state machine with integrated planning, contract, uncertainty, execution, and recovery gates.
+- Remaining likely follow-ups for `#48` are richer runtime serialization/session persistence and broader benchmark suites if needed.
 
 Recommended next step:
 
-- Start `#48` with a scoped first slice around a deterministic verified runtime loop that composes planning, contracts, policy, recovery, and proof-carrying execution into one auditable state machine.
+- Finish validation for the current `#48` slice, then close the issue if no additional integration surface is required, or split any remaining runtime persistence/benchmark work into a follow-up issue.
 
 ## MCP Status
 
