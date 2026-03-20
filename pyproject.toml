@@ -63,4 +63,4 @@ select = ["E", "F", "W"]
 ignore = ["W293", "W291"]
 
 [tool.setuptools.packages.find]
-include = ["logic_brain*"]
+include = ["logic_brain*", "examples*"]
