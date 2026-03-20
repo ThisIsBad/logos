@@ -121,16 +121,21 @@ config you must restart the client (or start a new session).
 
 ## Available Tools
 
-All clients see the same 6 tools once connected:
+All clients see the same 11 tools once connected:
 
 | Tool | Description |
 |---|---|
 | `verify_argument` | Verify a propositional logic argument via Z3 |
+| `certify_claim` | Create a serializable proof certificate for a claim |
 | `check_assumptions` | Check if assumptions are jointly satisfiable |
+| `check_beliefs` | Detect contradictions in a belief set |
 | `counterfactual_branch` | Evaluate named branches against shared constraints |
 | `z3_check` | Run a direct Z3 satisfiability check |
+| `check_contract` | Verify goal-contract preconditions against state constraints |
 | `check_policy` | Evaluate an action against policy rules |
 | `z3_session` | Manage a stateful Z3 session across multiple calls |
+| `orchestrate_proof` | Manage a compositional proof tree across MCP calls |
+| `proof_carrying_action` | Execute an action envelope with certified preconditions and checked postconditions |
 
 ## Tool Reference
 
@@ -150,6 +155,24 @@ All clients see the same 6 tools once connected:
     "rule": "Modus Ponens",
     "certificate_id": "<stable-id>",
     "explanation": "The conclusion follows from the premises."
+  }
+  ```
+
+### `certify_claim`
+
+- Input:
+
+  ```json
+  {"argument": "P -> Q, P |- Q"}
+  ```
+
+- Output:
+
+  ```json
+  {
+    "verified": true,
+    "certificate_json": "{...}",
+    "schema_version": "1.0"
   }
   ```
 
@@ -174,6 +197,29 @@ All clients see the same 6 tools once connected:
     "consistent": true,
     "conflict_ids": [],
     "explanation": "All 2 active assumptions are jointly satisfiable."
+  }
+  ```
+
+### `check_beliefs`
+
+- Input:
+
+  ```json
+  {
+    "beliefs": [
+      {"id": "b1", "statement": "x > 0"},
+      {"id": "b2", "statement": "x < 0"}
+    ],
+    "variables": {"x": "Int"}
+  }
+  ```
+
+- Output:
+
+  ```json
+  {
+    "consistent": false,
+    "contradiction_ids": ["b1", "b2"]
   }
   ```
 
@@ -221,6 +267,27 @@ All clients see the same 6 tools once connected:
     "satisfiable": true,
     "model": {"x": 1},
     "unsat_core": null
+  }
+  ```
+
+### `check_contract`
+
+- Input:
+
+  ```json
+  {
+    "contract": {"contract_id": "ship", "preconditions": ["x > 0"]},
+    "state_constraints": ["x == 5"],
+    "variables": {"x": "Int"}
+  }
+  ```
+
+- Output:
+
+  ```json
+  {
+    "satisfied": true,
+    "violations": []
   }
   ```
 
@@ -297,6 +364,66 @@ All clients see the same 6 tools once connected:
 
   ```json
   {"action": "destroy", "session_id": "demo"}
+  ```
+
+### `orchestrate_proof`
+
+- Create a root claim:
+
+  ```json
+  {
+    "action": "create_root",
+    "session_id": "demo",
+    "claim_id": "root",
+    "description": "Main claim"
+  }
+  ```
+
+- Add a sub-claim and composition rule:
+
+  ```json
+  {
+    "action": "add_sub_claim",
+    "session_id": "demo",
+    "claim_id": "leaf",
+    "parent_id": "root",
+    "description": "Leaf claim",
+    "composition_rule": "leaf"
+  }
+  ```
+
+- Verify a leaf or inspect status:
+
+  ```json
+  {"action": "verify_leaf", "session_id": "demo", "claim_id": "leaf", "expression": "P |- P"}
+  {"action": "status", "session_id": "demo"}
+  ```
+
+### `proof_carrying_action`
+
+- Execute an action only if its precondition certificates independently verify:
+
+  ```json
+  {
+    "intent": "certify a downstream claim",
+    "action": "certify_claim",
+    "payload": {"argument": "P -> Q, P |- Q"},
+    "preconditions": ["root-cert"],
+    "cert_refs": {"root-cert": "{...certificate json...}"},
+    "expected_postconditions": [{"path": "verified", "equals": true}]
+  }
+  ```
+
+- Output:
+
+  ```json
+  {
+    "status": "completed",
+    "accepted": true,
+    "diagnostics": [],
+    "trace": {"intent": "certify a downstream claim", "action": "certify_claim"},
+    "proof_bundle_json": "{...}"
+  }
   ```
 
 ## Error Format

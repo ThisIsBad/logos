@@ -1,5 +1,10 @@
 # Vision & Roadmap: LogicBrain als deterministischer Zustandsmanager
 
+> Hinweis: `docs/agi_roadmap_v2.md` ist die primaere Leitdatei fuer den Weg
+> Richtung AGI und `docs/logicbrain_development_roadmap.md` die daraus
+> abgeleitete LogicBrain-Roadmap. Dieses Dokument bleibt als fruehere
+> Architektur- und Motivationsbeschreibung erhalten.
+
 ## Kernprinzip
 
 **LLMs sind probabilistische Token-Generatoren. Sie brauchen deterministische Leitplanken, um zuverlässig zu sein.**

@@ -2,19 +2,17 @@
 
 Dieses Dokument verweist auf die aktuelle Planungsdokumentation.
 
-## Aktive Roadmap: v0.3 -> v0.7
+## Primare Leitdokumente
 
-**→ [`docs/roadmap_v030_v070.md`](docs/roadmap_v030_v070.md)**
+- **AGI-Leitdatei:** [`docs/agi_roadmap_v2.md`](docs/agi_roadmap_v2.md)
+- **LogicBrain-Umsetzungsroadmap:** [`docs/logicbrain_development_roadmap.md`](docs/logicbrain_development_roadmap.md)
+- **Aktueller Repo-Status / Queue:** [`docs/new_session_handoff.md`](docs/new_session_handoff.md)
 
-Agent-Centric Deterministic Tooling — LogicBrain wird vom Verifier zum Reasoning-Toolkit:
+## Aktuelle Stoerichtung
 
-| Version | Theme | Status |
-|---------|-------|--------|
-| v0.3 | Proof-Carrying Actions | Next up |
-| v0.4 | Reasoning Contracts | Planned |
-| v0.5 | Self-Consistency Checker | Planned |
-| v0.6 | Policy-Guided Search | Planned |
-| v0.7 | Compositional Proof Orchestrator | Planned |
+- `docs/agi_roadmap_v2.md` definiert die uebergeordnete Architektur und Acceptance Criteria fuer den Weg von Tool Agents zu Reflective, Learning und General Cognitive Agents.
+- `docs/logicbrain_development_roadmap.md` uebersetzt diese Architektur in konkrete LogicBrain-Arbeitspakete.
+- Historische versionsbasierte Roadmaps bleiben als Referenz erhalten, sind aber nicht mehr die primaere Planungsinstanz.
 
 ## Offene Follow-ups
 
@@ -34,7 +32,9 @@ Das bisherige Session-Log (Sprint-Backlog CI + Tooling, Stand v0.1.2) liegt unte
 
 ## Referenzen
 
-- Vision & Architektur: `vision_and_roadmap.md`
+- Primaere AGI-Vision: `docs/agi_roadmap_v2.md`
+- LogicBrain-Roadmap: `docs/logicbrain_development_roadmap.md`
+- Vision & Architektur (historischer Kontext): `vision_and_roadmap.md`
 - Development Process: `docs/development_process.md`
 - Metamorphic Ledger: `docs/metamorphic_ledger.md`
 - Planning Brief: `docs/claude_opus_planning_brief.md`

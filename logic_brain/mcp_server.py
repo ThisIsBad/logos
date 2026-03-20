@@ -24,6 +24,7 @@ from logic_brain.mcp_tools import (
     check_policy,
     counterfactual_branch,
     orchestrate_proof,
+    proof_carrying_action,
     verify_argument,
     z3_check,
     z3_session,
@@ -100,6 +101,15 @@ _ORCHESTRATOR_ACTION_SCHEMA: dict[str, object] = {
         "status",
         "get_tree",
     ],
+}
+_POSTCONDITION_SCHEMA: dict[str, object] = {
+    "type": "object",
+    "properties": {
+        "path": {"type": "string"},
+        "equals": {},
+    },
+    "required": ["path"],
+    "additionalProperties": False,
 }
 
 
@@ -313,6 +323,43 @@ _TOOLS: tuple[ToolSpec, ...] = (
         },
         ["action", "session_id"],
         orchestrate_proof,
+    ),
+    _tool(
+        "proof_carrying_action",
+        "Execute an action envelope only when precondition certificates verify and "
+        "expected postconditions hold.",
+        {
+            "schema_version": {"type": "string"},
+            "intent": {"type": "string", "description": "Why the action is being executed."},
+            "action": {
+                "type": "string",
+                "description": "Registered action adapter such as verify_argument or check_policy.",
+            },
+            "payload": {
+                "type": "object",
+                "description": "Action-specific payload passed to the adapter.",
+            },
+            "preconditions": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "Certificate refs that must be present and independently verified.",
+            },
+            "expected_postconditions": {
+                "type": "array",
+                "items": _POSTCONDITION_SCHEMA,
+                "description": "Expected fields in the action result.",
+            },
+            "cert_refs": {
+                "type": "object",
+                "description": "Certificate refs keyed by name. Values may be certificate objects or JSON strings.",
+            },
+            "metadata": {
+                "type": "object",
+                "description": "Optional trace metadata preserved in the execution trace.",
+            },
+        },
+        ["intent", "action", "payload"],
+        proof_carrying_action,
     ),
 )
 

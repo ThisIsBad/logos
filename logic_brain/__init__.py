@@ -87,6 +87,7 @@ from .goal_contract import (
     evaluate_goal_contract,
     verify_contract_preconditions_z3,
 )
+from .execution_bus import ActionBusResult, ActionEnvelope, PostconditionCheck, execute_action_envelope
 from .orchestrator import Claim, ClaimStatus, OrchestrationStatus, ProofOrchestrator
 
 __all__ = [
@@ -183,6 +184,11 @@ __all__ = [
     "build_branch_context",
     "evaluate_goal_contract",
     "verify_contract_preconditions_z3",
+    # Proof-carrying execution bus (Tier 2 / Provisional)
+    "ActionEnvelope",
+    "PostconditionCheck",
+    "ActionBusResult",
+    "execute_action_envelope",
     # Proof orchestration (Tier 2 / Provisional)
     "ClaimStatus",
     "Claim",

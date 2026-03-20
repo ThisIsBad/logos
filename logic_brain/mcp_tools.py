@@ -10,6 +10,7 @@ from logic_brain.assumptions import AssumptionKind, AssumptionSet
 from logic_brain.belief_graph import BeliefGraph
 from logic_brain.certificate import ProofCertificate, certify
 from logic_brain.counterfactual import CounterfactualPlanner
+from logic_brain.execution_bus import ActionEnvelope, execute_action_envelope
 from logic_brain.goal_contract import (
     SCHEMA_VERSION as GOAL_CONTRACT_SCHEMA_VERSION,
     GoalContract,
@@ -349,6 +350,28 @@ def orchestrate_proof(payload: Mapping[str, object]) -> ToolResult:
             "Field 'action' must be one of: create_root, add_sub_claim, "
             "verify_leaf, attach_certificate, mark_failed, propagate, status, get_tree"
         )
+    except Exception as exc:  # pragma: no cover - exercised via tests
+        return _error_response(exc)
+
+
+def proof_carrying_action(payload: Mapping[str, object]) -> ToolResult:
+    """Execute a proof-carrying action envelope across existing tool adapters."""
+    try:
+        data = _require_payload(payload)
+        envelope = ActionEnvelope.from_dict(data)
+        result = execute_action_envelope(
+            envelope,
+            adapters={
+                "verify_argument": verify_argument,
+                "certify_claim": certify_claim,
+                "counterfactual_branch": counterfactual_branch,
+                "z3_check": z3_check,
+                "check_contract": check_contract,
+                "check_policy": check_policy,
+                "orchestrate_proof": orchestrate_proof,
+            },
+        )
+        return result.to_dict()
     except Exception as exc:  # pragma: no cover - exercised via tests
         return _error_response(exc)
 

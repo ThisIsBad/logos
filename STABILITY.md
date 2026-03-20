@@ -100,6 +100,10 @@ The tier determines the guarantees you get when upgrading between releases.
 | `build_branch_context` | `goal_contract` | Build contract context from a planner branch |
 | `evaluate_goal_contract` | `goal_contract` | Evaluate a goal contract against a context |
 | `verify_contract_preconditions_z3` | `goal_contract` | Check contract preconditions against Z3 constraints |
+| `ActionEnvelope` | `execution_bus` | Proof-carrying action request spanning tool boundaries |
+| `PostconditionCheck` | `execution_bus` | Expected postcondition check over an action result |
+| `ActionBusResult` | `execution_bus` | Structured execution-bus result with trace and diagnostics |
+| `execute_action_envelope` | `execution_bus` | Execute a proof-carrying action envelope via registered adapters |
 
 ### Tier 3 — Internal
 
@@ -184,4 +188,4 @@ If you integrate LogicBrain into an agent or tool:
 
 - Public API: `logic_brain/__init__.py`
 - Changelog: `CHANGELOG.md`
-- Roadmaps: `docs/roadmap_v013_v020.md`, `docs/roadmap_v030_v070.md`, `docs/roadmap_v080_v120.md`
+- Roadmaps: `docs/agi_roadmap_v2.md`, `docs/logicbrain_development_roadmap.md`, `docs/roadmap_v013_v020.md`, `docs/roadmap_v030_v070.md`, `docs/roadmap_v080_v120.md`

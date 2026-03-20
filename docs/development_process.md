@@ -22,9 +22,10 @@ For every phase or milestone:
 2. Create or update GitHub Issues for each scoped unit.
 3. Select the next issue by priority and implement it end-to-end.
 4. Update documentation affected by the changes.
-5. Run validation (`pytest -q`, plus relevant tooling checks).
-6. Commit with a message that explains intent and outcome.
-7. Push to GitHub (`git push`).
+5. Refresh `docs/new_session_handoff.md` so the latest completed work, current WIP, queue, and blockers match the real repository state.
+6. Run validation (`pytest -q`, plus relevant tooling checks).
+7. Commit with a message that explains intent and outcome.
+8. Push to GitHub (`git push`).
 
 ## GitHub Issue Workflow
 
@@ -186,6 +187,14 @@ silent and is traceable via `git log` / GitHub.
 
 ### Session handoff
 
+`docs/new_session_handoff.md` is not just an end-of-session artifact. It must be kept current as part of the normal implementation workflow so that any new session can resume from the real repository state without archaeology.
+
+Minimum update points:
+
+- After every completed issue, before the implementation commit.
+- Whenever the current WIP issue changes.
+- Whenever the visible open-issue queue or known blockers materially change.
+
 When a session ends (token limit, timeout, or user-initiated stop):
 
 1. Write `docs/new_session_handoff.md` with:
@@ -205,5 +214,6 @@ A new session can read this file to resume without user re-explanation.
 ## References
 
 - API contract: `STABILITY.md`
-- Roadmap: `docs/roadmap_v013_v020.md`
+- Primary AGI roadmap: `docs/agi_roadmap_v2.md`
+- Actionable LogicBrain roadmap: `docs/logicbrain_development_roadmap.md`
 - Release process: `docs/release_playbook.md`

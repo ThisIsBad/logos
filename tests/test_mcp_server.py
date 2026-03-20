@@ -37,6 +37,7 @@ def test_create_server_registers_expected_tools() -> None:
         "check_policy",
         "z3_session",
         "orchestrate_proof",
+        "proof_carrying_action",
     ]
 
 
@@ -91,6 +92,7 @@ def test_stdio_server_lists_tools_and_handles_calls() -> None:
                     "check_policy",
                     "z3_session",
                     "orchestrate_proof",
+                    "proof_carrying_action",
                 ]
 
                 certify_result = await session.call_tool(
@@ -165,5 +167,17 @@ def test_stdio_server_lists_tools_and_handles_calls() -> None:
                     dict[str, object], orchestration_result.structuredContent
                 )
                 assert structured_orchestration["status"] == "created"
+
+                bus_result = await session.call_tool(
+                    "proof_carrying_action",
+                    {
+                        "intent": "certify a downstream claim",
+                        "action": "certify_claim",
+                        "payload": {"argument": "P -> Q, P |- Q"},
+                        "expected_postconditions": [{"path": "verified", "equals": True}],
+                    },
+                )
+                structured_bus = cast(dict[str, object], bus_result.structuredContent)
+                assert structured_bus["status"] == "completed"
 
     anyio.run(run)

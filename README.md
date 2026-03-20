@@ -223,7 +223,7 @@ Features:
 
 ```
 logic_brain/
-├── __init__.py         # Public API (32 exports)
+├── __init__.py         # Public API re-exports
 ├── py.typed            # PEP 561 marker for downstream type-checking
 ├── parser.py           # String-based parser ("P -> Q, P |- Q")
 ├── verifier.py         # Z3-backed propositional logic verifier
@@ -232,6 +232,7 @@ logic_brain/
 ├── lean_session.py     # Lean 4 interactive session wrapper
 ├── z3_session.py       # Z3 incremental solving session
 ├── diagnostics.py      # Structured error diagnostics for agents
+├── execution_bus.py    # Proof-carrying action envelopes across tools
 ├── cli.py              # CLI entrypoint (python -m logic_brain)
 ├── models.py           # Core data types
 ├── predicate_models.py # FOL data types
@@ -245,8 +246,9 @@ examples/
 tools/                  # Benchmark generation & checking
 docs/
 ├── api/                # Generated API reference (pdoc)
-└── roadmap_v013_v020.md # Development roadmap
-tests/                  # 227+ tests (pytest)
+├── agi_roadmap_v2.md   # Primary AGI framing and acceptance criteria
+└── logicbrain_development_roadmap.md # LogicBrain roadmap derived from AGI roadmap
+tests/                  # Test suite (pytest)
 ```
 
 ## Running Tests
@@ -310,7 +312,7 @@ structured diagnostics, and optionally build Lean 4 proofs.
 ## Agent Integration (MCP)
 
 LogicBrain also ships an MCP server for Claude Code and other MCP-compatible
-agents. Install the optional dependency, register the server, and the 5 core
+agents. Install the optional dependency, register the server, and the LogicBrain
 reasoning tools will be available over stdio.
 
 Install:
@@ -319,7 +321,7 @@ Install:
 pip install -e ".[mcp]"
 ```
 
-Config (`.claude/mcp.json`):
+Config (`.mcp.json`):
 
 ```json
 {
@@ -338,17 +340,24 @@ appear automatically.
 
 What an agent can do:
 - `verify_argument` - verify arguments and return proof-oriented summaries
+- `certify_claim` - create serializable proof certificates for claims
 - `check_assumptions` - detect contradictory assumption sets via Z3
+- `check_beliefs` - find contradictions in belief sets with explanations
 - `counterfactual_branch` - classify feasible vs infeasible branches
 - `z3_check` - run direct satisfiability checks with models and unsat cores
+- `check_contract` - validate goal-contract preconditions against state constraints
 - `check_policy` - evaluate boolean action policies with remediation hints
+- `z3_session` - manage stateful incremental Z3 sessions over MCP
+- `orchestrate_proof` - build and propagate compositional proof trees
+- `proof_carrying_action` - enforce certified preconditions and checked postconditions across tool calls
 
 For the full setup and troubleshooting guide, see `docs/mcp_setup.md`.
 
 Further documentation:
 - **API reference:** `docs/api/logic_brain.html` (regenerate: `python -m pdoc logic_brain -o docs/api`)
 - Metamorphic relation ledger: `docs/metamorphic_ledger.md`
-- Roadmap: `docs/roadmap_v013_v020.md`
+- Primary AGI roadmap: `docs/agi_roadmap_v2.md`
+- LogicBrain roadmap: `docs/logicbrain_development_roadmap.md`
 - API stability: `STABILITY.md`
 - Development process: `docs/development_process.md`
 - Logic extensions assessment: `docs/logic_extensions_assessment.md`

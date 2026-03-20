@@ -35,9 +35,9 @@ Stage 5: Cognitive  Integration Kernel contrib.   v1.5+
 
 ---
 
-## Current State (v0.2.0) — Stage 2: Tool Agent ✅
+## Current State (v0.7-era repository) — Stage 2 complete, Stage 3 substantially implemented
 
-LogicBrain is a **working MCP tool** that any Stage 2 agent can use.
+LogicBrain is a working MCP tool surface with most Stage 3 reflective primitives already present in the repository.
 
 | Capability | Module | Status |
 |------------|--------|--------|
@@ -45,13 +45,18 @@ LogicBrain is a **working MCP tool** that any Stage 2 agent can use.
 | First-order logic verification | `PredicateVerifier` | ✅ Stable |
 | Incremental Z3 sessions | `Z3Session` | ✅ Stable |
 | Lean 4 theorem proving | `LeanSession` | ✅ Stable |
-| MCP server (6 tools) | `mcp_server.py`, `mcp_tools.py` | ✅ Stable |
+| MCP server (11 tools) | `mcp_server.py`, `mcp_tools.py` | ✅ Stable |
 | API stability contract | `STABILITY.md` | ✅ Published |
 | Structured diagnostics | `Diagnostic` | ✅ Stable |
 
 **What Stage 2 enables:** An agent can call LogicBrain as a tool to
-verify claims, check satisfiability, and receive diagnostics. The agent
-cannot yet reason *about* its own reasoning — that's Stage 3.
+verify claims, check satisfiability, manage Z3 state, and inspect policy
+or contract conditions.
+
+**What is now also true:** The repository already contains several Stage 3
+building blocks, including contracts, belief checks, uncertainty hooks,
+proof orchestration, and a proof-carrying action bus. The remaining gap is less "missing modules" and
+more "closing the loop with agent workflows, validation, and issue hygiene".
 
 ---
 
@@ -68,7 +73,7 @@ cannot yet reason *about* its own reasoning — that's Stage 3.
 | **v0.4** | `GoalContract` | Reasoning contracts — pre/postconditions on steps | ✅ Implemented |
 | **v0.5** | `BeliefGraph` | Self-consistency — detect contradictions in beliefs | ✅ Implemented |
 | **v0.6** | `ActionPolicyEngine` | Policy enforcement — prune actions before execution | ✅ Implemented |
-| **v0.7** | Proof Orchestrator | Compositional proofs — decompose and compose claims | ⬜ Not started |
+| **v0.7** | Proof Orchestrator | Compositional proofs — decompose and compose claims | ✅ Implemented |
 
 ### What's Done
 
@@ -78,15 +83,17 @@ The core Stage 3 modules exist and are tested:
 - **`goal_contract.py`** — Machine-checkable pre/postconditions for reasoning steps
 - **`belief_graph.py`** — Contradiction detection with Z3-backed consistency checks
 - **`action_policy.py`** — Boolean policy engine with Z3 consistency and subsumption
+- **`orchestrator.py`** — `ProofOrchestrator` for claim decomposition, propagation, and composed certificates
+- **`execution_bus.py`** — `ActionEnvelope` and `execute_action_envelope()` for certified preconditions, validated postconditions, traces, and proof-bundle compatibility
+- **`mcp_tools.py` / `mcp_server.py`** — MCP exposure for `certify_claim`, `check_beliefs`, `check_contract`, `z3_session`, and `orchestrate_proof`
 
-### What's Missing for Stage 3 Completion
+### What's Missing for Stage 3 Closure
 
 | Gap | What's Needed | Priority |
 |-----|---------------|----------|
-| Proof orchestration (v0.7) | `ProofOrchestrator` — decompose complex claims, verify sub-claims, compose certificates | 🔴 High |
-| MCP exposure of Stage 3 tools | Expose `certify`, `check_beliefs`, `check_contract` as MCP tools | 🔴 High |
+| End-to-end proof-carrying bus validation | Reconcile Issue `#43` against the current code and close remaining acceptance-criteria gaps | 🔴 High |
 | Agent workflow examples | Real-world examples showing reflective verification loops | 🟡 Medium |
-| Acceptance criteria validation | Run Stage 3 criteria from [agi_roadmap_v2.md §4.3](file:///d:/AgenticAI/LogicBrain/docs/agi_roadmap_v2.md) against LogicBrain-assisted agent | 🟡 Medium |
+| Acceptance criteria validation | Run Stage 3 criteria from [agi_roadmap_v2.md §4.3](file:///d:/AgenticAI/LogicBrain/docs/agi_roadmap_v2.md) against LogicBrain-assisted agent workflows | 🟡 Medium |
 
 ---
 
@@ -161,11 +168,11 @@ Based on what's implemented vs. what's missing:
 
 | # | Action | Version | Stage | Effort |
 |---|--------|---------|-------|--------|
-| 1 | **Build Proof Orchestrator** (v0.7) — last missing Stage 3 module | v0.7 | 3 | ~2 weeks |
-| 2 | **Expose Stage 3 modules via MCP** — `certify`, `check_beliefs`, `check_contract` as MCP tools | v0.7+ | 3 | ~1 week |
+| 1 | **Close the loop on Issue #43** — validate proof-carrying execution-bus acceptance criteria against the implemented orchestrator + MCP stack | v0.7 | 3 | ~1 week |
+| 2 | **Stage 3 benchmark harness** — map LogicBrain-assisted workflows to `agi_roadmap_v2.md` Stage 3 acceptance criteria | v0.7+ | 3 | ~1-2 weeks |
 | 3 | **Verified memory retrieval API** — query proof certificates by claim/source/date | v1.3 | 4 | ~2 weeks |
-| 4 | **Cross-agent proof exchange E2E test** — Agent A → proof bundle → Agent B verification | v1.3 | 4 | ~1 week |
-| 5 | **Meta-verification prototype** — Z3 model of a simple integration kernel, verify safety property | v1.5 | 5 | Research |
+| 4 | **Cross-agent proof exchange E2E test** — Agent A -> proof bundle -> Agent B verification | v1.3 | 4 | ~1 week |
+| 5 | **Cost-risk-utility planning layer** — extend planner scoring and safety bounds in line with Issue `#47` | v1.4+ | 4 | ~2 weeks |
 
 ---
 
@@ -182,12 +189,12 @@ graph TD
     AGI -->|"Module 2: Memory (primitives)"| LB
     
     LB -->|"Stage 2 ✅"| S2["MCP Tool Endpoints"]
-    LB -->|"Stage 3 🔧"| S3["Reflective Verification"]
+    LB -->|"Stage 3 mostly implemented"| S3["Reflective Verification"]
     LB -->|"Stage 4 🔧"| S4["Verified Memory"]
     LB -->|"Stage 5 🔬"| S5["Integration Kernel"]
     
-    S3 -->|"v0.7 missing"| V7["Proof Orchestrator"]
-    S3 -->|"needs MCP"| MCP3["MCP for Stage 3 tools"]
+    S3 -->|"needs closure"| V7["Issue #43 validation"]
+    S3 -->|"needs benchmarks"| MCP3["Stage 3 workflow validation"]
     S4 -->|"v1.3 needed"| V13["Memory Retrieval API"]
 ```
 
