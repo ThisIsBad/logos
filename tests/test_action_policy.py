@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+import pytest
+
 from logic_brain import (
     ActionPolicyEngine,
     ActionPolicyRule,
+    CheckResult,
     PolicyDecision,
 )
+from logic_brain.action_policy import PolicyCheckStatus
 
 
 def _engine() -> ActionPolicyEngine:
@@ -59,6 +63,7 @@ def test_structured_violation_evidence_and_remediation() -> None:
     assert len(result.violations) == 2
     assert result.violations[0].policy_name
     assert result.violations[0].triggered_fields
+    assert result.violations[0].z3_witness is not None
     assert result.remediation_hints
 
 
@@ -146,7 +151,8 @@ def test_check_policy_consistency_z3_detects_contradictory_rules() -> None:
 
     contradictions = engine.check_policy_consistency_z3()
 
-    assert contradictions == (("requires_manual_approval", "forbids_manual_approval"),)
+    assert contradictions == (("forbids_manual_approval", "requires_manual_approval"),)
+    assert contradictions.status is PolicyCheckStatus.OK
 
 
 def test_check_policy_subsumption_z3_proves_stricter_rule() -> None:
@@ -164,5 +170,57 @@ def test_check_policy_subsumption_z3_proves_stricter_rule() -> None:
         when_true=("target_is_public_api", "adds_dependency"),
     )
 
-    assert engine.check_policy_subsumption_z3(broader_rule, narrower_rule)
-    assert not engine.check_policy_subsumption_z3(narrower_rule, broader_rule)
+    broader_subsumes_narrower = engine.check_policy_subsumption_z3(broader_rule, narrower_rule)
+    narrower_subsumes_broader = engine.check_policy_subsumption_z3(narrower_rule, broader_rule)
+
+    assert broader_subsumes_narrower
+    assert broader_subsumes_narrower.witness is not None
+    assert not narrower_subsumes_broader
+
+
+def test_policy_evaluation_surfaces_unknown_solver_state() -> None:
+    engine = _engine()
+
+    def fake_check(self: object) -> CheckResult:
+        return CheckResult(status="unknown", satisfiable=None, reason="timeout")
+
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr("logic_brain.z3_session.Z3Session.check", fake_check)
+        result = engine.evaluate(
+            {
+                "target_is_public_api": False,
+                "has_tests": True,
+                "adds_dependency": False,
+            }
+        )
+
+    assert result.decision is PolicyDecision.REVIEW_REQUIRED
+    assert result.solver_status == "unknown"
+    assert result.reason == "timeout"
+
+
+def test_policy_subsumption_surfaces_unknown_result() -> None:
+    engine = ActionPolicyEngine()
+    broader_rule = ActionPolicyRule(
+        name="public_api_change",
+        severity="error",
+        message="Public API changes require review",
+        when_true=("target_is_public_api",),
+    )
+    narrower_rule = ActionPolicyRule(
+        name="public_api_dependency_change",
+        severity="error",
+        message="Dependency changes on public API require review",
+        when_true=("target_is_public_api", "adds_dependency"),
+    )
+
+    def fake_check(self: object) -> CheckResult:
+        return CheckResult(status="unknown", satisfiable=None, reason="timeout")
+
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr("logic_brain.z3_session.Z3Session.check", fake_check)
+        result = engine.check_policy_subsumption_z3(broader_rule, narrower_rule)
+
+    assert result.subsumed is None
+    assert result.status is PolicyCheckStatus.UNKNOWN
+    assert result.reason == "timeout"

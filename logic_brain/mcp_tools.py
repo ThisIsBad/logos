@@ -403,6 +403,7 @@ def check_policy(payload: Mapping[str, object]) -> ToolResult:
                 "severity": violation.severity,
                 "message": violation.message,
                 "triggered_fields": violation.triggered_fields,
+                "z3_witness": violation.z3_witness,
             }
             for violation in result.violations
         ]
@@ -410,6 +411,8 @@ def check_policy(payload: Mapping[str, object]) -> ToolResult:
             "decision": result.decision.name,
             "violations": violations,
             "remediation_hints": result.remediation_hints,
+            "solver_status": result.solver_status,
+            "reason": result.reason,
         }
     except Exception as exc:  # pragma: no cover - exercised via tests
         return _error_response(exc)

@@ -6,6 +6,7 @@ import json
 from dataclasses import dataclass
 from enum import Enum
 import re
+from typing import Iterator
 
 from logic_brain.schema_utils import (
     load_json_object,
@@ -25,6 +26,13 @@ class PolicyDecision(Enum):
     ALLOW = "allow"
     REVIEW_REQUIRED = "review_required"
     BLOCK = "block"
+
+
+class PolicyCheckStatus(Enum):
+    """Outcome of Z3-backed policy analysis."""
+
+    OK = "ok"
+    UNKNOWN = "unknown"
 
 
 @dataclass(frozen=True)
@@ -61,6 +69,7 @@ class PolicyViolationEvidence:
     severity: str
     message: str
     triggered_fields: list[str]
+    z3_witness: dict[str, bool] | None = None
 
 
 @dataclass(frozen=True)
@@ -70,6 +79,52 @@ class ActionPolicyResult:
     decision: PolicyDecision
     violations: list[PolicyViolationEvidence]
     remediation_hints: list[str]
+    solver_status: str | None = None
+    reason: str | None = None
+
+
+@dataclass(frozen=True)
+class PolicyConsistencyResult:
+    """Sequence-like contradiction result plus solver status."""
+
+    pairs: tuple[tuple[str, str], ...]
+    status: PolicyCheckStatus
+    reason: str | None = None
+
+    def __iter__(self) -> Iterator[tuple[str, str]]:
+        return iter(self.pairs)
+
+    def __len__(self) -> int:
+        return len(self.pairs)
+
+    def __getitem__(
+        self, index: int | slice
+    ) -> tuple[str, str] | tuple[tuple[str, str], ...]:
+        return self.pairs[index]
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, PolicyConsistencyResult):
+            return (
+                self.pairs == other.pairs
+                and self.status is other.status
+                and self.reason == other.reason
+            )
+        if isinstance(other, tuple):
+            return self.pairs == other
+        return False
+
+
+@dataclass(frozen=True)
+class PolicySubsumptionResult:
+    """Z3-backed policy subsumption result."""
+
+    subsumed: bool | None
+    status: PolicyCheckStatus
+    witness: dict[str, bool] | None = None
+    reason: str | None = None
+
+    def __bool__(self) -> bool:
+        return self.subsumed is True
 
 
 class ActionPolicyEngine:
@@ -90,25 +145,60 @@ class ActionPolicyEngine:
     def evaluate(self, action: dict[str, bool]) -> ActionPolicyResult:
         """Evaluate one action and return deterministic enforcement result."""
         violations: list[PolicyViolationEvidence] = []
+        action_constraints = _action_constraints(action)
+        unknown_reason: str | None = None
 
         for rule in self._rules:
             if rule.is_triggered(action):
                 triggered_fields = list(rule.when_true) + list(rule.when_false)
+                witness_check = _check_policy_formulas(
+                    formulas=[_rule_trigger_formula(rule)],
+                    rules=[rule],
+                    variables=None,
+                    constraints=action_constraints,
+                    timeout_ms=30000,
+                )
+                if witness_check.satisfiable is None and unknown_reason is None:
+                    unknown_reason = witness_check.reason
                 violations.append(
                     PolicyViolationEvidence(
                         policy_name=rule.name,
                         severity=rule.severity,
                         message=rule.message,
                         triggered_fields=triggered_fields,
+                        z3_witness=_bool_witness_from_model(witness_check.model),
                     )
                 )
 
+        consistency = self.check_policy_consistency_z3(constraints=action_constraints)
+        if consistency.status is PolicyCheckStatus.UNKNOWN and unknown_reason is None:
+            unknown_reason = consistency.reason
+
+        if unknown_reason is None:
+            for index, left_rule in enumerate(self._rules):
+                for right_rule in self._rules[index + 1 :]:
+                    subsumption = self.check_policy_subsumption_z3(
+                        left_rule,
+                        right_rule,
+                        constraints=action_constraints,
+                    )
+                    if subsumption.status is PolicyCheckStatus.UNKNOWN:
+                        unknown_reason = subsumption.reason
+                        break
+                if unknown_reason is not None:
+                    break
+
         decision = _decision_from_violations(violations)
         remediation_hints = _build_remediation_hints(violations)
+        if unknown_reason is not None and decision is PolicyDecision.ALLOW:
+            decision = PolicyDecision.REVIEW_REQUIRED
+            remediation_hints.append("Resolve Z3 policy-analysis uncertainty before approving the action")
         return ActionPolicyResult(
             decision=decision,
             violations=violations,
             remediation_hints=remediation_hints,
+            solver_status="unknown" if unknown_reason is not None else "sat",
+            reason=unknown_reason,
         )
 
     def check_policy_consistency_z3(
@@ -116,7 +206,7 @@ class ActionPolicyEngine:
         variables: dict[str, str] | None = None,
         constraints: list[str] | None = None,
         timeout_ms: int = 30000,
-    ) -> tuple[tuple[str, str], ...]:
+    ) -> PolicyConsistencyResult:
         """Return rule pairs whose trigger conditions are jointly UNSAT in Z3.
 
         Mapping semantics:
@@ -129,6 +219,7 @@ class ActionPolicyEngine:
         both rules trigger at the same time.
         """
         contradictory_pairs: set[tuple[str, str]] = set()
+        unknown_reason: str | None = None
 
         for index, left_rule in enumerate(self._rules):
             for right_rule in self._rules[index + 1 :]:
@@ -140,9 +231,16 @@ class ActionPolicyEngine:
                     timeout_ms=timeout_ms,
                 )
                 if result.satisfiable is False:
-                    contradictory_pairs.add((left_rule.name, right_rule.name))
+                    pair = tuple(sorted((left_rule.name, right_rule.name)))
+                    contradictory_pairs.add((pair[0], pair[1]))
+                elif result.satisfiable is None and unknown_reason is None:
+                    unknown_reason = result.reason
 
-        return tuple(sorted(contradictory_pairs))
+        return PolicyConsistencyResult(
+            pairs=tuple(sorted(contradictory_pairs)),
+            status=PolicyCheckStatus.UNKNOWN if unknown_reason is not None else PolicyCheckStatus.OK,
+            reason=unknown_reason,
+        )
 
     def check_policy_subsumption_z3(
         self,
@@ -151,7 +249,7 @@ class ActionPolicyEngine:
         variables: dict[str, str] | None = None,
         constraints: list[str] | None = None,
         timeout_ms: int = 30000,
-    ) -> bool:
+    ) -> PolicySubsumptionResult:
         """Return whether ``rule_a`` is strictly more restrictive than ``rule_b``.
 
         The comparison is over rule trigger sets. ``rule_a`` subsumes ``rule_b``
@@ -172,8 +270,14 @@ class ActionPolicyEngine:
             constraints=constraints,
             timeout_ms=timeout_ms,
         )
+        if implication_check.satisfiable is None:
+            return PolicySubsumptionResult(
+                subsumed=None,
+                status=PolicyCheckStatus.UNKNOWN,
+                reason=implication_check.reason,
+            )
         if implication_check.satisfiable is not False:
-            return False
+            return PolicySubsumptionResult(subsumed=False, status=PolicyCheckStatus.OK)
 
         strictness_check = _check_policy_formulas(
             formulas=[formula_a, f"not ({formula_b})"],
@@ -182,7 +286,17 @@ class ActionPolicyEngine:
             constraints=constraints,
             timeout_ms=timeout_ms,
         )
-        return strictness_check.satisfiable is True
+        if strictness_check.satisfiable is None:
+            return PolicySubsumptionResult(
+                subsumed=None,
+                status=PolicyCheckStatus.UNKNOWN,
+                reason=strictness_check.reason,
+            )
+        return PolicySubsumptionResult(
+            subsumed=strictness_check.satisfiable is True,
+            status=PolicyCheckStatus.OK,
+            witness=_bool_witness_from_model(strictness_check.model),
+        )
 
     def to_dict(self) -> dict[str, object]:
         """Serialize policy set to dictionary."""
@@ -297,6 +411,17 @@ def _build_remediation_hints(violations: list[PolicyViolationEvidence]) -> list[
         f"Resolve policy '{violation.policy_name}': {violation.message}"
         for violation in violations
     ]
+
+
+def _bool_witness_from_model(model: dict[str, object] | None) -> dict[str, bool] | None:
+    if model is None:
+        return None
+    witness = {name: value for name, value in model.items() if isinstance(value, bool)}
+    return witness or None
+
+
+def _action_constraints(action: dict[str, bool]) -> list[str]:
+    return [field if value else f"not ({field})" for field, value in sorted(action.items())]
 
 
 def _check_policy_formulas(

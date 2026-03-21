@@ -6,6 +6,8 @@ import pytest
 
 import logic_brain.mcp_tools as mcp_tools
 from logic_brain.mcp_session_store import Z3SessionStore
+
+from logic_brain import CheckResult
 from logic_brain.mcp_tools import (
     check_assumptions,
     check_policy,
@@ -377,6 +379,7 @@ def test_check_policy_blocks_error_violations() -> None:
     violations = result["violations"]
     assert isinstance(violations, list)
     assert len(violations) == 1
+    assert violations[0]["z3_witness"] is not None
     assert result["remediation_hints"]
 
 
@@ -408,6 +411,8 @@ def test_check_policy_allows_clean_action_and_empty_rules() -> None:
         "decision": "ALLOW",
         "violations": [],
         "remediation_hints": [],
+        "solver_status": "sat",
+        "reason": None,
     }
 
 
@@ -427,6 +432,31 @@ def test_check_policy_rejects_invalid_rule_schema() -> None:
 
     assert result["error"] == "Invalid input"
     assert "severity" in str(result["details"])
+
+
+def test_check_policy_surfaces_unknown_solver_state() -> None:
+    def fake_check(self: object) -> CheckResult:
+        return CheckResult(status="unknown", satisfiable=None, reason="timeout")
+
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr("logic_brain.z3_session.Z3Session.check", fake_check)
+        result = check_policy(
+            {
+                "rules": [
+                    {
+                        "name": "dependency_review",
+                        "severity": "warning",
+                        "message": "New dependencies require review",
+                        "when_true": ["adds_dependency"],
+                    }
+                ],
+                "action": {"adds_dependency": True},
+            }
+        )
+
+    assert result["decision"] == "REVIEW_REQUIRED"
+    assert result["solver_status"] == "unknown"
+    assert result["reason"] == "timeout"
 
 
 def test_all_tools_return_structured_errors_for_bad_payload_types() -> None:
