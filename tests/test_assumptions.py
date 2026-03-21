@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from logic_brain import AssumptionKind, AssumptionSet, AssumptionStatus
+from logic_brain import AssumptionKind, AssumptionSet, AssumptionStatus, CheckResult
 
 
 def test_add_assumption_creates_active_entry() -> None:
@@ -128,6 +128,8 @@ def test_z3_consistency_detects_contradiction() -> None:
     result = assumptions.check_consistency_z3(variables={"x": "Int"})
 
     assert result.consistent is False
+    assert result.solver_status == "unsat"
+    assert result.reason is None
 
 
 def test_z3_consistency_passes_for_compatible_assumptions() -> None:
@@ -138,6 +140,8 @@ def test_z3_consistency_passes_for_compatible_assumptions() -> None:
     result = assumptions.check_consistency_z3(variables={"x": "Int"})
 
     assert result.consistent is True
+    assert result.solver_status == "sat"
+    assert result.reason is None
 
 
 def test_z3_consistency_with_auto_declared_variables() -> None:
@@ -156,3 +160,50 @@ def test_z3_consistency_empty_assumptions() -> None:
     result = assumptions.check_consistency_z3()
 
     assert result.consistent is True
+    assert result.solver_status == "sat"
+
+
+def test_z3_consistency_detects_contradictions_across_all_assumption_kinds() -> None:
+    assumptions = AssumptionSet()
+    assumptions.add("fact", "x > 0", AssumptionKind.FACT, "test")
+    assumptions.add("assumption", "x < 10", AssumptionKind.ASSUMPTION, "test")
+    assumptions.add("hypothesis", "x <= 0", AssumptionKind.HYPOTHESIS, "test")
+
+    result = assumptions.check_consistency_z3(variables={"x": "Int"})
+
+    assert result.consistent is False
+    assert result.solver_status == "unsat"
+
+
+def test_z3_consistency_handles_large_assumption_sets() -> None:
+    assumptions = AssumptionSet()
+    for index in range(50):
+        assumptions.add(
+            assumption_id=f"lower-{index}",
+            statement=f"x >= {-index}",
+            kind=AssumptionKind.ASSUMPTION,
+            source="test",
+        )
+    assumptions.add("upper", "x <= 25", AssumptionKind.FACT, "test")
+    assumptions.add("conflict", "x > 25", AssumptionKind.HYPOTHESIS, "test")
+
+    result = assumptions.check_consistency_z3(variables={"x": "Int"})
+
+    assert result.consistent is False
+    assert result.solver_status == "unsat"
+
+
+def test_z3_consistency_surfaces_unknown_results(monkeypatch: pytest.MonkeyPatch) -> None:
+    assumptions = AssumptionSet()
+    assumptions.add("a1", "x * x == 2", AssumptionKind.HYPOTHESIS, "test")
+
+    def fake_check(self: object) -> CheckResult:
+        return CheckResult(status="unknown", satisfiable=None, reason="timeout")
+
+    monkeypatch.setattr("logic_brain.z3_session.Z3Session.check", fake_check)
+
+    result = assumptions.check_consistency_z3(variables={"x": "Int"})
+
+    assert result.consistent is False
+    assert result.solver_status == "unknown"
+    assert result.reason == "timeout"

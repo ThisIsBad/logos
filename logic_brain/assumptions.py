@@ -55,6 +55,8 @@ class AssumptionConsistency:
 
     consistent: bool
     active_statements: list[str]
+    solver_status: str | None = None
+    reason: str | None = None
 
 
 class AssumptionSet:
@@ -180,7 +182,9 @@ class AssumptionSet:
         -------
         AssumptionConsistency
             With ``consistent=True`` if all active statements can be
-            simultaneously satisfied, ``False`` if Z3 proves UNSAT.
+            simultaneously satisfied, ``False`` if Z3 proves UNSAT or
+            returns ``unknown``. The solver outcome is exposed via
+            ``solver_status`` and ``reason``.
 
         Raises
         ------
@@ -191,7 +195,11 @@ class AssumptionSet:
 
         statements = self.active_statements()
         if not statements:
-            return AssumptionConsistency(consistent=True, active_statements=[])
+            return AssumptionConsistency(
+                consistent=True,
+                active_statements=[],
+                solver_status="sat",
+            )
 
         session = Z3Session(timeout_ms=timeout_ms)
 
@@ -206,8 +214,10 @@ class AssumptionSet:
 
         result = session.check()
         return AssumptionConsistency(
-            consistent=result.satisfiable is not False,
+            consistent=result.satisfiable is True,
             active_statements=statements,
+            solver_status=result.status,
+            reason=result.reason,
         )
 
     def to_dict(self) -> dict[str, object]:
