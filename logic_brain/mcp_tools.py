@@ -228,15 +228,21 @@ def check_beliefs(payload: Mapping[str, object]) -> ToolResult:
                     "right_id": explanation.right_id,
                     "left_support_path": list(explanation.left_support_path),
                     "right_support_path": list(explanation.right_support_path),
+                    "witness_ids": list(explanation.witness_ids),
                 }
             )
 
+        status = "unknown" if contradictions.status.value == "unknown" else (
+            "consistent" if not contradictions else "contradictions_found"
+        )
+
         return {
-            "status": "consistent" if not contradictions else "contradictions_found",
+            "status": status,
             "belief_count": len(beliefs_raw),
             "contradiction_count": len(contradictions),
             "contradictions": [{"left": left_id, "right": right_id} for left_id, right_id in contradictions],
             "explanations": explanations,
+            "reason": contradictions.reason,
         }
     except Exception as exc:  # pragma: no cover - exercised via tests
         return _error_response(exc)

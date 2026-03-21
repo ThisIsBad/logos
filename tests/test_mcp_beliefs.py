@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+from typing import cast
+
+import pytest
+
 from logic_brain.mcp_tools import check_beliefs
 
 
@@ -66,6 +70,29 @@ def test_check_beliefs_returns_explanations_with_correct_ids() -> None:
         }
     )
 
-    explanation = result["explanations"][0]
+    explanation = cast(list[dict[str, object]], result["explanations"])[0]
     assert explanation["left_id"] == "b1"
     assert explanation["right_id"] == "b2"
+    assert explanation["witness_ids"] == ["b1", "b2"]
+
+
+def test_check_beliefs_surfaces_unknown_status(monkeypatch: pytest.MonkeyPatch) -> None:
+    from logic_brain.z3_session import CheckResult
+
+    def fake_check(self: object) -> CheckResult:
+        return CheckResult(status="unknown", satisfiable=None, reason="timeout")
+
+    monkeypatch.setattr("logic_brain.z3_session.Z3Session.check", fake_check)
+
+    result = check_beliefs(
+        {
+            "beliefs": [
+                {"id": "b1", "statement": "x * x == 2"},
+                {"id": "b2", "statement": "x * x == 3"},
+            ],
+            "variables": {"x": "Int"},
+        }
+    )
+
+    assert result["status"] == "unknown"
+    assert result["reason"] == "timeout"

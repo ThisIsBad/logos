@@ -7,7 +7,9 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from enum import Enum
+from typing import Iterator, overload
 
+from logic_brain.z3_session import CheckResult
 from logic_brain.uncertainty import ConfidenceLevel, UncertaintyCalibrator
 
 
@@ -18,6 +20,14 @@ class BeliefEdgeType(Enum):
     CONTRADICTS = "contradicts"
     DERIVED_FROM = "derived_from"
     OBSERVED_AT = "observed_at"
+
+
+class ContradictionStatus(Enum):
+    """Outcome of Z3-backed contradiction detection."""
+
+    CONSISTENT = "consistent"
+    CONTRADICTION = "contradiction"
+    UNKNOWN = "unknown"
 
 
 @dataclass(frozen=True)
@@ -48,6 +58,44 @@ class ContradictionExplanation:
     right_id: str
     left_support_path: tuple[str, ...]
     right_support_path: tuple[str, ...]
+    witness_ids: tuple[str, ...] = ()
+    status: ContradictionStatus = ContradictionStatus.CONTRADICTION
+    reason: str | None = None
+
+
+@dataclass(frozen=True)
+class ContradictionCheckResult:
+    """Sequence-like contradiction result with explicit solver status."""
+
+    pairs: tuple[tuple[str, str], ...]
+    status: ContradictionStatus
+    reason: str | None = None
+
+    def __iter__(self) -> Iterator[tuple[str, str]]:
+        return iter(self.pairs)
+
+    def __len__(self) -> int:
+        return len(self.pairs)
+
+    @overload
+    def __getitem__(self, index: int) -> tuple[str, str]: ...
+
+    @overload
+    def __getitem__(self, index: slice) -> tuple[tuple[str, str], ...]: ...
+
+    def __getitem__(self, index: int | slice) -> tuple[str, str] | tuple[tuple[str, str], ...]:
+        return self.pairs[index]
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, ContradictionCheckResult):
+            return (
+                self.pairs == other.pairs
+                and self.status is other.status
+                and self.reason == other.reason
+            )
+        if isinstance(other, tuple):
+            return self.pairs == other
+        return False
 
 
 class BeliefGraph:
@@ -57,6 +105,7 @@ class BeliefGraph:
         self._nodes: dict[str, BeliefNode] = {}
         self._edges: list[BeliefEdge] = []
         self._confidence: dict[str, ConfidenceLevel] = {}
+        self._explanations: dict[tuple[str, str], ContradictionExplanation] = {}
 
     def add_belief(
         self,
@@ -175,11 +224,16 @@ class BeliefGraph:
         if pair not in self.contradiction_frontier():
             raise ValueError(f"Beliefs '{left_id}' and '{right_id}' are not contradictory")
 
+        cached = self._explanations.get(pair)
+        if cached is not None:
+            return cached
+
         return ContradictionExplanation(
             left_id=left_id,
             right_id=right_id,
             left_support_path=self._support_path_to_root(left_id),
             right_support_path=self._support_path_to_root(right_id),
+            witness_ids=tuple(sorted(set(self._support_closure(left_id)) | set(self._support_closure(right_id)))),
         )
 
     def ingest_assumptions(self, assumptions: object) -> tuple[str, ...]:
@@ -232,12 +286,14 @@ class BeliefGraph:
         self,
         variables: dict[str, str] | None = None,
         timeout_ms: int = 30000,
-    ) -> tuple[tuple[str, str], ...]:
+    ) -> ContradictionCheckResult:
         """Detect contradictory belief pairs using Z3.
 
-        For every pair of active beliefs, checks whether their statements
-        are jointly unsatisfiable. If so, adds a CONTRADICTS edge and
-        includes the pair in the result.
+        For every pair of beliefs, checks whether the combined support
+        closures of both beliefs are jointly unsatisfiable. If so, adds a
+        CONTRADICTS edge, stores a minimized Z3-derived witness, and
+        includes the pair in the result. If Z3 returns ``unknown`` for any
+        candidate pair, the overall status is surfaced explicitly.
 
         Parameters
         ----------
@@ -249,39 +305,46 @@ class BeliefGraph:
 
         Returns
         -------
-        tuple[tuple[str, str], ...]
-            Sorted pairs of belief ids that are Z3-contradictory.
+        ContradictionCheckResult
+            Sequence-like contradiction pairs plus explicit solver status.
         """
-        from logic_brain.z3_session import Z3Session
-
         nodes = list(self._nodes.values())
         found: set[tuple[str, str]] = set()
+        unknown_reason: str | None = None
+        self._explanations.clear()
 
         for i in range(len(nodes)):
             for j in range(i + 1, len(nodes)):
                 left, right = nodes[i], nodes[j]
-                session = Z3Session(timeout_ms=timeout_ms)
-
-                if variables is not None:
-                    for var_name, sort in variables.items():
-                        session.declare(var_name, sort)
-                else:
-                    _auto_declare_belief_variables(session, [left.statement, right.statement])
-
-                try:
-                    session.assert_constraint(left.statement)
-                    session.assert_constraint(right.statement)
-                except ValueError:
-                    continue
-
-                result = session.check()
+                support_ids = tuple(
+                    sorted(set(self._support_closure(left.belief_id)) | set(self._support_closure(right.belief_id)))
+                )
+                result = _check_belief_subset(self, support_ids, variables=variables, timeout_ms=timeout_ms)
                 if result.satisfiable is False:
                     pair_sorted = sorted((left.belief_id, right.belief_id))
                     pair = (pair_sorted[0], pair_sorted[1])
                     found.add(pair)
                     self.add_edge(left.belief_id, right.belief_id, BeliefEdgeType.CONTRADICTS)
+                    witness_ids = _minimize_unsat_witness(
+                        self,
+                        result.unsat_core or list(support_ids),
+                        variables=variables,
+                        timeout_ms=timeout_ms,
+                    )
+                    self._explanations[pair] = ContradictionExplanation(
+                        left_id=left.belief_id,
+                        right_id=right.belief_id,
+                        left_support_path=self._support_path_to_root(left.belief_id),
+                        right_support_path=self._support_path_to_root(right.belief_id),
+                        witness_ids=witness_ids,
+                    )
+                elif result.satisfiable is None and unknown_reason is None:
+                    unknown_reason = result.reason
 
-        return tuple(sorted(found))
+        status = ContradictionStatus.UNKNOWN if unknown_reason is not None else (
+            ContradictionStatus.CONTRADICTION if found else ContradictionStatus.CONSISTENT
+        )
+        return ContradictionCheckResult(tuple(sorted(found)), status=status, reason=unknown_reason)
 
     def _is_stale(self, node: BeliefNode, at_time: datetime) -> bool:
         valid_until = self._effective_valid_until(node)
@@ -315,6 +378,73 @@ class BeliefGraph:
             path.append(current)
 
         return tuple(path)
+
+    def _support_closure(self, belief_id: str) -> tuple[str, ...]:
+        support_types = {BeliefEdgeType.SUPPORTS, BeliefEdgeType.DERIVED_FROM}
+        closure: set[str] = set()
+        queue: deque[str] = deque([belief_id])
+
+        while queue:
+            current = queue.popleft()
+            if current in closure:
+                continue
+            closure.add(current)
+            for edge in self._edges:
+                if edge.target_id == current and edge.edge_type in support_types:
+                    queue.append(edge.source_id)
+
+        return tuple(sorted(closure))
+
+
+def _check_belief_subset(
+    graph: BeliefGraph,
+    belief_ids: Iterable[str],
+    *,
+    variables: dict[str, str] | None,
+    timeout_ms: int,
+    track_unsat_core: bool = False,
+) -> CheckResult:
+    from logic_brain.z3_session import Z3Session
+
+    ordered_ids = tuple(sorted(set(belief_ids)))
+    session = Z3Session(timeout_ms=timeout_ms, track_unsat_core=track_unsat_core)
+
+    statements = [graph.get_belief(belief_id).statement for belief_id in ordered_ids]
+    if variables is not None:
+        for var_name, sort in variables.items():
+            session.declare(var_name, sort)
+    else:
+        _auto_declare_belief_variables(session, statements)
+
+    for belief_id in ordered_ids:
+        session.assert_constraint(graph.get_belief(belief_id).statement, name=belief_id)
+
+    return session.check()
+
+
+def _minimize_unsat_witness(
+    graph: BeliefGraph,
+    belief_ids: Iterable[str],
+    *,
+    variables: dict[str, str] | None,
+    timeout_ms: int,
+) -> tuple[str, ...]:
+    witness = list(dict.fromkeys(sorted(set(belief_ids))))
+    if len(witness) <= 1:
+        return tuple(witness)
+
+    index = 0
+    while index < len(witness):
+        candidate = witness[:index] + witness[index + 1 :]
+        if not candidate:
+            index += 1
+            continue
+        result = _check_belief_subset(graph, candidate, variables=variables, timeout_ms=timeout_ms)
+        if getattr(result, "satisfiable") is False:
+            witness = candidate
+            continue
+        index += 1
+    return tuple(witness)
 
 
 def _auto_declare_belief_variables(session: object, statements: list[str]) -> None:

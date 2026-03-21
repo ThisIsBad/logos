@@ -63,7 +63,7 @@ def main() -> None:
 
     # Z3 automatically finds the contradiction
     contradictions = graph.detect_contradictions_z3(variables={"x": "Int"})
-    print(f"  Z3-detected contradictions: {contradictions}")
+    print(f"  Z3-detected contradictions: {contradictions.pairs}")
     assert contradictions == (("b1", "b3"),)
 
     # -- Step 3: Counterfactual planning --
