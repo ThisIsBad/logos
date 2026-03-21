@@ -38,6 +38,7 @@ from .diagnostics import (
 )
 from .generator import ProblemGenerator, GeneratorConfig
 from .certificate import ProofCertificate, certify, certify_z3_session, verify_certificate
+from .certificate_store import CertificateStore, StoredCertificate, StoreStats
 from .assumptions import (
     AssumptionConsistency,
     AssumptionEntry,
@@ -175,6 +176,9 @@ __all__ = [
     "certify",
     "certify_z3_session",
     "verify_certificate",
+    "CertificateStore",
+    "StoredCertificate",
+    "StoreStats",
     # Assumption state kernel (Tier 2 / Provisional)
     "AssumptionKind",
     "AssumptionStatus",

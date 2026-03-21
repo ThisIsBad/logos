@@ -1,0 +1,336 @@
+"""In-memory verified proof memory with query and lifecycle management."""
+
+from __future__ import annotations
+
+import hashlib
+import json
+from dataclasses import dataclass
+from datetime import datetime, timezone
+
+from logic_brain.certificate import ProofCertificate, SCHEMA_VERSION
+from logic_brain.schema_utils import load_json_object, require_dict, require_int, require_optional_str, require_str
+
+
+@dataclass(frozen=True)
+class StoredCertificate:
+    """A certificate with store metadata."""
+
+    store_id: str
+    certificate: ProofCertificate
+    tags: dict[str, str]
+    stored_at: str
+    invalidated_at: str | None = None
+    invalidation_reason: str | None = None
+
+    def to_dict(self) -> dict[str, object]:
+        """Serialize a stored certificate."""
+        return {
+            "store_id": self.store_id,
+            "certificate": self.certificate.to_dict(),
+            "tags": dict(self.tags),
+            "stored_at": self.stored_at,
+            "invalidated_at": self.invalidated_at,
+            "invalidation_reason": self.invalidation_reason,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, object]) -> "StoredCertificate":
+        """Deserialize a stored certificate."""
+        store_id = require_str(data.get("store_id"), "StoredCertificate field 'store_id' must be a string")
+        certificate_raw = require_dict(
+            data.get("certificate"),
+            "StoredCertificate field 'certificate' must be an object",
+        )
+        tags_raw = require_dict(data.get("tags", {}), "StoredCertificate field 'tags' must be an object")
+        stored_at = require_str(data.get("stored_at"), "StoredCertificate field 'stored_at' must be a string")
+        invalidated_at = require_optional_str(
+            data.get("invalidated_at"),
+            "StoredCertificate field 'invalidated_at' must be a string or null",
+        )
+        invalidation_reason = require_optional_str(
+            data.get("invalidation_reason"),
+            "StoredCertificate field 'invalidation_reason' must be a string or null",
+        )
+
+        tags: dict[str, str] = {}
+        for key, value in tags_raw.items():
+            if not isinstance(value, str):
+                raise ValueError("StoredCertificate tags must map strings to strings")
+            tags[str(key)] = value
+
+        return cls(
+            store_id=store_id,
+            certificate=ProofCertificate.from_dict({str(key): value for key, value in certificate_raw.items()}),
+            tags=tags,
+            stored_at=stored_at,
+            invalidated_at=invalidated_at,
+            invalidation_reason=invalidation_reason,
+        )
+
+
+@dataclass(frozen=True)
+class StoreStats:
+    """Aggregate statistics about the certificate store."""
+
+    total: int
+    valid: int
+    invalidated: int
+    by_claim_type: dict[str, int]
+    by_method: dict[str, int]
+
+    def to_dict(self) -> dict[str, object]:
+        """Serialize aggregate statistics."""
+        return {
+            "total": self.total,
+            "valid": self.valid,
+            "invalidated": self.invalidated,
+            "by_claim_type": dict(self.by_claim_type),
+            "by_method": dict(self.by_method),
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, object]) -> "StoreStats":
+        """Deserialize aggregate statistics."""
+        by_claim_type_raw = require_dict(
+            data.get("by_claim_type", {}),
+            "StoreStats field 'by_claim_type' must be an object",
+        )
+        by_method_raw = require_dict(
+            data.get("by_method", {}),
+            "StoreStats field 'by_method' must be an object",
+        )
+        return cls(
+            total=require_int(data.get("total"), "StoreStats field 'total' must be an integer"),
+            valid=require_int(data.get("valid"), "StoreStats field 'valid' must be an integer"),
+            invalidated=require_int(
+                data.get("invalidated"),
+                "StoreStats field 'invalidated' must be an integer",
+            ),
+            by_claim_type=_deserialize_counter_map(by_claim_type_raw, "by_claim_type"),
+            by_method=_deserialize_counter_map(by_method_raw, "by_method"),
+        )
+
+
+class CertificateStore:
+    """In-memory store for proof certificates with query and lifecycle management."""
+
+    def __init__(self) -> None:
+        self._entries: dict[str, StoredCertificate] = {}
+
+    def store(self, certificate: ProofCertificate, tags: dict[str, str] | None = None) -> str:
+        """Store a certificate and return its deterministic store id."""
+        _validate_tags(tags)
+        store_id = _store_id(certificate)
+        existing = self._entries.get(store_id)
+        merged_tags = _merge_tags(existing.tags if existing is not None else {}, tags or {})
+
+        if existing is not None:
+            if merged_tags != existing.tags:
+                self._entries[store_id] = StoredCertificate(
+                    store_id=existing.store_id,
+                    certificate=existing.certificate,
+                    tags=merged_tags,
+                    stored_at=existing.stored_at,
+                    invalidated_at=existing.invalidated_at,
+                    invalidation_reason=existing.invalidation_reason,
+                )
+            return store_id
+
+        self._entries[store_id] = StoredCertificate(
+            store_id=store_id,
+            certificate=certificate,
+            tags=merged_tags,
+            stored_at=_utc_now_iso(),
+        )
+        return store_id
+
+    def get(self, store_id: str) -> StoredCertificate | None:
+        """Retrieve a stored certificate by id."""
+        return self._entries.get(store_id)
+
+    def query(
+        self,
+        *,
+        claim_pattern: str | None = None,
+        method: str | None = None,
+        verified: bool | None = None,
+        tags: dict[str, str] | None = None,
+        include_invalidated: bool = False,
+        since: str | None = None,
+        limit: int = 50,
+    ) -> list[StoredCertificate]:
+        """Query stored certificates sorted by newest first."""
+        if limit < 0:
+            raise ValueError("query() limit must be non-negative")
+        _validate_tags(tags)
+        since_dt = _parse_iso(since) if since is not None else None
+
+        matches: list[StoredCertificate] = []
+        for entry in self._entries.values():
+            if not include_invalidated and entry.invalidated_at is not None:
+                continue
+            if claim_pattern is not None and claim_pattern not in _claim_text(entry.certificate):
+                continue
+            if method is not None and entry.certificate.method != method:
+                continue
+            if verified is not None and entry.certificate.verified is not verified:
+                continue
+            if tags is not None and not all(entry.tags.get(key) == value for key, value in tags.items()):
+                continue
+            if since_dt is not None and _parse_iso(entry.stored_at) < since_dt:
+                continue
+            matches.append(entry)
+
+        matches.sort(key=lambda item: _parse_iso(item.stored_at), reverse=True)
+        return matches[:limit]
+
+    def invalidate(self, store_id: str, *, reason: str) -> StoredCertificate:
+        """Mark a certificate as invalidated."""
+        if not reason:
+            raise ValueError("invalidate() reason cannot be empty")
+        entry = self._entries.get(store_id)
+        if entry is None:
+            raise ValueError(f"Unknown certificate store id '{store_id}'")
+        if entry.invalidated_at is not None:
+            return entry
+
+        updated = StoredCertificate(
+            store_id=entry.store_id,
+            certificate=entry.certificate,
+            tags=dict(entry.tags),
+            stored_at=entry.stored_at,
+            invalidated_at=_utc_now_iso(),
+            invalidation_reason=reason,
+        )
+        self._entries[store_id] = updated
+        return updated
+
+    def prune(self, *, max_age_seconds: float | None = None, invalidated_only: bool = False) -> int:
+        """Physically remove matching entries and return the number pruned."""
+        now = datetime.now(timezone.utc)
+        removable: list[str] = []
+
+        for store_id, entry in self._entries.items():
+            age_matches = True
+            invalidation_matches = True
+
+            if max_age_seconds is not None:
+                age_matches = (now - _parse_iso(entry.stored_at)).total_seconds() > max_age_seconds
+            if invalidated_only:
+                invalidation_matches = entry.invalidated_at is not None
+
+            if age_matches and invalidation_matches:
+                removable.append(store_id)
+
+        for store_id in removable:
+            del self._entries[store_id]
+        return len(removable)
+
+    def stats(self) -> StoreStats:
+        """Return aggregate statistics about the store."""
+        by_claim_type: dict[str, int] = {}
+        by_method: dict[str, int] = {}
+        valid = 0
+        invalidated = 0
+
+        for entry in self._entries.values():
+            by_claim_type[entry.certificate.claim_type] = by_claim_type.get(entry.certificate.claim_type, 0) + 1
+            by_method[entry.certificate.method] = by_method.get(entry.certificate.method, 0) + 1
+            if entry.invalidated_at is None:
+                valid += 1
+            else:
+                invalidated += 1
+
+        return StoreStats(
+            total=len(self._entries),
+            valid=valid,
+            invalidated=invalidated,
+            by_claim_type=by_claim_type,
+            by_method=by_method,
+        )
+
+    def clear(self) -> None:
+        """Remove all entries."""
+        self._entries.clear()
+
+    def to_dict(self) -> dict[str, object]:
+        """Serialize the full store."""
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "entries": [entry.to_dict() for entry in self.query(include_invalidated=True, limit=len(self._entries))],
+        }
+
+    def to_json(self) -> str:
+        """Serialize the full store to JSON."""
+        return json.dumps(self.to_dict(), sort_keys=True)
+
+    @classmethod
+    def from_dict(cls, data: dict[str, object]) -> "CertificateStore":
+        """Deserialize a full store."""
+        schema_version = require_str(
+            data.get("schema_version"),
+            "CertificateStore field 'schema_version' must be a string",
+        )
+        if schema_version != SCHEMA_VERSION:
+            raise ValueError(f"Unsupported certificate store schema version '{schema_version}'")
+        entries_raw = data.get("entries")
+        if not isinstance(entries_raw, list):
+            raise ValueError("CertificateStore field 'entries' must be a list")
+
+        instance = cls()
+        for item in entries_raw:
+            item_dict = require_dict(item, "CertificateStore entries must be objects")
+            entry = StoredCertificate.from_dict({str(key): value for key, value in item_dict.items()})
+            instance._entries[entry.store_id] = entry
+        return instance
+
+    @classmethod
+    def from_json(cls, raw_json: str) -> "CertificateStore":
+        """Deserialize a full store from JSON."""
+        payload = load_json_object(
+            raw_json,
+            invalid_error="Invalid certificate store JSON",
+            object_error="Certificate store JSON must be an object",
+        )
+        return cls.from_dict(payload)
+
+
+def _store_id(certificate: ProofCertificate) -> str:
+    return hashlib.sha256(certificate.to_json().encode()).hexdigest()
+
+
+def _merge_tags(existing: dict[str, str], new: dict[str, str]) -> dict[str, str]:
+    merged = dict(existing)
+    merged.update(new)
+    return merged
+
+
+def _validate_tags(tags: dict[str, str] | None) -> None:
+    if tags is None:
+        return
+    for key, value in tags.items():
+        if not isinstance(key, str) or not isinstance(value, str):
+            raise ValueError("CertificateStore tags must be dict[str, str]")
+
+
+def _claim_text(certificate: ProofCertificate) -> str:
+    if isinstance(certificate.claim, str):
+        return certificate.claim
+    return json.dumps(certificate.claim, sort_keys=True)
+
+
+def _deserialize_counter_map(data: dict[str, object], field_name: str) -> dict[str, int]:
+    result: dict[str, int] = {}
+    for key, value in data.items():
+        if not isinstance(value, int):
+            raise ValueError(f"StoreStats field '{field_name}' must map strings to integers")
+        result[str(key)] = value
+    return result
+
+
+def _utc_now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _parse_iso(value: str) -> datetime:
+    return datetime.fromisoformat(value)
