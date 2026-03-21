@@ -267,6 +267,9 @@ def check_contract(payload: Mapping[str, object]) -> ToolResult:
                 {"code": diagnostic.code, "message": diagnostic.message}
                 for diagnostic in result.diagnostics
             ],
+            "unsat_core": list(result.unsat_core),
+            "solver_status": result.solver_status,
+            "reason": result.reason,
         }
     except Exception as exc:  # pragma: no cover - exercised via tests
         return _error_response(exc)

@@ -8,6 +8,7 @@ from enum import Enum
 
 from logic_brain.action_policy import ActionPolicyEngine, PolicyDecision
 from logic_brain.counterfactual import PlanBranch
+from logic_brain.z3_session import CheckResult
 from logic_brain.schema_utils import (
     load_json_object,
     require_list_of_str,
@@ -135,6 +136,9 @@ class GoalContractResult:
     status: GoalContractStatus
     diagnostics: tuple[GoalContractDiagnostic, ...]
     policy_decision: PolicyDecision | None = None
+    unsat_core: tuple[str, ...] = ()
+    solver_status: str | None = None
+    reason: str | None = None
 
 
 def build_branch_context(branch: PlanBranch) -> dict[str, bool]:
@@ -253,8 +257,11 @@ def verify_contract_preconditions_z3(
     The check asks: given the state constraints, are all preconditions
     necessarily satisfied?
 
-    This uses proof-by-refutation: assert state constraints and the
-    negation of a precondition. If UNSAT, the precondition holds.
+    This uses two Z3 queries over the full precondition conjunction:
+    first, check whether the state and preconditions are jointly
+    satisfiable; second, use proof-by-refutation by asserting the state
+    and the negation of the full precondition conjunction. If that second
+    query is UNSAT, the preconditions hold.
 
     Parameters
     ----------
@@ -270,49 +277,165 @@ def verify_contract_preconditions_z3(
     Returns
     -------
     GoalContractResult
-        ACTIVE if all preconditions hold, BLOCKED if any fails.
+        ACTIVE if all preconditions hold, BLOCKED if any fails or Z3
+        returns ``unknown``.
     """
     from logic_brain.z3_session import Z3Session
 
     diagnostics: list[GoalContractDiagnostic] = []
+    if not contract.preconditions:
+        return GoalContractResult(
+            status=GoalContractStatus.ACTIVE,
+            diagnostics=(),
+            solver_status="sat",
+        )
 
+    consistency_session = Z3Session(timeout_ms=timeout_ms)
+    _declare_contract_variables(
+        consistency_session,
+        variables=variables,
+        statements=state_constraints + list(contract.preconditions),
+    )
+    for constraint in state_constraints:
+        consistency_session.assert_constraint(constraint)
     for precondition in contract.preconditions:
-        session = Z3Session(timeout_ms=timeout_ms)
+        consistency_session.assert_constraint(precondition)
 
-        if variables is not None:
-            for var_name, sort in variables.items():
-                session.declare(var_name, sort)
-        else:
-            _auto_declare_contract_variables(
-                session, state_constraints + [precondition]
+    consistency_result = consistency_session.check()
+    if consistency_result.satisfiable is False:
+        unsat_core = _minimize_unsat_contract_clauses(
+            state_constraints=state_constraints,
+            preconditions=contract.preconditions,
+            variables=variables,
+            timeout_ms=timeout_ms,
+        )
+        diagnostics.append(
+            GoalContractDiagnostic(
+                code="z3_preconditions_unsat",
+                message="State constraints and contract preconditions are jointly unsatisfiable",
             )
-
-        for constraint in state_constraints:
-            session.assert_constraint(constraint)
-
-        # Negate the precondition — if UNSAT, precondition must hold
-        session.assert_constraint(f"not ({precondition})")
-
-        result = session.check()
-        if result.satisfiable is not False:
-            # SAT or unknown means precondition is not guaranteed
-            diagnostics.append(
-                GoalContractDiagnostic(
-                    code="z3_precondition_not_entailed",
-                    message=f"Precondition '{precondition}' is not entailed by state",
-                )
-            )
-
-    if diagnostics:
+        )
         return GoalContractResult(
             status=GoalContractStatus.BLOCKED,
             diagnostics=tuple(diagnostics),
+            unsat_core=unsat_core,
+            solver_status=consistency_result.status,
+            reason=consistency_result.reason,
+        )
+    if consistency_result.satisfiable is None:
+        diagnostics.append(
+            GoalContractDiagnostic(
+                code="z3_precondition_unknown",
+                message="Z3 could not determine whether the contract preconditions are satisfiable",
+            )
+        )
+        return GoalContractResult(
+            status=GoalContractStatus.BLOCKED,
+            diagnostics=tuple(diagnostics),
+            solver_status=consistency_result.status,
+            reason=consistency_result.reason,
+        )
+
+    entailment_session = Z3Session(timeout_ms=timeout_ms)
+    _declare_contract_variables(
+        entailment_session,
+        variables=variables,
+        statements=state_constraints + list(contract.preconditions),
+    )
+    for constraint in state_constraints:
+        entailment_session.assert_constraint(constraint)
+    entailment_session.assert_constraint(f"not ({_combine_clauses_with_and(contract.preconditions)})")
+
+    entailment_result = entailment_session.check()
+    if entailment_result.satisfiable is True:
+        diagnostics.append(
+            GoalContractDiagnostic(
+                code="z3_precondition_not_entailed",
+                message="One or more preconditions are not entailed by state",
+            )
+        )
+        return GoalContractResult(
+            status=GoalContractStatus.BLOCKED,
+            diagnostics=tuple(diagnostics),
+            solver_status=entailment_result.status,
+            reason=entailment_result.reason,
+        )
+    if entailment_result.satisfiable is None:
+        diagnostics.append(
+            GoalContractDiagnostic(
+                code="z3_precondition_unknown",
+                message="Z3 could not determine whether the contract preconditions are entailed by state",
+            )
+        )
+        return GoalContractResult(
+            status=GoalContractStatus.BLOCKED,
+            diagnostics=tuple(diagnostics),
+            solver_status=entailment_result.status,
+            reason=entailment_result.reason,
         )
 
     return GoalContractResult(
         status=GoalContractStatus.ACTIVE,
         diagnostics=(),
+        solver_status=entailment_result.status,
     )
+
+
+def _declare_contract_variables(
+    session: object,
+    *,
+    variables: dict[str, str] | None,
+    statements: list[str],
+) -> None:
+    declare = getattr(session, "declare")
+    if variables is not None:
+        for var_name, sort in variables.items():
+            declare(var_name, sort)
+        return
+    _auto_declare_contract_variables(session, statements)
+
+
+def _combine_clauses_with_and(clauses: tuple[str, ...]) -> str:
+    return " and ".join(f"({clause})" for clause in clauses)
+
+
+def _minimize_unsat_contract_clauses(
+    *,
+    state_constraints: list[str],
+    preconditions: tuple[str, ...],
+    variables: dict[str, str] | None,
+    timeout_ms: int,
+) -> tuple[str, ...]:
+    clauses = list(state_constraints) + list(preconditions)
+    index = 0
+
+    while index < len(clauses):
+        candidate = clauses[:index] + clauses[index + 1 :]
+        if not candidate:
+            index += 1
+            continue
+        result = _check_contract_clause_set(candidate, variables=variables, timeout_ms=timeout_ms)
+        if result.satisfiable is False:
+            clauses = candidate
+            continue
+        index += 1
+
+    return tuple(clauses)
+
+
+def _check_contract_clause_set(
+    clauses: list[str],
+    *,
+    variables: dict[str, str] | None,
+    timeout_ms: int,
+) -> CheckResult:
+    from logic_brain.z3_session import Z3Session
+
+    session = Z3Session(timeout_ms=timeout_ms)
+    _declare_contract_variables(session, variables=variables, statements=clauses)
+    for clause in clauses:
+        session.assert_constraint(clause)
+    return session.check()
 
 
 def _auto_declare_contract_variables(

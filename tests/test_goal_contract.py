@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import pytest
+
 from logic_brain import (
     ActionPolicyEngine,
     ActionPolicyRule,
+    CheckResult,
     CounterfactualPlanner,
     GoalContract,
     GoalContractStatus,
@@ -112,6 +115,8 @@ def test_z3_precondition_check_proves_entailed_preconditions() -> None:
 
     assert result.status is GoalContractStatus.ACTIVE
     assert result.diagnostics == ()
+    assert result.unsat_core == ()
+    assert result.solver_status == "unsat"
 
 
 def test_z3_precondition_check_detects_unentailed_precondition() -> None:
@@ -127,7 +132,9 @@ def test_z3_precondition_check_detects_unentailed_precondition() -> None:
     )
 
     assert result.status is GoalContractStatus.BLOCKED
-    assert result.diagnostics[0].code == "z3_precondition_not_entailed"
+    assert result.diagnostics[0].code == "z3_preconditions_unsat"
+    assert result.unsat_core == ("x == -5", "x > 0")
+    assert result.solver_status == "unsat"
 
 
 def test_z3_precondition_check_with_auto_variables() -> None:
@@ -142,3 +149,57 @@ def test_z3_precondition_check_with_auto_variables() -> None:
     )
 
     assert result.status is GoalContractStatus.ACTIVE
+
+
+def test_z3_precondition_check_uses_single_query_for_composite_preconditions() -> None:
+    contract = GoalContract(
+        contract_id="gc1",
+        preconditions=("x > 0", "y > x", "y < 10"),
+    )
+
+    result = verify_contract_preconditions_z3(
+        contract,
+        state_constraints=["x == 2", "y == 5"],
+        variables={"x": "Int", "y": "Int"},
+    )
+
+    assert result.status is GoalContractStatus.ACTIVE
+    assert result.solver_status == "unsat"
+
+
+def test_z3_precondition_check_carries_unsat_core_for_inconsistent_preconditions() -> None:
+    contract = GoalContract(
+        contract_id="gc1",
+        preconditions=("x > 0", "x < 0", "y == 1"),
+    )
+
+    result = verify_contract_preconditions_z3(
+        contract,
+        state_constraints=["y == 1"],
+        variables={"x": "Int", "y": "Int"},
+    )
+
+    assert result.status is GoalContractStatus.BLOCKED
+    assert result.diagnostics[0].code == "z3_preconditions_unsat"
+    assert result.unsat_core == ("x > 0", "x < 0")
+    assert result.solver_status == "unsat"
+
+
+def test_z3_precondition_check_surfaces_unknown_result(monkeypatch: pytest.MonkeyPatch) -> None:
+    contract = GoalContract(contract_id="gc1", preconditions=("x * x == 2",))
+
+    def fake_check(self: object) -> CheckResult:
+        return CheckResult(status="unknown", satisfiable=None, reason="timeout")
+
+    monkeypatch.setattr("logic_brain.z3_session.Z3Session.check", fake_check)
+
+    result = verify_contract_preconditions_z3(
+        contract,
+        state_constraints=["x >= 0"],
+        variables={"x": "Int"},
+    )
+
+    assert result.status is GoalContractStatus.BLOCKED
+    assert result.diagnostics[0].code == "z3_precondition_unknown"
+    assert result.reason == "timeout"
+    assert result.solver_status == "unknown"
