@@ -9,6 +9,7 @@ from logic_brain.action_policy import ActionPolicyEngine, ActionPolicyRule
 from logic_brain.assumptions import AssumptionKind, AssumptionSet
 from logic_brain.belief_graph import BeliefGraph
 from logic_brain.certificate import ProofCertificate, certify
+from logic_brain.certificate_store import CertificateStore
 from logic_brain.counterfactual import CounterfactualPlanner
 from logic_brain.execution_bus import ActionEnvelope, execute_action_envelope
 from logic_brain.goal_contract import (
@@ -30,6 +31,7 @@ from logic_brain.z3_session import Z3Session as SolverSession
 ToolResult = dict[str, object]
 
 _SESSION_STORE = Z3SessionStore()
+_CERTIFICATE_STORE = CertificateStore()
 
 
 def verify_argument(payload: Mapping[str, object]) -> ToolResult:
@@ -197,6 +199,56 @@ def certify_claim(payload: Mapping[str, object]) -> ToolResult:
             "certificate_json": serialized,
             "certificate_id": _certificate_id(argument),
         }
+    except Exception as exc:  # pragma: no cover - exercised via tests
+        return _error_response(exc)
+
+
+def certificate_store(payload: Mapping[str, object]) -> ToolResult:
+    """Manage the certificate store: store, get, query, invalidate, stats."""
+    try:
+        data = _require_payload(payload)
+        action = _require_non_empty_str(data, "action")
+
+        if action == "store":
+            certificate, duplicate = _certificate_from_store_payload(data)
+            store_id = _CERTIFICATE_STORE.store(certificate, tags=_optional_tags(data.get("tags")))
+            entry = _CERTIFICATE_STORE.get(store_id)
+            if entry is None:  # pragma: no cover
+                raise RuntimeError("Stored certificate could not be retrieved")
+            return {
+                "store_id": store_id,
+                "stored_at": entry.stored_at,
+                "duplicate": duplicate,
+            }
+
+        if action == "get":
+            store_id = _require_non_empty_str(data, "store_id")
+            entry = _CERTIFICATE_STORE.get(store_id)
+            if entry is None:
+                return {"found": False}
+            return {"found": True, "entry": entry.to_dict()}
+
+        if action == "query":
+            entries = _CERTIFICATE_STORE.query(
+                claim_pattern=_optional_non_empty_str(data.get("claim_pattern"), "claim_pattern"),
+                method=_optional_non_empty_str(data.get("method"), "method"),
+                verified=_optional_bool(data.get("verified"), "verified"),
+                tags=_optional_tags(data.get("tags")),
+                include_invalidated=_optional_bool(data.get("include_invalidated"), "include_invalidated") or False,
+                since=_optional_non_empty_str(data.get("since"), "since"),
+                limit=_optional_non_negative_int(data.get("limit"), default=50),
+            )
+            return {"count": len(entries), "entries": [entry.to_dict() for entry in entries]}
+
+        if action == "invalidate":
+            store_id = _require_non_empty_str(data, "store_id")
+            reason = _require_non_empty_str(data, "reason")
+            return _CERTIFICATE_STORE.invalidate(store_id, reason=reason).to_dict()
+
+        if action == "stats":
+            return _CERTIFICATE_STORE.stats().to_dict()
+
+        raise ValueError("Field 'action' must be one of: store, get, query, invalidate, stats")
     except Exception as exc:  # pragma: no cover - exercised via tests
         return _error_response(exc)
 
@@ -569,6 +621,61 @@ def _require_bool_map(payload: dict[str, object], key: str) -> dict[str, bool]:
             raise ValueError(f"Action field '{name}' must be a boolean")
         normalized[name] = value
     return normalized
+
+
+def _optional_tags(value: object) -> dict[str, str] | None:
+    if value is None:
+        return None
+    if not isinstance(value, dict):
+        raise ValueError("Field 'tags' must be an object")
+    normalized: dict[str, str] = {}
+    for name, item in value.items():
+        if not isinstance(name, str) or not isinstance(item, str):
+            raise ValueError("Field 'tags' must be dict[str, str]")
+        normalized[name] = item
+    return normalized
+
+
+def _optional_non_empty_str(value: object, field_name: str) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"Field '{field_name}' must be a non-empty string")
+    return value
+
+
+def _optional_bool(value: object, field_name: str) -> bool | None:
+    if value is None:
+        return None
+    if not isinstance(value, bool):
+        raise ValueError(f"Field '{field_name}' must be a boolean")
+    return value
+
+
+def _optional_non_negative_int(value: object, default: int) -> int:
+    if value is None:
+        return default
+    if not isinstance(value, int) or value < 0:
+        raise ValueError("Field 'limit' must be an integer >= 0")
+    return value
+
+
+def _certificate_from_store_payload(data: dict[str, object]) -> tuple[ProofCertificate, bool]:
+    has_dict = "certificate" in data
+    has_json = "certificate_json" in data
+    if has_dict == has_json:
+        raise ValueError("Exactly one of 'certificate' or 'certificate_json' must be provided")
+
+    if has_dict:
+        certificate_raw = _require_dict(data, "certificate")
+        certificate = ProofCertificate.from_dict(certificate_raw)
+    else:
+        certificate_json = _require_non_empty_str(data, "certificate_json")
+        certificate = ProofCertificate.from_json(certificate_json)
+
+    store_id = _certificate_id(certificate.to_json())
+    duplicate = _CERTIFICATE_STORE.get(store_id) is not None
+    return certificate, duplicate
 
 
 def _optional_positive_int(value: object, default: int) -> int:

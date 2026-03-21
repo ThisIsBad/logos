@@ -19,6 +19,7 @@ except ImportError as exc:  # pragma: no cover
     ) from exc
 
 from logic_brain.mcp_tools import (
+    certificate_store,
     certify_claim,
     check_assumptions,
     check_beliefs,
@@ -113,6 +114,10 @@ _POSTCONDITION_SCHEMA: dict[str, object] = {
     "required": ["path"],
     "additionalProperties": False,
 }
+_CERT_STORE_ACTION_SCHEMA: dict[str, object] = {
+    "type": "string",
+    "enum": ["store", "get", "query", "invalidate", "stats"],
+}
 
 
 def _tool(
@@ -150,6 +155,36 @@ _TOOLS: tuple[ToolSpec, ...] = (
         {"argument": {"type": "string", "description": "Argument to certify."}},
         ["argument"],
         certify_claim,
+    ),
+    _tool(
+        "certificate_store",
+        "Manage proof memory for stored certificates. Example: {'action': 'stats'}",
+        {
+            "action": _CERT_STORE_ACTION_SCHEMA,
+            "certificate": {
+                "type": "object",
+                "description": "ProofCertificate payload for the 'store' action.",
+            },
+            "certificate_json": {
+                "type": "string",
+                "description": "Serialized ProofCertificate JSON for the 'store' action.",
+            },
+            "tags": {
+                "type": "object",
+                "description": "Optional string tags merged onto the stored entry.",
+                "additionalProperties": {"type": "string"},
+            },
+            "store_id": {"type": "string", "description": "Stored certificate identifier."},
+            "claim_pattern": {"type": "string", "description": "Substring to match against the claim."},
+            "method": {"type": "string", "description": "Exact certificate method to match."},
+            "verified": {"type": "boolean", "description": "Optional verified-state filter."},
+            "include_invalidated": {"type": "boolean", "description": "Include invalidated entries in query results."},
+            "since": {"type": "string", "description": "Only return entries stored at or after this ISO timestamp."},
+            "limit": {"type": "integer", "description": "Maximum number of query results to return."},
+            "reason": {"type": "string", "description": "Invalidation reason for the 'invalidate' action."},
+        },
+        ["action"],
+        certificate_store,
     ),
     _tool(
         "check_assumptions",

@@ -29,6 +29,7 @@ def test_create_server_registers_expected_tools() -> None:
     assert anyio.run(run) == [
         "verify_argument",
         "certify_claim",
+        "certificate_store",
         "check_assumptions",
         "check_beliefs",
         "counterfactual_branch",
@@ -84,6 +85,7 @@ def test_stdio_server_lists_tools_and_handles_calls() -> None:
                 assert [tool.name for tool in tools.tools] == [
                     "verify_argument",
                     "certify_claim",
+                    "certificate_store",
                     "check_assumptions",
                     "check_beliefs",
                     "counterfactual_branch",
@@ -101,6 +103,13 @@ def test_stdio_server_lists_tools_and_handles_calls() -> None:
                 )
                 structured_certify = cast(dict[str, object], certify_result.structuredContent)
                 assert structured_certify["verified"] is True
+
+                store_result = await session.call_tool(
+                    "certificate_store",
+                    {"action": "stats"},
+                )
+                structured_store = cast(dict[str, object], store_result.structuredContent)
+                assert structured_store["total"] == 0
 
                 verify_result = await session.call_tool(
                     "verify_argument",
