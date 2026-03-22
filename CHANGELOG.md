@@ -4,6 +4,41 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-03-21
+
+Stage 3 fully validated, Stage 4 verification substrate complete. This release
+adds 15+ modules, 12 MCP tools, and 500+ tests.
+
+### Added
+- Add `certificate.py` with `ProofCertificate`, `certify`, `certify_z3_session`, and `verify_certificate` for proof-carrying verification (#63).
+- Add `assumptions.py` with `AssumptionSet` for typed epistemic state and Z3-backed consistency checks (#63).
+- Add `counterfactual.py` with `CounterfactualPlanner`, branch replay, utility ranking, and safety bounds for counterfactual planning (#47).
+- Add `action_policy.py` with `ActionPolicyEngine`, structured violation evidence, and Z3-backed consistency/subsumption checks (#50, #66).
+- Add `uncertainty.py` with `UncertaintyCalibrator`, confidence records, and risk-based escalation hooks (#47).
+- Add `belief_graph.py` with `BeliefGraph` and Z3-backed contradiction detection plus support-path explanations (#64).
+- Add `goal_contract.py` with `GoalContract`, machine-checkable contracts, and Z3-backed precondition verification (#48, #65).
+- Add `orchestrator.py` with `ProofOrchestrator`, claim decomposition, propagation, and composed certificates (#43).
+- Add `execution_bus.py` with `ActionEnvelope`, `ActionBusResult`, postcondition checks, and proof-carrying execution traces (#43).
+- Add `proof_exchange.py` with `ProofBundle`, `ProofExchangeNode`, and cross-agent proof exchange with schema versioning (#37).
+- Add `recovery.py` with `RecoveryProtocol`, deterministic failure classification, and recovery certificates (#50).
+- Add `trust_ledger.py` with `FederatedProofLedger` and trust-domain scoped proof acceptance for exchanged bundles (#49).
+- Add `verified_runtime.py` with `VerifiedAgentRuntime` for closed-loop planning, contracts, uncertainty, execution, and recovery (#48).
+- Add `adversarial_harness.py` with `AdversarialSelfPlayHarness` for deterministic red-team campaigns over runtime traces (#45).
+- Add `certificate_store.py` with `CertificateStore`, `StoredCertificate`, and `StoreStats` for hash-deduped proof memory with tagging, invalidation, and query APIs (#69).
+- Add MCP tools `check_beliefs`, `counterfactual_branch`, `check_contract`, `check_policy`, `z3_session`, `orchestrate_proof`, `proof_carrying_action`, and `certificate_store`, expanding the MCP surface from 5 to 12 tools (#64, #65, #66, #70).
+- Add `examples/reflective_agent.py` as a runnable Stage 3 reflective verification workflow example (#67).
+- Add `tests/test_stage3_criteria.py` as the Stage 3 benchmark harness with local criteria checks and external benchmark placeholders (#68).
+- Add `tests/test_cross_agent_exchange.py` for end-to-end cross-agent proof exchange across bundle verification, trust evaluation, and execution (#71).
+- Add `tests/test_runtime_composition.py` for sequential `VerifiedAgentRuntime` composition with persistent certificates across requests (#72).
+- Add metamorphic suites `tests/test_metamorphic_certificate_store.py`, `tests/test_metamorphic_belief_graph.py`, and `tests/test_metamorphic_goal_contract.py` to lock in new invariants across Stage 3 and Stage 4 primitives (#64, #65, #69).
+- Add Z3 grounding closure across `AssumptionSet`, `BeliefGraph`, `GoalContract`, and `ActionPolicyEngine`, eliminating Python-only fallbacks in formal checks (#63, #64, #65, #66).
+- Add 330+ tests since `v0.2.0`, growing the suite from about 185 tests to 500+ tests with coverage and metamorphic gates in CI.
+
+### Changed
+- Change `AssumptionSet`, `BeliefGraph`, `GoalContract`, and `ActionPolicyEngine` to surface explicit solver status and `unknown` outcomes instead of silently treating them as success (#63, #64, #65, #66).
+- Change MCP server and tool wiring to expose the expanded agent-facing workflow surface, including persistent proof memory (#67, #70).
+- Change runtime and validation coverage from isolated unit checks to end-to-end reflective, cross-agent, and sequential-composition workflows (#67, #68, #71, #72).
+
 ## [0.2.0] - 2026-03-13
 
 First release with an explicit API stability contract. Agent developers can

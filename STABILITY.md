@@ -59,6 +59,9 @@ The tier determines the guarantees you get when upgrading between releases.
 | `certify` | `certificate` | Create a certificate from propositional or FOL verification |
 | `certify_z3_session` | `certificate` | Create a certificate from a `Z3Session` check |
 | `verify_certificate` | `certificate` | Re-verify a proof certificate deterministically |
+| `CertificateStore` | `certificate_store` | In-memory proof memory with hash-dedup, tagging, query, invalidation, and pruning |
+| `StoredCertificate` | `certificate_store` | Frozen dataclass representing one stored certificate entry |
+| `StoreStats` | `certificate_store` | Frozen dataclass with aggregate store statistics |
 | `AssumptionKind` | `assumptions` | Enum of typed assumption categories |
 | `AssumptionStatus` | `assumptions` | Enum of assumption lifecycle states |
 | `AssumptionEntry` | `assumptions` | Assumption record with provenance and lifecycle metadata |
@@ -107,6 +110,10 @@ The tier determines the guarantees you get when upgrading between releases.
 | `PostconditionCheck` | `execution_bus` | Expected postcondition check over an action result |
 | `ActionBusResult` | `execution_bus` | Structured execution-bus result with trace and diagnostics |
 | `execute_action_envelope` | `execution_bus` | Execute a proof-carrying action envelope via registered adapters |
+| `ClaimStatus` | `orchestrator` | Enum of claim verification states |
+| `Claim` | `orchestrator` | One claim node in a proof orchestration tree |
+| `OrchestrationStatus` | `orchestrator` | Frozen status snapshot for a proof orchestration tree |
+| `ProofOrchestrator` | `orchestrator` | Compositional proof tree with claim decomposition and propagation |
 | `FailureCategory` | `recovery` | Unified failure taxonomy across planner/proof/policy modules |
 | `RecoveryProtocol` | `recovery` | Deterministic recovery actions after failure |
 | `FailureContext` | `recovery` | Auditable failure input used for protocol selection |
