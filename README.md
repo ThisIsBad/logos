@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/ThisIsBad/LogicBrain/actions/workflows/ci.yml/badge.svg)](https://github.com/ThisIsBad/LogicBrain/actions/workflows/ci.yml)
 
-A Z3-backed deterministic verifier for propositional and predicate logic. Designed to be used directly by AI coding agents (Claude Code, OpenCode, Aider, etc.) via Python execution.
+A deterministic reasoning toolkit backed by Z3 and Lean 4 -- formal verification, assumption management, counterfactual planning, policy enforcement, and proof certificates for AI agents.
 
 ## Quick Start
 
@@ -223,21 +223,44 @@ Features:
 
 ```
 logic_brain/
-├── __init__.py         # Public API re-exports
-├── py.typed            # PEP 561 marker for downstream type-checking
-├── parser.py           # String-based parser ("P -> Q, P |- Q")
-├── verifier.py         # Z3-backed propositional logic verifier
-├── predicate.py        # Z3-backed predicate logic verifier
-├── generator.py        # Fresh problem generator (ProblemGenerator)
-├── lean_session.py     # Lean 4 interactive session wrapper
-├── z3_session.py       # Z3 incremental solving session
-├── diagnostics.py      # Structured error diagnostics for agents
-├── execution_bus.py    # Proof-carrying action envelopes across tools
-├── cli.py              # CLI entrypoint (python -m logic_brain)
-├── models.py           # Core data types
-├── predicate_models.py # FOL data types
-├── loader.py           # Benchmark loader
-└── runner.py           # Benchmark runner
+├── __init__.py             # Public API (see STABILITY.md for tiers)
+├── __main__.py             # Module entrypoint for `python -m logic_brain`
+├── py.typed                # PEP 561 marker
+├── parser.py               # String-based parser ("P -> Q, P |- Q")
+├── verifier.py             # Z3-backed propositional logic verifier
+├── predicate.py            # Z3-backed predicate logic verifier
+├── models.py               # Core propositional data types
+├── predicate_models.py     # FOL data types
+├── certificate.py          # Proof certificates (certify, verify, serialize)
+├── certificate_store.py    # In-memory proof memory with query API
+├── assumptions.py          # Typed epistemic state manager
+├── counterfactual.py       # Z3-backed counterfactual branch planner
+├── action_policy.py        # Pre-action policy enforcement with Z3
+├── uncertainty.py          # Confidence calibration and escalation
+├── belief_graph.py         # Causal belief graph with contradiction detection
+├── goal_contract.py        # Machine-checkable goal contracts
+├── orchestrator.py         # Compositional proof trees
+├── execution_bus.py        # Proof-carrying action envelopes
+├── proof_exchange.py       # Cross-agent proof bundles
+├── recovery.py             # Deterministic recovery protocols
+├── trust_ledger.py         # Federated trust-domain proof ledger
+├── verified_runtime.py     # Closed-loop verified agent runtime
+├── adversarial_harness.py  # Adversarial self-play harness
+├── z3_session.py           # Incremental Z3 solving session
+├── lean_session.py         # Lean 4 interactive session
+├── diagnostics.py          # Structured error diagnostics
+├── generator.py            # Logic problem generator
+├── mcp_tools.py            # MCP tool handler implementations
+├── mcp_server.py           # MCP stdio server
+├── mcp_session_store.py    # MCP Z3/orchestrator session state (internal)
+├── cli.py                  # CLI entrypoint
+├── schema_utils.py         # Shared schema helpers (internal)
+├── loader.py               # Benchmark loader (internal)
+├── runner.py               # Benchmark runner (internal)
+├── analyzer.py             # Error pattern analysis (internal)
+├── evaluate.py             # LLM evaluation (internal)
+├── external.py             # External benchmark adapters (internal)
+└── lean_verifier.py        # Non-interactive Lean verification (internal)
 examples/
 ├── agent_integration.py  # Full agent workflow demo (copy-paste ready)
 ├── quick_verify.py       # Minimal verification examples
@@ -350,6 +373,7 @@ What an agent can do:
 - `z3_session` - manage stateful incremental Z3 sessions over MCP
 - `orchestrate_proof` - build and propagate compositional proof trees
 - `proof_carrying_action` - enforce certified preconditions and checked postconditions across tool calls
+- `certificate_store` - store, query, invalidate, and retrieve proof certificates
 
 For the full setup and troubleshooting guide, see `docs/mcp_setup.md`.
 
@@ -372,4 +396,4 @@ Further documentation:
 
 ## License
 
-MIT
+See `LICENSE`.

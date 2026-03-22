@@ -14,9 +14,10 @@ Run from the repository root:
 ```powershell
 python -m pip install -e ".[dev]"
 python -m pytest -q
-python tools/check_results.py exam
-python tools/check_fol_results.py
-python tools/check_stress_results.py
+python -m ruff check logic_brain/ tests/ tools/
+python -m mypy --strict logic_brain
+python -m pytest --cov=logic_brain --cov-report=term-missing --cov-fail-under=85
+python -m pytest -q -m metamorphic
 ```
 
 Optional if Lean is installed:
@@ -71,17 +72,26 @@ Run these quick checks before or after release:
 # Core parser/verifier API sanity
 python -c "from logic_brain import verify; r=verify('P -> Q, P |- Q'); print(r.valid, r.rule)"
 
+# Certificate round-trip sanity
+python -c "from logic_brain import certify, verify_certificate; c=certify('P -> Q, P |- Q'); print(c.verified, verify_certificate(c))"
+
+# CertificateStore sanity
+python -c "from logic_brain import CertificateStore, certify; s=CertificateStore(); sid=s.store(certify('P -> Q, P |- Q')); print(s.stats())"
+
 # CLI sanity
 python -m logic_brain "P -> Q, P |- Q" --json
 
 # Benchmark checker sanity
 python tools/check_results.py exam
-
-# Predicate checker sanity
 python tools/check_fol_results.py
-
-# Stress checker sanity
 python tools/check_stress_results.py
+```
+
+Optional MCP smoke test:
+
+```powershell
+# MCP server starts without error (Ctrl+C to stop)
+python -m logic_brain.mcp_server
 ```
 
 If Lean is available:
