@@ -133,11 +133,42 @@ def _check_entailment_compaction() -> int:
     return 0 if failures == 0 else 1
 
 
+def _check_compaction_curve() -> int:
+    path = RESULTS_DIR / "experiment_compaction_curve.json"
+    if not path.exists():
+        raise FileNotFoundError(f"Missing experiment result file: {path}")
+
+    payload = _load_json(path)
+    levels = payload.get("levels")
+    if not isinstance(levels, list):
+        raise ValueError("Compaction curve results must contain a 'levels' list")
+
+    print("Difficulty   Variables  Valid  Compacted  Ratio     Time")
+    print("---------------------------------------------------------")
+    failures = 0
+    for level in levels:
+        if not isinstance(level, dict):
+            raise ValueError("Each compaction curve level must be an object")
+        difficulty = str(level.get("difficulty"))
+        variables = _require_int(level, "num_variables")
+        valid_count = _require_int(level, "valid_count")
+        compacted_count = _require_int(level, "compacted_count")
+        ratio = _require_number(level, "compaction_ratio")
+        wall_time = _require_number(level, "wall_time_seconds")
+        verification_passed = level.get("verification_passed") is True
+        if compacted_count > valid_count or not verification_passed:
+            failures += 1
+        print(
+            f"{difficulty:12s}{variables:<11d}{valid_count:<7d}{compacted_count:<11d}{ratio:<10.4f}{wall_time:.1f}s"
+        )
+    return 0 if failures == 0 else 1
+
+
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Check experiment result files")
     parser.add_argument(
         "experiment",
-        choices=["memory_consistency", "entailment_compaction"],
+        choices=["memory_consistency", "entailment_compaction", "compaction_curve"],
         help="Experiment family to validate",
     )
     return parser.parse_args()
@@ -149,6 +180,8 @@ def main() -> int:
         return _check_memory_consistency()
     if args.experiment == "entailment_compaction":
         return _check_entailment_compaction()
+    if args.experiment == "compaction_curve":
+        return _check_compaction_curve()
     raise ValueError(f"Unsupported experiment '{args.experiment}'")
 
 
