@@ -95,11 +95,49 @@ def _check_memory_consistency() -> int:
     return 0 if failures == 0 else 1
 
 
+def _check_entailment_compaction() -> int:
+    path = RESULTS_DIR / "experiment_entailment_compaction.json"
+    if not path.exists():
+        raise FileNotFoundError(f"Missing experiment result file: {path}")
+
+    payload = _load_json(path)
+    compacted_count = _require_int(payload, "compacted_count")
+    original_count = _require_int(payload, "original_count")
+    compaction_ratio = _require_number(payload, "compaction_ratio")
+    verification_passed = payload.get("verification_passed") is True
+
+    rows = [
+        (
+            "verification_passed",
+            verification_passed,
+            f"verification_passed={verification_passed}",
+        ),
+        (
+            "compacted<=original",
+            compacted_count <= original_count,
+            f"compacted={compacted_count} original={original_count}",
+        ),
+        (
+            "compaction_ratio",
+            True,
+            f"ratio={compaction_ratio:.3f}",
+        ),
+    ]
+
+    print("check                        status   details")
+    print("-------------------------------------------------------------")
+    failures = 0
+    for name, ok, detail in rows:
+        print(f"{name:28s} {'PASS' if ok else 'FAIL':6s} {detail}")
+        failures += int(not ok)
+    return 0 if failures == 0 else 1
+
+
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Check experiment result files")
     parser.add_argument(
         "experiment",
-        choices=["memory_consistency"],
+        choices=["memory_consistency", "entailment_compaction"],
         help="Experiment family to validate",
     )
     return parser.parse_args()
@@ -109,6 +147,8 @@ def main() -> int:
     args = _parse_args()
     if args.experiment == "memory_consistency":
         return _check_memory_consistency()
+    if args.experiment == "entailment_compaction":
+        return _check_entailment_compaction()
     raise ValueError(f"Unsupported experiment '{args.experiment}'")
 
 
