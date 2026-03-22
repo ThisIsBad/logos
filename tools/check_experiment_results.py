@@ -164,11 +164,58 @@ def _check_compaction_curve() -> int:
     return 0 if failures == 0 else 1
 
 
+def _check_context_retrieval() -> int:
+    path = RESULTS_DIR / "experiment_context_retrieval.json"
+    if not path.exists():
+        raise FileNotFoundError(f"Missing experiment result file: {path}")
+
+    payload = _load_json(path)
+    knowledge_base_size = _require_int(payload, "knowledge_base_size")
+    query_count = _require_int(payload, "query_count")
+    queries = payload.get("queries")
+    aggregates = payload.get("aggregates")
+    if not isinstance(queries, list):
+        raise ValueError("Context retrieval results must contain a 'queries' list")
+    if not isinstance(aggregates, dict):
+        raise ValueError("Context retrieval results must contain an 'aggregates' object")
+
+    print(f"Knowledge base: {knowledge_base_size} certificates")
+    print(f"Queries: {query_count}\n")
+    print("Query  Unfiltered  Consistent  Applicable  Reduction  Precision")
+    print("---------------------------------------------------------------")
+
+    failures = 0
+    for item in queries:
+        if not isinstance(item, dict):
+            raise ValueError("Each context retrieval query result must be an object")
+        query_index = _require_int(item, "query_index")
+        unfiltered = _require_int(item, "unfiltered_count")
+        consistent = _require_int(item, "consistent_count")
+        applicable = _require_int(item, "applicable_count")
+        reduction = _require_number(item, "consistency_reduction")
+        precision = _require_number(item, "applicability_precision")
+
+        if consistent > unfiltered or applicable > consistent or reduction < 0.0 or not (0.0 <= precision <= 1.0):
+            failures += 1
+
+        print(
+            f"{query_index:<6d} {unfiltered:<11d}{consistent:<12d}{applicable:<12d}"
+            f"{reduction * 100:>7.1f}%   {precision * 100:>7.1f}%"
+        )
+
+    print("\nAggregates:")
+    print(f"  Mean consistency reduction:     {_require_number(aggregates, 'mean_consistency_reduction') * 100:.1f}%")
+    print(f"  Mean applicability precision:   {_require_number(aggregates, 'mean_applicability_precision') * 100:.1f}%")
+    print(f"  Mean check time per query:      {_require_number(aggregates, 'mean_applicability_check_seconds'):.2f}s")
+
+    return 0 if failures == 0 else 1
+
+
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Check experiment result files")
     parser.add_argument(
         "experiment",
-        choices=["memory_consistency", "entailment_compaction", "compaction_curve"],
+        choices=["memory_consistency", "entailment_compaction", "compaction_curve", "context_retrieval"],
         help="Experiment family to validate",
     )
     return parser.parse_args()
@@ -182,6 +229,8 @@ def main() -> int:
         return _check_entailment_compaction()
     if args.experiment == "compaction_curve":
         return _check_compaction_curve()
+    if args.experiment == "context_retrieval":
+        return _check_context_retrieval()
     raise ValueError(f"Unsupported experiment '{args.experiment}'")
 
 
