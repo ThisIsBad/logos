@@ -1,0 +1,10 @@
+{
+  "actual_invalid": 100,
+  "actual_valid": 100,
+  "certificate_count": 200,
+  "expected_invalid": 100,
+  "expected_valid": 100,
+  "experiment": "memory_consistency_mixed_accumulation",
+  "invalid_query_seconds": 0.000297,
+  "valid_query_seconds": 0.000354
+}
