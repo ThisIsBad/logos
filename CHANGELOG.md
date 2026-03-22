@@ -7,6 +7,8 @@ All notable changes to this project are documented in this file.
 ### Added
 - `CertificateStore.compact()` - Z3-verified redundancy removal for propositional certificates.
 - `CompactionResult` dataclass for compaction outcomes.
+- `CertificateStore.query_consistent()` - Z3 consistency-filtered retrieval for propositional certificates.
+- `ConsistencyFilterResult` dataclass for consistency-filtered query outcomes.
 
 ## [0.8.0] - 2026-03-21
 

@@ -11,7 +11,7 @@ import z3
 
 from logic_brain.certificate import PROPOSITIONAL_CLAIM, ProofCertificate, SCHEMA_VERSION
 from logic_brain.models import Connective, LogicalExpression, Proposition
-from logic_brain.parser import parse_argument
+from logic_brain.parser import parse_argument, parse_expression
 from logic_brain.schema_utils import load_json_object, require_dict, require_int, require_optional_str, require_str
 from logic_brain.verifier import PropositionalVerifier
 
@@ -124,6 +124,15 @@ class CompactionResult:
     retained_count: int
     removed_ids: tuple[str, ...]
     verification_passed: bool
+
+
+@dataclass(frozen=True)
+class ConsistencyFilterResult:
+    """Result of a Z3 consistency-filtered query."""
+
+    consistent: list[StoredCertificate]
+    inconsistent_count: int
+    premises_contradictory: bool
 
 
 class CertificateStore:
@@ -315,6 +324,63 @@ class CertificateStore:
             verification_passed=verification_passed,
         )
 
+    def query_consistent(
+        self,
+        premises: list[str],
+        *,
+        verified: bool | None = None,
+        tags: dict[str, str] | None = None,
+        include_invalidated: bool = False,
+        limit: int = 50,
+    ) -> ConsistencyFilterResult:
+        """Query certificates filtered by Z3 consistency with given premises."""
+        if limit < 0:
+            raise ValueError("query_consistent() limit must be non-negative")
+        _validate_tags(tags)
+
+        if premises and not _check_consistency(premises, None):
+            return ConsistencyFilterResult(
+                consistent=[],
+                inconsistent_count=0,
+                premises_contradictory=True,
+            )
+
+        candidates: list[StoredCertificate] = []
+        for entry in self.query(
+            verified=verified,
+            tags=tags,
+            include_invalidated=include_invalidated,
+            limit=len(self._entries),
+        ):
+            if entry.certificate.claim_type != PROPOSITIONAL_CLAIM:
+                continue
+            if not isinstance(entry.certificate.claim, str):
+                continue
+            candidates.append(entry)
+
+        if not premises:
+            return ConsistencyFilterResult(
+                consistent=candidates[:limit],
+                inconsistent_count=0,
+                premises_contradictory=False,
+            )
+
+        consistent: list[StoredCertificate] = []
+        inconsistent_count = 0
+        for entry in candidates:
+            assert isinstance(entry.certificate.claim, str)
+            conclusion = _extract_conclusion_text(entry.certificate.claim)
+            if _check_consistency(premises, conclusion):
+                consistent.append(entry)
+            else:
+                inconsistent_count += 1
+
+        return ConsistencyFilterResult(
+            consistent=consistent[:limit],
+            inconsistent_count=inconsistent_count,
+            premises_contradictory=False,
+        )
+
     def to_dict(self) -> dict[str, object]:
         """Serialize the full store."""
         return {
@@ -398,6 +464,26 @@ def _check_propositional_entailment(
         solver.add(verifier._to_z3(premise, z3_vars))
     solver.add(z3.Not(verifier._to_z3(target_expr, z3_vars)))
     return bool(solver.check() == z3.unsat)
+
+
+def _check_consistency(premises: list[str], conclusion: str | None) -> bool:
+    verifier = PropositionalVerifier()
+    premise_exprs = [parse_expression(premise) for premise in premises]
+    conclusion_expr = parse_argument(f"{conclusion} |- {conclusion}").conclusion if conclusion is not None else None
+
+    atoms: set[str] = set()
+    for premise in premise_exprs:
+        verifier._collect_atoms_from_expr(premise, atoms)
+    if conclusion_expr is not None:
+        verifier._collect_atoms_from_expr(conclusion_expr, atoms)
+
+    z3_vars = {label: z3.Bool(label) for label in sorted(atoms)}
+    solver = z3.Solver()
+    for premise in premise_exprs:
+        solver.add(verifier._to_z3(premise, z3_vars))
+    if conclusion_expr is not None:
+        solver.add(verifier._to_z3(conclusion_expr, z3_vars))
+    return bool(solver.check() == z3.sat)
 
 
 def _extract_conclusion_text(claim: str) -> str:

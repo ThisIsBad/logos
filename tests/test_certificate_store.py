@@ -5,6 +5,7 @@ from __future__ import annotations
 from logic_brain import (
     CertificateStore,
     CompactionResult,
+    ConsistencyFilterResult,
     ProofCertificate,
     StoreStats,
     StoredCertificate,
@@ -384,3 +385,75 @@ def test_compact_skips_unverified_certificates() -> None:
 
     assert result.verification_passed is True
     assert store.get(unverified_id) is not None
+
+
+def test_query_consistent_filters_inconsistent() -> None:
+    store = CertificateStore()
+    consistent_id = store.store(certify("P |- P"), tags={"domain": "logic"})
+    inconsistent_id = store.store(certify("~P |- ~P"), tags={"domain": "logic"})
+
+    result = store.query_consistent(["P"], verified=True, tags={"domain": "logic"})
+
+    assert isinstance(result, ConsistencyFilterResult)
+    assert [entry.store_id for entry in result.consistent] == [consistent_id]
+    assert inconsistent_id not in [entry.store_id for entry in result.consistent]
+    assert result.inconsistent_count == 1
+    assert result.premises_contradictory is False
+
+
+def test_query_consistent_contradictory_premises() -> None:
+    store = CertificateStore()
+    store.store(certify("P |- P"))
+
+    result = store.query_consistent(["P", "~P"])
+
+    assert result.consistent == []
+    assert result.inconsistent_count == 0
+    assert result.premises_contradictory is True
+
+
+def test_query_consistent_empty_premises() -> None:
+    store = CertificateStore()
+    first_id = store.store(certify("P |- P"))
+    second_id = store.store(certify("Q |- Q"))
+    store.store(_dict_claim_cert())
+
+    result = store.query_consistent([])
+
+    assert {entry.store_id for entry in result.consistent} == {first_id, second_id}
+    assert len(result.consistent) == 2
+    assert result.inconsistent_count == 0
+    assert result.premises_contradictory is False
+
+
+def test_query_consistent_excludes_non_propositional() -> None:
+    store = CertificateStore()
+    propositional_id = store.store(certify("P |- P"))
+    store.store(_dict_claim_cert())
+
+    result = store.query_consistent(["P"])
+
+    assert [entry.store_id for entry in result.consistent] == [propositional_id]
+    assert all(entry.certificate.claim_type == "propositional" for entry in result.consistent)
+
+
+def test_query_consistent_respects_limit() -> None:
+    store = CertificateStore()
+    for claim in ("P |- P", "P & Q |- (P & Q)", "P | R |- (P | R)"):
+        store.store(certify(claim))
+
+    result = store.query_consistent(["P"], limit=2)
+
+    assert len(result.consistent) == 2
+    assert result.inconsistent_count == 0
+
+
+def test_query_consistent_respects_tags() -> None:
+    store = CertificateStore()
+    wanted_id = store.store(certify("P |- P"), tags={"domain": "wanted"})
+    store.store(certify("P & Q |- (P & Q)"), tags={"domain": "other"})
+
+    result = store.query_consistent(["P"], tags={"domain": "wanted"})
+
+    assert [entry.store_id for entry in result.consistent] == [wanted_id]
+    assert result.inconsistent_count == 0

@@ -41,6 +41,7 @@ from .certificate import ProofCertificate, certify, certify_z3_session, verify_c
 from .certificate_store import (
     CertificateStore,
     CompactionResult,
+    ConsistencyFilterResult,
     StoredCertificate,
     StoreStats,
 )
@@ -183,6 +184,7 @@ __all__ = [
     "verify_certificate",
     "CertificateStore",
     "CompactionResult",
+    "ConsistencyFilterResult",
     "StoredCertificate",
     "StoreStats",
     # Assumption state kernel (Tier 2 / Provisional)

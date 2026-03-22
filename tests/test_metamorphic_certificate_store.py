@@ -110,3 +110,27 @@ def test_compact_idempotence() -> None:
     assert first.verification_passed is True
     assert second.verification_passed is True
     assert first_ids == second_ids
+
+
+def test_query_consistent_monotone_under_relaxation() -> None:
+    """Removing a premise cannot decrease the number of consistent certificates."""
+    store = CertificateStore()
+    for claim in ("P |- P", "Q |- Q", "P & Q |- (P & Q)"):
+        store.store(certify(claim))
+
+    stricter = store.query_consistent(["P", "Q"])
+    relaxed = store.query_consistent(["P"])
+
+    assert len(relaxed.consistent) >= len(stricter.consistent)
+
+
+def test_query_consistent_subset_of_query() -> None:
+    """Consistency filtering can only eliminate certificates from a plain query."""
+    store = CertificateStore()
+    for claim in ("P |- P", "Q |- Q", "P & Q |- (P & Q)"):
+        store.store(certify(claim))
+
+    filtered_ids = {entry.store_id for entry in store.query_consistent(["P"], verified=True).consistent}
+    queried_ids = {entry.store_id for entry in store.query(verified=True, limit=20)}
+
+    assert filtered_ids <= queried_ids
