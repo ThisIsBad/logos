@@ -60,6 +60,7 @@ The tier determines the guarantees you get when upgrading between releases.
 | `certify_z3_session` | `certificate` | Create a certificate from a `Z3Session` check |
 | `verify_certificate` | `certificate` | Re-verify a proof certificate deterministically |
 | `CertificateStore` | `certificate_store` | In-memory proof memory with hash-dedup, tagging, query, invalidation, and pruning |
+| `CompactionResult` | `certificate_store` | Result of Z3-verified store compaction |
 | `StoredCertificate` | `certificate_store` | Frozen dataclass representing one stored certificate entry |
 | `StoreStats` | `certificate_store` | Frozen dataclass with aggregate store statistics |
 | `AssumptionKind` | `assumptions` | Enum of typed assumption categories |

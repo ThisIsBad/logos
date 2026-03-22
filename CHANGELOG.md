@@ -4,6 +4,10 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+### Added
+- `CertificateStore.compact()` - Z3-verified redundancy removal for propositional certificates.
+- `CompactionResult` dataclass for compaction outcomes.
+
 ## [0.8.0] - 2026-03-21
 
 Stage 3 fully validated, Stage 4 verification substrate complete. This release

@@ -7,8 +7,13 @@ import json
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
-from logic_brain.certificate import ProofCertificate, SCHEMA_VERSION
+import z3
+
+from logic_brain.certificate import PROPOSITIONAL_CLAIM, ProofCertificate, SCHEMA_VERSION
+from logic_brain.models import Connective, LogicalExpression, Proposition
+from logic_brain.parser import parse_argument
 from logic_brain.schema_utils import load_json_object, require_dict, require_int, require_optional_str, require_str
+from logic_brain.verifier import PropositionalVerifier
 
 
 @dataclass(frozen=True)
@@ -109,6 +114,16 @@ class StoreStats:
             by_claim_type=_deserialize_counter_map(by_claim_type_raw, "by_claim_type"),
             by_method=_deserialize_counter_map(by_method_raw, "by_method"),
         )
+
+
+@dataclass(frozen=True)
+class CompactionResult:
+    """Result of a Z3-verified store compaction."""
+
+    removed_count: int
+    retained_count: int
+    removed_ids: tuple[str, ...]
+    verification_passed: bool
 
 
 class CertificateStore:
@@ -253,6 +268,53 @@ class CertificateStore:
         """Remove all entries."""
         self._entries.clear()
 
+    def compact(self) -> CompactionResult:
+        """Remove logically redundant propositional certificates via Z3 entailment."""
+        candidates = self._compaction_candidates()
+        if not candidates:
+            return CompactionResult(
+                removed_count=0,
+                retained_count=len(self._entries),
+                removed_ids=(),
+                verification_passed=True,
+            )
+
+        candidate_ids = sorted(candidates)
+        retained_ids = list(candidate_ids)
+        removed_ids: list[str] = []
+
+        for target_id in candidate_ids:
+            if target_id not in retained_ids:
+                continue
+            remaining_ids = [store_id for store_id in retained_ids if store_id != target_id]
+            if not remaining_ids:
+                continue
+            if _check_propositional_entailment(
+                premises_conclusions=[candidates[store_id] for store_id in remaining_ids],
+                target_conclusion=candidates[target_id],
+            ):
+                retained_ids.remove(target_id)
+                removed_ids.append(target_id)
+
+        verification_passed = all(
+            _check_propositional_entailment(
+                premises_conclusions=[candidates[store_id] for store_id in retained_ids],
+                target_conclusion=candidates[store_id],
+            )
+            for store_id in candidate_ids
+        )
+
+        if verification_passed:
+            for store_id in removed_ids:
+                del self._entries[store_id]
+
+        return CompactionResult(
+            removed_count=len(removed_ids) if verification_passed else 0,
+            retained_count=len(self._entries) if verification_passed else len(self._entries),
+            removed_ids=tuple(removed_ids) if verification_passed else (),
+            verification_passed=verification_passed,
+        )
+
     def to_dict(self) -> dict[str, object]:
         """Serialize the full store."""
         return {
@@ -294,9 +356,72 @@ class CertificateStore:
         )
         return cls.from_dict(payload)
 
+    def _compaction_candidates(self) -> dict[str, str]:
+        candidates: dict[str, str] = {}
+        for store_id in sorted(self._entries):
+            entry = self._entries[store_id]
+            if entry.invalidated_at is not None:
+                continue
+            if not entry.certificate.verified:
+                continue
+            if entry.certificate.claim_type != PROPOSITIONAL_CLAIM:
+                continue
+            if not isinstance(entry.certificate.claim, str):
+                continue
+            candidates[store_id] = _extract_conclusion_text(entry.certificate.claim)
+        return candidates
+
 
 def _store_id(certificate: ProofCertificate) -> str:
     return hashlib.sha256(certificate.to_json().encode()).hexdigest()
+
+
+def _check_propositional_entailment(
+    premises_conclusions: list[str],
+    target_conclusion: str,
+) -> bool:
+    if not premises_conclusions:
+        return False
+
+    verifier = PropositionalVerifier()
+    premise_exprs = [parse_argument(f"{conclusion} |- {conclusion}").conclusion for conclusion in premises_conclusions]
+    target_expr = parse_argument(f"{target_conclusion} |- {target_conclusion}").conclusion
+
+    atoms: set[str] = set()
+    for premise in premise_exprs:
+        verifier._collect_atoms_from_expr(premise, atoms)
+    verifier._collect_atoms_from_expr(target_expr, atoms)
+
+    z3_vars = {label: z3.Bool(label) for label in sorted(atoms)}
+    solver = z3.Solver()
+    for premise in premise_exprs:
+        solver.add(verifier._to_z3(premise, z3_vars))
+    solver.add(z3.Not(verifier._to_z3(target_expr, z3_vars)))
+    return bool(solver.check() == z3.unsat)
+
+
+def _extract_conclusion_text(claim: str) -> str:
+    return _expression_to_ascii(parse_argument(claim).conclusion)
+
+
+def _expression_to_ascii(expr: Proposition | LogicalExpression) -> str:
+    if isinstance(expr, Proposition):
+        return expr.label
+    if expr.connective is Connective.NOT:
+        return f"~({_expression_to_ascii(expr.left)})"
+    if expr.right is None:
+        raise AssertionError("Binary expression requires right operand")
+    left = _expression_to_ascii(expr.left)
+    right = _expression_to_ascii(expr.right)
+    if expr.connective is Connective.AND:
+        return f"({left} & {right})"
+    if expr.connective is Connective.OR:
+        return f"({left} | {right})"
+    if expr.connective is Connective.IMPLIES:
+        return f"({left} -> {right})"
+    if expr.connective is Connective.IFF:
+        return f"({left} <-> {right})"
+    raise AssertionError(f"Unsupported connective {expr.connective}")
 
 
 def _merge_tags(existing: dict[str, str], new: dict[str, str]) -> dict[str, str]:

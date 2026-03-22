@@ -5,6 +5,7 @@ from __future__ import annotations
 import pytest
 
 from logic_brain import CertificateStore, certify
+from logic_brain.models import LogicalExpression, Proposition
 
 
 pytestmark = pytest.mark.metamorphic
@@ -50,3 +51,62 @@ def test_invalidation_irreversibility() -> None:
 
     assert first.invalidated_at == second.invalidated_at
     assert first.invalidation_reason == second.invalidation_reason
+
+
+def test_compact_never_loses_conclusions() -> None:
+    """Compaction preserves entailment of all original propositional conclusions."""
+    import z3
+
+    from logic_brain.parser import parse_argument
+    from logic_brain.verifier import PropositionalVerifier
+
+    def conclusion(claim: str) -> Proposition | LogicalExpression:
+        return parse_argument(claim).conclusion
+
+    def entailed(remaining: list[str], target: str) -> bool:
+        if not remaining:
+            return False
+        verifier = PropositionalVerifier()
+        premise_exprs = [conclusion(claim) for claim in remaining]
+        target_expr = conclusion(f"{target} |- {target}")
+        atoms: set[str] = set()
+        for premise in premise_exprs:
+            verifier._collect_atoms_from_expr(premise, atoms)
+        verifier._collect_atoms_from_expr(target_expr, atoms)
+        z3_vars = {label: z3.Bool(label) for label in sorted(atoms)}
+        solver = z3.Solver()
+        for premise in premise_exprs:
+            solver.add(verifier._to_z3(premise, z3_vars))
+        solver.add(z3.Not(verifier._to_z3(target_expr, z3_vars)))
+        return bool(solver.check() == z3.unsat)
+
+    store = CertificateStore()
+    original = ["P |- P", "Q |- Q", "P & Q |- (P & Q)", "R |- R"]
+    for claim in original:
+        store.store(certify(claim))
+
+    store.compact()
+    remaining = [
+        str(entry.certificate.claim)
+        for entry in store.query(limit=20)
+        if isinstance(entry.certificate.claim, str)
+    ]
+
+    for claim in original:
+        assert entailed(remaining, claim.split("|-", maxsplit=1)[1].strip())
+
+
+def test_compact_idempotence() -> None:
+    """Compacting twice yields the same retained store as compacting once."""
+    store = CertificateStore()
+    for claim in ("P |- P", "Q |- Q", "P & Q |- (P & Q)", "R |- R"):
+        store.store(certify(claim))
+
+    first = store.compact()
+    first_ids = tuple(entry.store_id for entry in store.query(include_invalidated=True, limit=20))
+    second = store.compact()
+    second_ids = tuple(entry.store_id for entry in store.query(include_invalidated=True, limit=20))
+
+    assert first.verification_passed is True
+    assert second.verification_passed is True
+    assert first_ids == second_ids

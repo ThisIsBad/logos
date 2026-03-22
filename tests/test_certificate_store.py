@@ -2,7 +2,14 @@
 
 from __future__ import annotations
 
-from logic_brain import CertificateStore, ProofCertificate, StoreStats, StoredCertificate, certify
+from logic_brain import (
+    CertificateStore,
+    CompactionResult,
+    ProofCertificate,
+    StoreStats,
+    StoredCertificate,
+    certify,
+)
 
 
 def _valid_cert() -> ProofCertificate:
@@ -31,6 +38,56 @@ def _store_from_entries(*entries: StoredCertificate) -> CertificateStore:
             "entries": [entry.to_dict() for entry in entries],
         }
     )
+
+
+def _conclusion(claim: str) -> str:
+    from logic_brain.parser import parse_argument
+    from logic_brain.models import Connective, LogicalExpression, Proposition
+
+    def expression_to_ascii(expr: Proposition | LogicalExpression) -> str:
+        if isinstance(expr, Proposition):
+            return expr.label
+        if expr.connective is Connective.NOT:
+            return f"~({expression_to_ascii(expr.left)})"
+        if expr.right is None:
+            raise AssertionError("Binary expression requires right operand")
+        left = expression_to_ascii(expr.left)
+        right = expression_to_ascii(expr.right)
+        if expr.connective is Connective.AND:
+            return f"({left} & {right})"
+        if expr.connective is Connective.OR:
+            return f"({left} | {right})"
+        if expr.connective is Connective.IMPLIES:
+            return f"({left} -> {right})"
+        if expr.connective is Connective.IFF:
+            return f"({left} <-> {right})"
+        raise AssertionError("Unsupported connective")
+
+    return expression_to_ascii(parse_argument(claim).conclusion)
+
+
+def _entailed(remaining: list[str], target: str) -> bool:
+    import z3
+
+    from logic_brain.parser import parse_argument
+    from logic_brain.verifier import PropositionalVerifier
+
+    if not remaining:
+        return False
+
+    verifier = PropositionalVerifier()
+    premise_exprs = [parse_argument(f"{claim} |- {claim}").conclusion for claim in remaining]
+    target_expr = parse_argument(f"{target} |- {target}").conclusion
+    atoms: set[str] = set()
+    for premise in premise_exprs:
+        verifier._collect_atoms_from_expr(premise, atoms)
+    verifier._collect_atoms_from_expr(target_expr, atoms)
+    z3_vars = {label: z3.Bool(label) for label in sorted(atoms)}
+    solver = z3.Solver()
+    for premise in premise_exprs:
+        solver.add(verifier._to_z3(premise, z3_vars))
+    solver.add(z3.Not(verifier._to_z3(target_expr, z3_vars)))
+    return solver.check() == z3.unsat
 
 
 def test_store_is_idempotent_and_merges_tags() -> None:
@@ -248,3 +305,82 @@ def test_invalid_inputs_raise_descriptive_errors() -> None:
         assert "dict[str, str]" in str(exc)
     else:  # pragma: no cover
         raise AssertionError("Expected invalid tags to fail")
+
+
+def test_compact_removes_redundant_certificates() -> None:
+    store = CertificateStore()
+    store.store(certify("P |- P"))
+    store.store(certify("Q |- Q"))
+    store.store(certify("P & Q |- (P & Q)"))
+    store.store(certify("R |- R"))
+    store.store(certify("P | R |- (P | R)"))
+
+    result = store.compact()
+
+    assert isinstance(result, CompactionResult)
+    assert result.removed_count > 0
+    assert result.verification_passed is True
+    remaining = [
+        str(entry.certificate.claim)
+        for entry in store.query(limit=20)
+        if isinstance(entry.certificate.claim, str)
+    ]
+    assert len(remaining) < 5
+    for original in ["P |- P", "Q |- Q", "P & Q |- (P & Q)", "R |- R", "P | R |- (P | R)"]:
+        assert _entailed([_conclusion(claim) for claim in remaining], _conclusion(original))
+
+
+def test_compact_preserves_non_propositional() -> None:
+    store = CertificateStore()
+    propositional_id = store.store(certify("P |- P"))
+    z3_id = store.store(_dict_claim_cert())
+
+    result = store.compact()
+
+    assert result.verification_passed is True
+    assert store.get(z3_id) is not None
+    assert store.get(propositional_id) is not None
+
+
+def test_compact_empty_store() -> None:
+    result = CertificateStore().compact()
+
+    assert result == CompactionResult(removed_count=0, retained_count=0, removed_ids=(), verification_passed=True)
+
+
+def test_compact_single_certificate() -> None:
+    store = CertificateStore()
+    store.store(certify("P |- P"))
+
+    result = store.compact()
+
+    assert result.removed_count == 0
+    assert result.retained_count == 1
+    assert result.removed_ids == ()
+    assert result.verification_passed is True
+
+
+def test_compact_skips_invalidated() -> None:
+    store = CertificateStore()
+    active_id = store.store(certify("P & Q |- (P & Q)"))
+    invalidated_id = store.store(certify("P |- P"))
+    store.invalidate(invalidated_id, reason="already retracted")
+
+    result = store.compact()
+
+    assert result.verification_passed is True
+    assert invalidated_id not in result.removed_ids
+    assert store.get(invalidated_id) is not None
+    assert store.get(active_id) is not None
+
+
+def test_compact_skips_unverified_certificates() -> None:
+    store = CertificateStore()
+    unverified_id = store.store(_invalid_cert())
+    store.store(certify("P |- P"))
+    store.store(certify("P & Q |- (P & Q)"))
+
+    result = store.compact()
+
+    assert result.verification_passed is True
+    assert store.get(unverified_id) is not None
