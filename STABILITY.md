@@ -1,6 +1,6 @@
 # API Stability Contract
 
-Version: 1.1 | Effective from: Unreleased
+Version: 1.1 | Effective from: v0.8.0
 
 ---
 
