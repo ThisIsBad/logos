@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-03-29
+
+Stage 4 verification substrate hardened with Z3-backed compaction,
+consistency-filtered retrieval, relevance ranking, and a domain-specific
+exception hierarchy. Nine exports promoted to Tier 1.
+
 ### Added
 - `CertificateStore.compact()` - Z3-verified redundancy removal for propositional certificates.
 - `CompactionResult` dataclass for compaction outcomes.
@@ -13,6 +19,7 @@ All notable changes to this project are documented in this file.
 - `RankedCertificate` and `RelevanceResult` dataclasses for relevance-ranked query outcomes.
 - MCP `certificate_store` tool now supports `compact`, `query_consistent`, and `query_ranked` actions.
 - `exceptions.py` module with domain-specific exception hierarchy: `LogicBrainError`, `VerificationError`, `ConstraintError`, `SessionError`, `CertificateError`, `PolicyViolationError`. All new exceptions inherit from `ValueError` where appropriate for backward compatibility.
+- Proof template transfer experiment validating Gap 4 (strategy transfer) with 100% transfer rate across 7 valid and 2 invalid reasoning patterns.
 
 ### Changed
 - `ParseError` now inherits from `LogicBrainError` (previously `Exception`). Existing `except ParseError` handlers are unaffected.
