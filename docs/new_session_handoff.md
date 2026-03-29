@@ -6,14 +6,23 @@ Last updated: 2026-03-29
 
 **v0.8.0 released (2026-03-22).** Release Polishing wave (#73–#75) complete.
 
+### Relevance Retrieval, Tier-1 Promotion, Docs Sync (2026-03-29)
+
+- `CertificateStore.query_ranked()` — Jaccard token-overlap relevance scoring. MCP `query_ranked` action.
+- `RankedCertificate`, `RelevanceResult` dataclasses (Tier 2).
+- Tier-1 promotions: `Z3Session`, `CheckResult`, `Diagnostic`, `ErrorType`, `ProofCertificate`, `certify`, `certify_z3_session`, `verify_certificate`. STABILITY.md v1.2.
+- Docs synchronized.
+
+Recent commit: `792fbed` — "Add relevance-ranked retrieval, Tier-1 promotions, and docs sync"
+
 ### MCP Exposure + Exception Hierarchy (2026-03-29)
 
-- MCP `certificate_store` tool now supports `compact` and `query_consistent` actions.
+- MCP `certificate_store` tool now supports `compact`, `query_consistent`, and `query_ranked` actions.
 - Domain-specific exception hierarchy: `LogicBrainError` → `VerificationError`, `ConstraintError`, `SessionError`, `CertificateError`, `PolicyViolationError`. Backward-compatible via `ValueError` inheritance.
 - `ParseError` reparented under `LogicBrainError`.
 - MCP session errors (`UnknownSessionError`, `ExpiredSessionError`, `SessionLimitError`) reparented under `SessionError`.
 
-Recent commit: `b7679b8` — "Add MCP compact/query_consistent actions and exception hierarchy"
+Commit: `b7679b8` — "Add MCP compact/query_consistent actions and exception hierarchy"
 
 ### Stage 4 Production Modules (#81–#82) — complete
 
@@ -64,10 +73,9 @@ All closed:
 
 Recommended next steps:
 
-1. **Tier-1 promotion** — Promote battle-tested Tier-2 exports (Z3Session, Diagnostic, ProofCertificate) to Tier 1 before PyPI release.
-2. **Relevance retrieval** — Add `query_ranked()` to CertificateStore for token-overlap-based relevance scoring.
-3. **PyPI publication** — v0.8.0 is tagged and released on GitHub; actual PyPI upload has not been done yet. Consider v0.9.0 after stabilization.
-4. **ProofTemplate experiment** — Test Gap 4 (strategy transfer) with generalized certificates. More speculative.
+1. **PyPI publication** — v0.8.0 is tagged and released on GitHub; actual PyPI upload has not been done yet. Consider v0.9.0 with the new features.
+2. **ProofTemplate experiment** — Test Gap 4 (strategy transfer) with generalized certificates. More speculative.
+3. **Stage 4 research monitoring** — Track Gaps 1 (Stable Learning) and 4 (Strategy Transfer). See `docs/stage4_research_watch.md`.
 
 ## MCP Status
 
