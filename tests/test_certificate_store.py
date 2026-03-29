@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
+import pytest
+
 from logic_brain import (
     CertificateStore,
     CompactionResult,
     ConsistencyFilterResult,
+    RankedCertificate,
+    RelevanceResult,
     ProofCertificate,
     StoreStats,
     StoredCertificate,
@@ -457,3 +461,96 @@ def test_query_consistent_respects_tags() -> None:
 
     assert [entry.store_id for entry in result.consistent] == [wanted_id]
     assert result.inconsistent_count == 0
+
+
+# --- query_ranked ---
+
+
+def test_query_ranked_returns_relevance_result() -> None:
+    store = CertificateStore()
+    store.store(certify("P -> Q, P |- Q"))
+
+    result = store.query_ranked("P Q")
+
+    assert isinstance(result, RelevanceResult)
+    assert result.total_candidates >= 1
+    assert all(isinstance(r, RankedCertificate) for r in result.results)
+
+
+def test_query_ranked_scores_are_between_zero_and_one() -> None:
+    store = CertificateStore()
+    store.store(certify("P -> Q, P |- Q"))
+    store.store(certify("A -> B, A |- B"))
+
+    result = store.query_ranked("P Q A B")
+
+    for r in result.results:
+        assert 0.0 < r.score <= 1.0
+
+
+def test_query_ranked_sorts_by_descending_score() -> None:
+    store = CertificateStore()
+    store.store(certify("P |- P"))
+    store.store(certify("P -> Q, P |- Q"))
+    store.store(certify("A -> B, A |- B"))
+
+    result = store.query_ranked("P Q")
+
+    scores = [r.score for r in result.results]
+    assert scores == sorted(scores, reverse=True)
+
+
+def test_query_ranked_excludes_zero_score_entries() -> None:
+    store = CertificateStore()
+    store.store(certify("X -> Y, X |- Y"))
+
+    result = store.query_ranked("completely unrelated tokens zzz")
+
+    # X/Y tokens don't overlap with query tokens
+    assert result.total_candidates == 0
+    assert result.results == []
+
+
+def test_query_ranked_respects_limit() -> None:
+    store = CertificateStore()
+    for claim in ("P |- P", "P & Q |- (P & Q)", "P | R |- (P | R)"):
+        store.store(certify(claim))
+
+    result = store.query_ranked("P Q R", limit=1)
+
+    assert len(result.results) <= 1
+    assert result.total_candidates >= 1
+
+
+def test_query_ranked_rejects_empty_query() -> None:
+    store = CertificateStore()
+
+    with pytest.raises(ValueError, match="non-empty"):
+        store.query_ranked("   ")
+
+
+def test_query_ranked_rejects_negative_limit() -> None:
+    store = CertificateStore()
+
+    with pytest.raises(ValueError, match="non-negative"):
+        store.query_ranked("P", limit=-1)
+
+
+def test_query_ranked_respects_tags_filter() -> None:
+    store = CertificateStore()
+    store.store(certify("P |- P"), tags={"domain": "wanted"})
+    store.store(certify("P & Q |- (P & Q)"), tags={"domain": "other"})
+
+    result = store.query_ranked("P", tags={"domain": "wanted"})
+
+    assert all(r.entry.tags.get("domain") == "wanted" for r in result.results)
+
+
+def test_query_ranked_excludes_invalidated_by_default() -> None:
+    store = CertificateStore()
+    sid = store.store(certify("P |- P"))
+    store.invalidate(sid, reason="retracted")
+
+    result = store.query_ranked("P")
+
+    assert result.total_candidates == 0

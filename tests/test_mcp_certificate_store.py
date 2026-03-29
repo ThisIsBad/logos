@@ -213,3 +213,64 @@ def test_certificate_store_query_consistent_rejects_missing_premises() -> None:
     result = certificate_store({"action": "query_consistent"})
 
     assert result["error"] == "Invalid input"
+
+
+def test_certificate_store_query_ranked_returns_scored_entries() -> None:
+    certificate_store({"action": "store", "certificate": certify("P -> Q, P |- Q").to_dict()})
+    certificate_store({"action": "store", "certificate": certify("A -> B, A |- B").to_dict()})
+
+    result = certificate_store({
+        "action": "query_ranked",
+        "query": "P implies Q",
+    })
+
+    assert isinstance(result["count"], int)
+    assert isinstance(result["total_candidates"], int)
+    entries = result["entries"]
+    assert isinstance(entries, list)
+    for entry in entries:
+        assert "score" in entry
+        assert "entry" in entry
+        assert 0.0 < entry["score"] <= 1.0
+
+
+def test_certificate_store_query_ranked_sorts_by_descending_score() -> None:
+    certificate_store({"action": "store", "certificate": certify("P -> Q, P |- Q").to_dict()})
+    certificate_store({"action": "store", "certificate": certify("A -> B, A |- B").to_dict()})
+    certificate_store({"action": "store", "certificate": certify("P |- P").to_dict()})
+
+    result = certificate_store({
+        "action": "query_ranked",
+        "query": "P Q",
+    })
+
+    entries = result["entries"]
+    if len(entries) >= 2:
+        scores = [e["score"] for e in entries]
+        assert scores == sorted(scores, reverse=True)
+
+
+def test_certificate_store_query_ranked_respects_limit() -> None:
+    certificate_store({"action": "store", "certificate": certify("P |- P").to_dict()})
+    certificate_store({"action": "store", "certificate": certify("P -> Q, P |- Q").to_dict()})
+    certificate_store({"action": "store", "certificate": certify("A -> B, A |- B").to_dict()})
+
+    result = certificate_store({
+        "action": "query_ranked",
+        "query": "P Q A B",
+        "limit": 1,
+    })
+
+    assert result["count"] <= 1
+
+
+def test_certificate_store_query_ranked_rejects_empty_query() -> None:
+    result = certificate_store({"action": "query_ranked", "query": "  "})
+
+    assert result["error"] == "Invalid input"
+
+
+def test_certificate_store_query_ranked_rejects_missing_query() -> None:
+    result = certificate_store({"action": "query_ranked"})
+
+    assert result["error"] == "Invalid input"

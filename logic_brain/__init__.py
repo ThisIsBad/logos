@@ -50,6 +50,8 @@ from .certificate_store import (
     CertificateStore,
     CompactionResult,
     ConsistencyFilterResult,
+    RankedCertificate,
+    RelevanceResult,
     StoredCertificate,
     StoreStats,
 )
@@ -177,29 +179,32 @@ __all__ = [
     "Quantifier",
     "FOLArgument",
     "PredicateVerifier",
-    # Lean 4 interactive session
-    "LeanSession",
-    "TacticResult",
-    "is_lean_available",
-    # Z3 interactive session
+    # Z3 interactive session (Tier 1 / Stable)
     "Z3Session",
     "CheckResult",
-    # Diagnostics
+    # Diagnostics (Tier 1 / Stable)
     "Diagnostic",
     "ErrorType",
-    "LeanDiagnosticParser",
-    "Z3DiagnosticParser",
-    # Problem generation
-    "ProblemGenerator",
-    "GeneratorConfig",
-    # Proof certificates (Tier 2 / Provisional)
+    # Proof certificates (Tier 1 / Stable)
     "ProofCertificate",
     "certify",
     "certify_z3_session",
     "verify_certificate",
+    # Lean 4 interactive session (Tier 2 / Provisional)
+    "LeanSession",
+    "TacticResult",
+    "is_lean_available",
+    # Diagnostics — parsers (Tier 2 / Provisional)
+    "LeanDiagnosticParser",
+    "Z3DiagnosticParser",
+    # Problem generation (Tier 2 / Provisional)
+    "ProblemGenerator",
+    "GeneratorConfig",
     "CertificateStore",
     "CompactionResult",
     "ConsistencyFilterResult",
+    "RankedCertificate",
+    "RelevanceResult",
     "StoredCertificate",
     "StoreStats",
     # Assumption state kernel (Tier 2 / Provisional)

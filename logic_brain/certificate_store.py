@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
@@ -133,6 +134,22 @@ class ConsistencyFilterResult:
     consistent: list[StoredCertificate]
     inconsistent_count: int
     premises_contradictory: bool
+
+
+@dataclass(frozen=True)
+class RankedCertificate:
+    """A stored certificate with a relevance score."""
+
+    entry: StoredCertificate
+    score: float
+
+
+@dataclass(frozen=True)
+class RelevanceResult:
+    """Result of a relevance-ranked query."""
+
+    results: list[RankedCertificate]
+    total_candidates: int
 
 
 class CertificateStore:
@@ -381,6 +398,47 @@ class CertificateStore:
             premises_contradictory=False,
         )
 
+    def query_ranked(
+        self,
+        query: str,
+        *,
+        verified: bool | None = None,
+        tags: dict[str, str] | None = None,
+        include_invalidated: bool = False,
+        limit: int = 10,
+    ) -> RelevanceResult:
+        """Query certificates ranked by token-overlap relevance to *query*.
+
+        Scoring uses Jaccard similarity over lowercased alphanumeric tokens
+        extracted from the query and each certificate's claim text.
+        """
+        if limit < 0:
+            raise ValueError("query_ranked() limit must be non-negative")
+        if not query.strip():
+            raise ValueError("query_ranked() query must be non-empty")
+        _validate_tags(tags)
+
+        query_tokens = _tokenize(query)
+        candidates = self.query(
+            verified=verified,
+            tags=tags,
+            include_invalidated=include_invalidated,
+            limit=len(self._entries),
+        )
+
+        scored: list[RankedCertificate] = []
+        for entry in candidates:
+            claim_tokens = _tokenize(_claim_text(entry.certificate))
+            score = _jaccard(query_tokens, claim_tokens)
+            if score > 0.0:
+                scored.append(RankedCertificate(entry=entry, score=score))
+
+        scored.sort(key=lambda r: (-r.score, r.entry.stored_at))
+        return RelevanceResult(
+            results=scored[:limit],
+            total_candidates=len(scored),
+        )
+
     def to_dict(self) -> dict[str, object]:
         """Serialize the full store."""
         return {
@@ -545,3 +603,17 @@ def _utc_now_iso() -> str:
 
 def _parse_iso(value: str) -> datetime:
     return datetime.fromisoformat(value)
+
+
+def _tokenize(text: str) -> set[str]:
+    """Extract lowercased alphanumeric tokens from *text*."""
+    return set(re.findall(r"[a-z0-9]+", text.lower()))
+
+
+def _jaccard(a: set[str], b: set[str]) -> float:
+    """Jaccard similarity between two token sets."""
+    if not a or not b:
+        return 0.0
+    intersection = a & b
+    union = a | b
+    return len(intersection) / len(union)

@@ -1,6 +1,6 @@
 # API Stability Contract
 
-Version: 1.1 | Effective from: v0.8.0
+Version: 1.2 | Effective from: v0.8.0
 
 ---
 
@@ -37,6 +37,14 @@ The tier determines the guarantees you get when upgrading between releases.
 | `Quantifier` | `predicate_models` | Enum (FORALL, EXISTS) |
 | `FOLArgument` | `predicate_models` | FOL argument |
 | `PredicateVerifier` | `predicate` | Z3-backed FOL verifier |
+| `Z3Session` | `z3_session` | Incremental Z3 solving session |
+| `CheckResult` | `z3_session` | Result of a satisfiability check |
+| `Diagnostic` | `diagnostics` | Structured error diagnostic |
+| `ErrorType` | `diagnostics` | Enum of error categories |
+| `ProofCertificate` | `certificate` | Serializable proof-carrying certificate |
+| `certify` | `certificate` | Create a certificate from propositional or FOL verification |
+| `certify_z3_session` | `certificate` | Create a certificate from a `Z3Session` check |
+| `verify_certificate` | `certificate` | Re-verify a proof certificate deterministically |
 
 ### Tier 2 — Provisional
 
@@ -53,19 +61,13 @@ The tier determines the guarantees you get when upgrading between releases.
 | `LeanSession` | `lean_session` | Lean 4 interactive proof session |
 | `TacticResult` | `lean_session` | Result of applying a tactic |
 | `is_lean_available` | `lean_session` | Check if Lean 4 is installed |
-| `Z3Session` | `z3_session` | Incremental Z3 solving session |
-| `CheckResult` | `z3_session` | Result of a satisfiability check |
-| `Diagnostic` | `diagnostics` | Structured error diagnostic |
-| `ErrorType` | `diagnostics` | Enum of error categories |
 | `LeanDiagnosticParser` | `diagnostics` | Parser for Lean error output |
 | `Z3DiagnosticParser` | `diagnostics` | Parser for Z3 error output |
 | `ProblemGenerator` | `generator` | Fresh logic problem generator |
 | `GeneratorConfig` | `generator` | Configuration for problem difficulty |
-| `ProofCertificate` | `certificate` | Serializable proof-carrying certificate |
-| `certify` | `certificate` | Create a certificate from propositional or FOL verification |
-| `certify_z3_session` | `certificate` | Create a certificate from a `Z3Session` check |
-| `verify_certificate` | `certificate` | Re-verify a proof certificate deterministically |
 | `CertificateStore` | `certificate_store` | In-memory proof memory with hash-dedup, tagging, query, invalidation, and pruning |
+| `RankedCertificate` | `certificate_store` | A stored certificate with relevance score |
+| `RelevanceResult` | `certificate_store` | Result of a relevance-ranked query |
 | `CompactionResult` | `certificate_store` | Result of Z3-verified store compaction |
 | `ConsistencyFilterResult` | `certificate_store` | Result of Z3 consistency-filtered retrieval |
 | `StoredCertificate` | `certificate_store` | Frozen dataclass representing one stored certificate entry |

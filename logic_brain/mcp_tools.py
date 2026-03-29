@@ -273,8 +273,27 @@ def certificate_store(payload: Mapping[str, object]) -> ToolResult:
                 "entries": [entry.to_dict() for entry in consistent_result.consistent],
             }
 
+        if action == "query_ranked":
+            query_text = _require_non_empty_str(data, "query")
+            ranked_result = _CERTIFICATE_STORE.query_ranked(
+                query_text,
+                verified=_optional_bool(data.get("verified"), "verified"),
+                tags=_optional_tags(data.get("tags")),
+                include_invalidated=_optional_bool(data.get("include_invalidated"), "include_invalidated") or False,
+                limit=_optional_non_negative_int(data.get("limit"), default=10),
+            )
+            return {
+                "count": len(ranked_result.results),
+                "total_candidates": ranked_result.total_candidates,
+                "entries": [
+                    {"score": r.score, "entry": r.entry.to_dict()}
+                    for r in ranked_result.results
+                ],
+            }
+
         raise ValueError(
-            "Field 'action' must be one of: store, get, query, invalidate, stats, compact, query_consistent"
+            "Field 'action' must be one of: store, get, query, invalidate,"
+            " stats, compact, query_consistent, query_ranked"
         )
     except Exception as exc:  # pragma: no cover - exercised via tests
         return _error_response(exc)

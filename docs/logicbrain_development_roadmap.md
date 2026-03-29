@@ -1,7 +1,7 @@
 # LogicBrain Development Roadmap
 
 **Anchored to:** [agi_roadmap_v2.md](file:///d:/AgenticAI/LogicBrain/docs/agi_roadmap_v2.md)
-**Date:** 2026-03-20 · **Status:** Living document
+**Date:** 2026-03-29 · **Status:** Living document
 
 ---
 
@@ -45,7 +45,7 @@ LogicBrain is a working MCP tool surface with most Stage 3 reflective primitives
 | First-order logic verification | `PredicateVerifier` | ✅ Stable |
 | Incremental Z3 sessions | `Z3Session` | ✅ Stable |
 | Lean 4 theorem proving | `LeanSession` | ✅ Stable |
-| MCP server (11 tools) | `mcp_server.py`, `mcp_tools.py` | ✅ Stable |
+| MCP server (12 tools) | `mcp_server.py`, `mcp_tools.py` | ✅ Stable |
 | API stability contract | `STABILITY.md` | ✅ Published |
 | Structured diagnostics | `Diagnostic` | ✅ Stable |
 
@@ -164,19 +164,63 @@ LogicBrain's scope. However, LogicBrain can prepare specific primitives:
 
 ## Consolidated Next Steps (Priority Order)
 
-Based on what's implemented vs. what's missing:
+**Strategic direction (2026-03-29):** Stage 3 fully closed. Stage 4 substrate
+complete (#81–#82, MCP exposure, exception hierarchy). Next: API stabilization
+(Tier-1 promotion), relevance retrieval, then PyPI publication.
 
-| # | Action | Version | Stage | Effort |
-|---|--------|---------|-------|--------|
-| 1 | **Close the loop on Issue #43** — validate proof-carrying execution-bus acceptance criteria against the implemented orchestrator + MCP stack | v0.7 | 3 | ~1 week |
-| 2 | **Stage 3 benchmark harness** — map LogicBrain-assisted workflows to `agi_roadmap_v2.md` Stage 3 acceptance criteria | v0.7+ | 3 | ~1-2 weeks |
-| 3 | **Verified memory retrieval API** — query proof certificates by claim/source/date | v1.3 | 4 | ~2 weeks |
-| 4 | **Cross-agent proof exchange E2E test** — Agent A -> proof bundle -> Agent B verification | v1.3 | 4 | ~1 week |
-| 5 | **Cost-risk-utility planning layer** — extend planner scoring and safety bounds in line with Issue `#47` | v1.4+ | 4 | Done |
-| 6 | **Autonomous recovery protocols** — unify failure taxonomy and deterministic recovery actions in line with Issue `#50` | v1.5 | 4 | Done |
-| 7 | **Federated trust-domain proof ledger** — explicit trust policies, revocation, expiry, and audit queries in line with Issue `#49` | v1.6 | 4 | Done |
-| 8 | **Verified runtime loop** — closed-loop state machine integrating planning, contracts, uncertainty, execution, and recovery in line with Issue `#48` | v2.0 | 5 | Done |
-| 9 | **Adversarial self-play harness** — deterministic red-team episodes, defense scoring, and regression artifacts in line with Issue `#45` | v2.0+ | 5 | Done |
+### Wave 1: Z3 Grounding Closure (Issues #63–#66)
+
+These issues make the formal guarantees real. Until these are closed, modules
+claim soundness they don't fully deliver.
+
+| # | Issue | Module | Acceptance Criteria | Effort |
+|---|-------|--------|---------------------|--------|
+| [**#63**](https://github.com/ThisIsBad/LogicBrain/issues/63) | Full Z3 grounding for `AssumptionSet` consistency | `assumptions.py` | All consistency checks backed by Z3 solver; `unknown` results surfaced explicitly; metamorphic tests for large assumption sets | ~1 week |
+| [**#64**](https://github.com/ThisIsBad/LogicBrain/issues/64) | Full Z3 grounding for `BeliefGraph` contradiction detection | `belief_graph.py` | Contradiction detection via Z3 for all supported graph topologies; no Python-only fallback that silently passes; metamorphic tests | ~1 week |
+| [**#65**](https://github.com/ThisIsBad/LogicBrain/issues/65) | Full Z3 grounding for `GoalContract` preconditions | `goal_contract.py` | Nested contract preconditions verified via Z3; composite contracts correctly compose; metamorphic tests | ~1 week |
+| [**#66**](https://github.com/ThisIsBad/LogicBrain/issues/66) | Full Z3 consistency + subsumption for `ActionPolicyEngine` | `action_policy.py` | Policy consistency and subsumption checked via Z3 (not structural comparison); metamorphic tests for policy order invariance | ~1 week |
+
+### Wave 2: MCP End-to-End Validation (Issues #67–#68)
+
+Proof that the tool surface works in real agent workflows, not just unit tests.
+
+| # | Issue | Description | Acceptance Criteria | Effort |
+|---|-------|-------------|---------------------|--------|
+| [**#67**](https://github.com/ThisIsBad/LogicBrain/issues/67) | Stage 3 reflective workflow example | `examples/reflective_agent.py` | Runnable example: agent calls `verify_argument` → `check_assumptions` → `check_contract` → `proof_carrying_action` in a reflective loop; maps to Stage 3 criteria in `agi_roadmap_v2.md §4.3` | ~1 week |
+| [**#68**](https://github.com/ThisIsBad/LogicBrain/issues/68) | Stage 3 benchmark harness | `tests/test_stage3_criteria.py` | Automated test that validates LogicBrain-assisted workflows against the measurable Stage 3 acceptance criteria from `agi_roadmap_v2.md` | ~1 week |
+
+### Wave 3: Stage 4 Verification Substrate (Issues #69–#72)
+
+Turn LogicBrain from stateless verification tools into stateful verification
+memory — the foundation a Stage 4 Learning Agent needs for persistent,
+queryable, cross-boundary reasoning.
+
+| # | Issue | Module | Acceptance Criteria | Effort |
+|---|-------|--------|---------------------|--------|
+| [**#69**](https://github.com/ThisIsBad/LogicBrain/issues/69) | CertificateStore with query API | `certificate_store.py` (new) | In-memory store with hash-dedup, tagging, query, invalidation, pruning; metamorphic tests for idempotence, monotonicity, irreversibility | ~1 week |
+| [**#70**](https://github.com/ThisIsBad/LogicBrain/issues/70) | MCP certificate_store tool | `mcp_tools.py`, `mcp_server.py` | store/get/query/invalidate/stats actions via MCP; follows z3_session dispatch pattern | ~3–4 days |
+| [**#71**](https://github.com/ThisIsBad/LogicBrain/issues/71) | Cross-agent proof exchange E2E | `tests/test_cross_agent_exchange.py` | Happy path + tampered bundle + trust mismatch + missing dependency; no new production code | ~1 week |
+| [**#72**](https://github.com/ThisIsBad/LogicBrain/issues/72) | VerifiedAgentRuntime composition test | `tests/test_runtime_composition.py` | Sequential composition (Request 2 uses Request 1 certs) + recovery chain (store survives failure); depends on #69 | ~1 week |
+
+### Completed
+
+| # | Action | Stage | Status |
+|---|--------|-------|--------|
+| [#69](https://github.com/ThisIsBad/LogicBrain/issues/69) | CertificateStore with query API | 4 | ✅ Done |
+| [#70](https://github.com/ThisIsBad/LogicBrain/issues/70) | MCP certificate_store tool | 4 | ✅ Done |
+| [#71](https://github.com/ThisIsBad/LogicBrain/issues/71) | Cross-agent proof exchange E2E | 4 | ✅ Done |
+| [#72](https://github.com/ThisIsBad/LogicBrain/issues/72) | VerifiedAgentRuntime composition test | 4 | ✅ Done |
+| [#63](https://github.com/ThisIsBad/LogicBrain/issues/63) | Full Z3 grounding: `AssumptionSet` | 3 | ✅ Done |
+| [#64](https://github.com/ThisIsBad/LogicBrain/issues/64) | Full Z3 grounding: `BeliefGraph` | 3 | ✅ Done |
+| [#65](https://github.com/ThisIsBad/LogicBrain/issues/65) | Full Z3 grounding: `GoalContract` | 3 | ✅ Done |
+| [#66](https://github.com/ThisIsBad/LogicBrain/issues/66) | Full Z3 grounding: `ActionPolicyEngine` | 3 | ✅ Done |
+| [#67](https://github.com/ThisIsBad/LogicBrain/issues/67) | Stage 3 reflective workflow example | 3 | ✅ Done |
+| [#68](https://github.com/ThisIsBad/LogicBrain/issues/68) | Stage 3 benchmark harness | 3 | ✅ Done |
+| #47 | Cost-risk-utility planning layer | 4 | ✅ Done |
+| #50 | Autonomous recovery protocols | 4 | ✅ Done |
+| #49 | Federated trust-domain proof ledger | 4 | ✅ Done |
+| #48 | Verified runtime loop | 5 | ✅ Done |
+| #45 | Adversarial self-play harness | 5 | ✅ Done |
 
 ---
 
