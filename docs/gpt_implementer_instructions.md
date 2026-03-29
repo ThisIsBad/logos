@@ -20,9 +20,21 @@ Workflow-Dokument. Diese Datei hier ist deine kompakte Einstiegsreferenz.
 
 ## Sofort-Einstieg: Was als naechstes zu tun ist
 
-**Aktuell:** Keine offenen Issues. #81 und #82 sind abgeschlossen.
+**Aktuell:** Wave "Human-Readable Explain" — Issues #83–#87.
 
-Warte auf das naechste Issue vom Head-Agent (Claude).
+Starte mit **#83** (truth table generator). Reihenfolge ist Pflicht:
+```
+#83  explain.py + truth_table()        (unabhaengig)
+ |
+ +-- #84  proof_steps()                (braucht #83)
+      |
+      +-- #85  Mermaid proof_graph()   (braucht #84)
+ |
+ +-- #86  counterexample + labels      (braucht #83 + #84)
+      |
+      +-- #87  MCP explain_argument    (braucht #86)
+```
+
 Lies `docs/new_session_handoff.md` fuer den aktuellen Stand.
 **WIP=1: Immer nur ein Issue gleichzeitig.**
 
@@ -75,89 +87,29 @@ git commit -m "Add CertificateStore.compact() with Z3-verified redundancy remova
 
 ---
 
-## Was die aktuelle Wave verlangt (Stage 4 Production: Issues #81–#82)
+## Was die aktuelle Wave verlangt (Human-Readable Explain: Issues #83–#87)
 
-**Thema:** Produktionsmodule fuer Z3-basierte Kompaktierung und Retrieval.
+**Thema:** Menschenlesbare Erklaerungen fuer logische Verifikationsergebnisse.
 
-Diese Issues aendern **Produktionscode** in `logic_brain/`. Volle mypy --strict
-Compliance und vollstaendige Tests sind Pflicht.
+Neues Modul `logic_brain/explain.py`. Volle mypy --strict Compliance
+und vollstaendige Tests sind Pflicht.
 
 ### Abhaengigkeitsstruktur
 
 ```
-#81  CertificateStore.compact() (unabhaengig)
+#83  explain.py + truth_table()            (unabhaengig — startet das Modul)
  |
- +-- #82  CertificateStore.query_consistent() (nutzt Z3-Helpers aus #81)
+ +-- #84  proof_steps()                    (braucht #83)
+ |    |
+ |    +-- #85  Mermaid proof_graph()       (braucht #84)
+ |
+ +-- #86  counterexample + labels          (braucht #83 + #84)
+      |
+      +-- #87  MCP explain_argument tool   (braucht #86)
 ```
 
-#82 baut auf den Z3-Parsing-Helpers aus #81 auf. #81 muss zuerst abgeschlossen sein.
-
----
-
-### Issue #81: CertificateStore.compact()
-
-**Was:**
-1. `CompactionResult` frozen dataclass in `certificate_store.py`
-2. `compact()` Methode auf `CertificateStore`
-3. `_check_propositional_entailment()` private Helper-Funktion
-4. `CompactionResult` export in `__init__.py` + STABILITY.md Tier 2
-5. Unit-Tests in `test_certificate_store.py` (6 Szenarien)
-6. Metamorphic Tests in `test_metamorphic_certificate_store.py` (2 Properties)
-7. CHANGELOG.md Eintrag unter `[Unreleased]`
-
-**Warum:** Experiment #78/#79 zeigte 96–98% Kompaktierung mit 100% Conclusion-Erhaltung.
-Dieser Code befoerdert den Experiment-Algorithmus in die Produktion.
-
-**Kernlogik:** Fuer jedes propositional-verifizierte Zertifikat: Z3 prueft ob
-dessen Conclusion durch die restlichen Conclusions entailed wird. Wenn ja: entfernen.
-Dann: Verifikationsschritt — alle originalen Conclusions muessen noch ableitbar sein.
-
-**Dateien die du lesen musst:**
-
-| Datei | Warum |
-|-------|-------|
-| `logic_brain/certificate_store.py` | Du erweiterst diese Datei |
-| `logic_brain/certificate.py` | `PROPOSITIONAL_CLAIM`, `claim_type` |
-| `logic_brain/parser.py` | `parse_argument()` fuer Claim-Parsing |
-| `logic_brain/verifier.py` | `PropositionalVerifier._to_z3()` |
-| `tests/test_certificate_store.py` | Bestehende Tests erweitern |
-| `tests/test_metamorphic_certificate_store.py` | Metamorphic Tests erweitern |
-| `tests/experiments/test_entailment_compaction.py` | Experiment-Code als Referenz |
-| `STABILITY.md` | Tier-2-Tabelle erweitern |
-| `CHANGELOG.md` | Unreleased-Sektion ergaenzen |
-
-**Dateien die du aenderst:** `logic_brain/certificate_store.py`, `logic_brain/__init__.py`,
-`STABILITY.md`, `CHANGELOG.md`, `tests/test_certificate_store.py`,
-`tests/test_metamorphic_certificate_store.py`
-
----
-
-### Issue #82: CertificateStore.query_consistent()
-
-**Was:**
-1. `ConsistencyFilterResult` frozen dataclass in `certificate_store.py`
-2. `query_consistent()` Methode auf `CertificateStore`
-3. `_check_consistency()` private Helper-Funktion
-4. `ConsistencyFilterResult` export in `__init__.py` + STABILITY.md Tier 2
-5. Unit-Tests in `test_certificate_store.py` (6 Szenarien)
-6. Metamorphic Tests in `test_metamorphic_certificate_store.py` (2 Properties)
-7. CHANGELOG.md Eintrag
-
-**Warum:** Experiment #80 zeigte 70% Mean Reduction durch Z3-Konsistenzfilter
-und perfekte Erkennung kontradiktiver Praemissen.
-
-**Kernlogik:** Praemissen + Conclusion jedes Zertifikats als Z3-Konjunktion pruefen.
-SAT = konsistent (behalten), UNSAT = inkonsistent (ausfiltern). Kontradiktive
-Praemissen vorab erkennen.
-
-**Dateien die du lesen musst:**
-
-| Datei | Warum |
-|-------|-------|
-| `logic_brain/certificate_store.py` | Inklusive compact() aus #81 |
-| `logic_brain/parser.py` | `parse_expression()` fuer Praemissen-Parsing |
-| `tests/experiments/test_context_retrieval.py` | Experiment-Code als Referenz |
-| Gleiche Dateien wie #81 | Tests, STABILITY.md, CHANGELOG.md |
+#83 muss zuerst abgeschlossen sein. Danach #84, dann #85 und #86 (parallel moeglich),
+dann #87 als letztes.
 
 ---
 
@@ -167,10 +119,10 @@ Praemissen vorab erkennen.
 |-------|-------|
 | `docs/agent_collaboration.md` | Vollstaendige Rollendefinition |
 | `docs/development_process.md` | Kanonischer Workflow |
-| `logic_brain/certificate_store.py` | Primaere Datei fuer beide Issues |
-| `logic_brain/certificate.py` | ProofCertificate, PROPOSITIONAL_CLAIM |
 | `logic_brain/parser.py` | parse_argument(), parse_expression() |
-| `logic_brain/verifier.py` | PropositionalVerifier._to_z3() |
+| `logic_brain/verifier.py` | PropositionalVerifier, _identify_rule(), _to_z3() |
+| `logic_brain/models.py` | Argument, VerificationResult, Connective |
+| `logic_brain/mcp_tools.py` | Bestehendes Tool-Dispatch-Pattern (fuer #87) |
 | `STABILITY.md` | Tier-2-Tabelle |
 
 ---
@@ -197,7 +149,7 @@ Typische Eskalationsgruende:
 - Commits ohne gruene Preflight Gates pushen
 - Scope eigenstaendig erweitern ("das mache ich gleich mit")
 - `--no-verify`, force-push, Rebase von shared history
-- MCP-Tools aendern (kommt in einem spaeteren Issue, falls gewuenscht)
+- MCP-Tools aendern (ausser in #87, wo das explizit verlangt wird)
 
 ---
 
@@ -206,7 +158,7 @@ Typische Eskalationsgruende:
 Nach erfolgreichem Commit:
 
 ```bash
-gh issue close 81 --comment "Implemented in commit $(git rev-parse --short HEAD). All preflight gates green."
+gh issue close <NR> --comment "Implemented in commit $(git rev-parse --short HEAD). All preflight gates green."
 ```
 
 Dann: naechstes Issue lesen und starten.

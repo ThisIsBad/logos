@@ -55,11 +55,21 @@ code under `tests/experiments/` — no production code changes.
 
 ## Current WIP
 
-No issue currently in progress.
+**Wave: Human-Readable Explain (#83–#87)** — GPT-5.4 soll ab #83 starten.
 
 ## Issue Queue
 
-All closed:
+### Open — Human-Readable Explain Wave
+
+| # | Title | Depends on | Status |
+|---|-------|------------|--------|
+| [#83](https://github.com/ThisIsBad/LogicBrain/issues/83) | explain.py + truth table generator | — | Open |
+| [#84](https://github.com/ThisIsBad/LogicBrain/issues/84) | Proof step chain | #83 | Open |
+| [#85](https://github.com/ThisIsBad/LogicBrain/issues/85) | Mermaid proof graph export | #84 | Open |
+| [#86](https://github.com/ThisIsBad/LogicBrain/issues/86) | Counterexample narration + labels | #83, #84 | Open |
+| [#87](https://github.com/ThisIsBad/LogicBrain/issues/87) | MCP explain_argument tool | #86 | Open |
+
+### Closed
 
 - Wave 1 (#63–#66): Z3 Grounding Closure — ✅
 - Wave 2 (#67–#68): MCP End-to-End Validation — ✅
@@ -70,12 +80,12 @@ All closed:
 - Stage 4 Experiments (#77–#80): Substrate validation — ✅
 - Stage 4 Production Modules (#81–#82): compact() + query_consistent() — ✅
 - MCP Exposure + Exception Hierarchy (untracked): — ✅
+- v0.9.0 finalization (untracked): version bump, ProofTemplate experiment, docs — ✅
 
-Recommended next steps:
+### After this wave
 
-1. **PyPI publication** — v0.8.0 is tagged and released on GitHub; actual PyPI upload has not been done yet. Consider v0.9.0 with the new features.
-2. **ProofTemplate experiment** — Test Gap 4 (strategy transfer) with generalized certificates. More speculative.
-3. **Stage 4 research monitoring** — Track Gaps 1 (Stable Learning) and 4 (Strategy Transfer). See `docs/stage4_research_watch.md`.
+1. **PyPI publication** — v0.9.0 is ready; actual PyPI upload pending.
+2. **Stage 4 research monitoring** — Track Gaps 1 (Stable Learning). See `docs/stage4_research_watch.md`.
 
 ## MCP Status
 
