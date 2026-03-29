@@ -125,7 +125,7 @@ def test_certificate_store_rejects_missing_required_fields_and_invalid_certifica
 
 
 def test_certificate_store_rejects_unknown_action() -> None:
-    result = certificate_store({"action": "prune"})
+    result = certificate_store({"action": "drop_all"})
 
     assert result["error"] == "Invalid input"
 
@@ -141,3 +141,75 @@ def test_certificate_store_can_round_trip_entry_certificate() -> None:
     assert isinstance(certificate_data, dict)
     restored = ProofCertificate.from_dict(certificate_data)
     assert restored == cert
+
+
+def test_certificate_store_compact_removes_redundant_certificates() -> None:
+    # Store two certificates where one entails the other
+    certificate_store({"action": "store", "certificate": certify("P, P -> Q |- Q").to_dict()})
+    certificate_store({"action": "store", "certificate": certify("P |- P").to_dict()})
+    certificate_store({"action": "store", "certificate": certify("P -> Q, P |- Q").to_dict()})
+
+    result = certificate_store({"action": "compact"})
+
+    assert result["verification_passed"] is True
+    assert isinstance(result["removed_count"], int)
+    assert isinstance(result["retained_count"], int)
+    assert isinstance(result["removed_ids"], list)
+    assert result["retained_count"] >= 1
+
+
+def test_certificate_store_compact_on_empty_store() -> None:
+    result = certificate_store({"action": "compact"})
+
+    assert result["verification_passed"] is True
+    assert result["removed_count"] == 0
+    assert result["retained_count"] == 0
+    assert result["removed_ids"] == []
+
+
+def test_certificate_store_query_consistent_filters_by_premises() -> None:
+    certificate_store({"action": "store", "certificate": certify("P -> Q, P |- Q").to_dict()})
+    certificate_store({"action": "store", "certificate": certify("A -> B, A |- B").to_dict()})
+
+    result = certificate_store({
+        "action": "query_consistent",
+        "premises": ["~Q"],
+    })
+
+    assert result["premises_contradictory"] is False
+    assert isinstance(result["consistent_count"], int)
+    assert isinstance(result["inconsistent_count"], int)
+    assert isinstance(result["entries"], list)
+    # Certificate concluding Q is inconsistent with ~Q, so should be filtered
+    assert result["consistent_count"] + result["inconsistent_count"] >= 1
+
+
+def test_certificate_store_query_consistent_detects_contradictory_premises() -> None:
+    certificate_store({"action": "store", "certificate": certify("P -> Q, P |- Q").to_dict()})
+
+    result = certificate_store({
+        "action": "query_consistent",
+        "premises": ["P", "~P"],
+    })
+
+    assert result["premises_contradictory"] is True
+    assert result["consistent_count"] == 0
+    assert result["entries"] == []
+
+
+def test_certificate_store_query_consistent_with_empty_premises() -> None:
+    certificate_store({"action": "store", "certificate": certify("P -> Q, P |- Q").to_dict()})
+
+    result = certificate_store({
+        "action": "query_consistent",
+        "premises": [],
+    })
+
+    assert result["premises_contradictory"] is False
+    assert result["consistent_count"] >= 1
+
+
+def test_certificate_store_query_consistent_rejects_missing_premises() -> None:
+    result = certificate_store({"action": "query_consistent"})
+
+    assert result["error"] == "Invalid input"

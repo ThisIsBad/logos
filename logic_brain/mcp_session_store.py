@@ -8,6 +8,7 @@ from threading import Lock
 from time import monotonic
 from typing import TypeVar
 
+from logic_brain.exceptions import SessionError
 from logic_brain.orchestrator import ProofOrchestrator
 from logic_brain.z3_session import CheckResult, Z3Session
 
@@ -16,15 +17,15 @@ T = TypeVar("T")
 ORCHESTRATOR_STORE: dict[str, ProofOrchestrator] = {}
 
 
-class UnknownSessionError(Exception):
+class UnknownSessionError(SessionError):
     """Raised when a requested session does not exist."""
 
 
-class ExpiredSessionError(Exception):
+class ExpiredSessionError(SessionError):
     """Raised when a requested session has expired due to inactivity."""
 
 
-class SessionLimitError(Exception):
+class SessionLimitError(SessionError):
     """Raised when the store has reached its concurrent session limit."""
 
 

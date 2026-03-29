@@ -19,6 +19,14 @@ from .predicate_models import (
     PredicateExpression, QuantifiedExpression, Quantifier, FOLArgument
 )
 from .predicate import PredicateVerifier
+from .exceptions import (
+    CertificateError,
+    ConstraintError,
+    LogicBrainError,
+    PolicyViolationError,
+    SessionError,
+    VerificationError,
+)
 from .parser import (
     verify,
     parse_argument,
@@ -137,6 +145,13 @@ from .adversarial_harness import (
 )
 
 __all__ = [
+    # Exception hierarchy (Tier 2 / Provisional)
+    "LogicBrainError",
+    "VerificationError",
+    "ConstraintError",
+    "SessionError",
+    "CertificateError",
+    "PolicyViolationError",
     # Quick API (string-based)
     "verify",
     "parse_argument",

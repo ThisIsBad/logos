@@ -35,6 +35,7 @@ import re
 from dataclasses import dataclass
 from typing import Union
 
+from logic_brain.exceptions import LogicBrainError
 from logic_brain.models import (
     Argument,
     Connective,
@@ -60,7 +61,7 @@ __all__ = [
 ]
 
 
-class ParseError(Exception):
+class ParseError(LogicBrainError):
     """Raised when parsing fails."""
     pass
 

@@ -248,7 +248,34 @@ def certificate_store(payload: Mapping[str, object]) -> ToolResult:
         if action == "stats":
             return _CERTIFICATE_STORE.stats().to_dict()
 
-        raise ValueError("Field 'action' must be one of: store, get, query, invalidate, stats")
+        if action == "compact":
+            result = _CERTIFICATE_STORE.compact()
+            return {
+                "removed_count": result.removed_count,
+                "retained_count": result.retained_count,
+                "removed_ids": list(result.removed_ids),
+                "verification_passed": result.verification_passed,
+            }
+
+        if action == "query_consistent":
+            premises = _require_str_list(data, "premises")
+            consistent_result = _CERTIFICATE_STORE.query_consistent(
+                premises,
+                verified=_optional_bool(data.get("verified"), "verified"),
+                tags=_optional_tags(data.get("tags")),
+                include_invalidated=_optional_bool(data.get("include_invalidated"), "include_invalidated") or False,
+                limit=_optional_non_negative_int(data.get("limit"), default=50),
+            )
+            return {
+                "consistent_count": len(consistent_result.consistent),
+                "inconsistent_count": consistent_result.inconsistent_count,
+                "premises_contradictory": consistent_result.premises_contradictory,
+                "entries": [entry.to_dict() for entry in consistent_result.consistent],
+            }
+
+        raise ValueError(
+            "Field 'action' must be one of: store, get, query, invalidate, stats, compact, query_consistent"
+        )
     except Exception as exc:  # pragma: no cover - exercised via tests
         return _error_response(exc)
 

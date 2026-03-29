@@ -25,6 +25,8 @@ from typing import TYPE_CHECKING, Any, Optional, cast
 
 import z3
 
+from logic_brain.exceptions import ConstraintError
+
 if TYPE_CHECKING:
     from logic_brain.diagnostics import Diagnostic
 
@@ -177,11 +179,11 @@ class Z3Session:
         """
         try:
             expr = self._parse_constraint(constraint)
-        except ValueError as exc:
+        except (ValueError, ConstraintError) as exc:
             from logic_brain.diagnostics import Z3DiagnosticParser
 
             diagnostic = Z3DiagnosticParser.parse_constraint_error(str(exc), constraint)
-            raise ValueError(str(diagnostic)) from exc
+            raise ConstraintError(str(diagnostic)) from exc
 
         if self.track_unsat_core and name:
             # Create a named assertion for unsat core tracking
@@ -327,12 +329,14 @@ class Z3Session:
             if isinstance(result, bool):
                 result = z3.BoolVal(result)
             if not isinstance(result, z3.BoolRef):
-                raise ValueError(
+                raise ConstraintError(
                     f"Constraint '{constraint}' did not evaluate to a boolean expression"
                 )
             return result
+        except ConstraintError:
+            raise
         except Exception as e:
-            raise ValueError(f"Failed to parse constraint '{constraint}': {e}")
+            raise ConstraintError(f"Failed to parse constraint '{constraint}': {e}")
 
     def _normalize_constraint_syntax(self, constraint: str) -> str:
         """Normalize user-friendly operators into parseable Python syntax."""
@@ -355,7 +359,7 @@ class Z3Session:
         right = expr[index + op_len :].strip()
 
         if not left or not right:
-            raise ValueError("Incomplete implication expression")
+            raise ConstraintError("Incomplete implication expression")
 
         return f"Implies({self._rewrite_implication(left)}, {self._rewrite_implication(right)})"
 
@@ -390,7 +394,7 @@ class Z3Session:
                 return z3.BoolVal(True)
             if node.id == "False":
                 return z3.BoolVal(False)
-            raise ValueError(f"Undeclared variable '{node.id}'")
+            raise ConstraintError(f"Undeclared variable '{node.id}'")
 
         if isinstance(node, ast.Constant):
             if isinstance(node.value, bool):
@@ -399,7 +403,7 @@ class Z3Session:
                 return z3.IntVal(node.value)
             if isinstance(node.value, float):
                 return z3.RealVal(str(node.value))
-            raise ValueError(f"Unsupported constant type: {type(node.value).__name__}")
+            raise ConstraintError(f"Unsupported constant type: {type(node.value).__name__}")
 
         if isinstance(node, ast.UnaryOp):
             operand = self._ast_to_z3(node.operand)
@@ -407,7 +411,7 @@ class Z3Session:
                 return z3.Not(operand)
             if isinstance(node.op, ast.USub):
                 return -operand
-            raise ValueError(f"Unsupported unary operator: {type(node.op).__name__}")
+            raise ConstraintError(f"Unsupported unary operator: {type(node.op).__name__}")
 
         if isinstance(node, ast.BoolOp):
             values = [self._ast_to_z3(v) for v in node.values]
@@ -415,7 +419,7 @@ class Z3Session:
                 return z3.And(*values)
             if isinstance(node.op, ast.Or):
                 return z3.Or(*values)
-            raise ValueError(f"Unsupported boolean operator: {type(node.op).__name__}")
+            raise ConstraintError(f"Unsupported boolean operator: {type(node.op).__name__}")
 
         if isinstance(node, ast.BinOp):
             left = self._ast_to_z3(node.left)
@@ -430,7 +434,7 @@ class Z3Session:
                 return left / right
             if isinstance(node.op, ast.Mod):
                 return left % right
-            raise ValueError(f"Unsupported binary operator: {type(node.op).__name__}")
+            raise ConstraintError(f"Unsupported binary operator: {type(node.op).__name__}")
 
         if isinstance(node, ast.Compare):
             left = self._ast_to_z3(node.left)
@@ -451,7 +455,7 @@ class Z3Session:
                 elif isinstance(op, ast.LtE):
                     comparisons.append(left <= right)
                 else:
-                    raise ValueError(f"Unsupported comparison operator: {type(op).__name__}")
+                    raise ConstraintError(f"Unsupported comparison operator: {type(op).__name__}")
                 left = right
 
             if len(comparisons) == 1:
@@ -460,7 +464,7 @@ class Z3Session:
 
         if isinstance(node, ast.Call):
             if not isinstance(node.func, ast.Name):
-                raise ValueError("Only direct function calls are supported")
+                raise ConstraintError("Only direct function calls are supported")
 
             fn_name = node.func.id
             args = [self._ast_to_z3(arg) for arg in node.args]
@@ -471,23 +475,23 @@ class Z3Session:
                 return z3.Or(*args)
             if fn_name == "Not":
                 if len(args) != 1:
-                    raise ValueError("Not() expects exactly one argument")
+                    raise ConstraintError("Not() expects exactly one argument")
                 return z3.Not(args[0])
             if fn_name == "Implies":
                 if len(args) != 2:
-                    raise ValueError("Implies() expects exactly two arguments")
+                    raise ConstraintError("Implies() expects exactly two arguments")
                 return z3.Implies(args[0], args[1])
             if fn_name == "If":
                 if len(args) != 3:
-                    raise ValueError("If() expects exactly three arguments")
+                    raise ConstraintError("If() expects exactly three arguments")
                 return z3.If(args[0], args[1], args[2])
             if fn_name == "Abs":
                 if len(args) != 1:
-                    raise ValueError("Abs() expects exactly one argument")
+                    raise ConstraintError("Abs() expects exactly one argument")
                 x = args[0]
                 return z3.If(x >= 0, x, -x)
 
-            raise ValueError(f"Unsupported function: {fn_name}")
+            raise ConstraintError(f"Unsupported function: {fn_name}")
 
         if isinstance(node, ast.IfExp):
             cond = self._ast_to_z3(node.test)
@@ -495,7 +499,7 @@ class Z3Session:
             orelse = self._ast_to_z3(node.orelse)
             return z3.If(cond, body, orelse)
 
-        raise ValueError(f"Unsupported syntax node: {type(node).__name__}")
+        raise ConstraintError(f"Unsupported syntax node: {type(node).__name__}")
 
     def _extract_model(self, model: z3.ModelRef) -> dict[str, Any]:
         """Extract variable values from a Z3 model."""

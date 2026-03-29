@@ -44,6 +44,12 @@ The tier determines the guarantees you get when upgrading between releases.
 
 | Export | Module | Description |
 |---|---|---|
+| `LogicBrainError` | `exceptions` | Base exception for all LogicBrain errors |
+| `VerificationError` | `exceptions` | Verification operation failure |
+| `ConstraintError` | `exceptions` | Invalid or unparseable Z3 constraint |
+| `SessionError` | `exceptions` | Base for session-management failures |
+| `CertificateError` | `exceptions` | Certificate creation or store failure |
+| `PolicyViolationError` | `exceptions` | Policy evaluation error |
 | `LeanSession` | `lean_session` | Lean 4 interactive proof session |
 | `TacticResult` | `lean_session` | Result of applying a tactic |
 | `is_lean_available` | `lean_session` | Check if Lean 4 is installed |

@@ -9,6 +9,13 @@ All notable changes to this project are documented in this file.
 - `CompactionResult` dataclass for compaction outcomes.
 - `CertificateStore.query_consistent()` - Z3 consistency-filtered retrieval for propositional certificates.
 - `ConsistencyFilterResult` dataclass for consistency-filtered query outcomes.
+- MCP `certificate_store` tool now supports `compact` and `query_consistent` actions, exposing Z3-verified compaction and consistency-filtered retrieval to agents over MCP.
+- `exceptions.py` module with domain-specific exception hierarchy: `LogicBrainError`, `VerificationError`, `ConstraintError`, `SessionError`, `CertificateError`, `PolicyViolationError`. All new exceptions inherit from `ValueError` where appropriate for backward compatibility.
+
+### Changed
+- `ParseError` now inherits from `LogicBrainError` (previously `Exception`). Existing `except ParseError` handlers are unaffected.
+- `UnknownSessionError`, `ExpiredSessionError`, `SessionLimitError` now inherit from `SessionError` (previously `Exception`).
+- Z3 constraint parsing errors in `Z3Session` now raise `ConstraintError` instead of `ValueError`. `ConstraintError` inherits from `ValueError`, so existing handlers are unaffected.
 
 ## [0.8.0] - 2026-03-21
 

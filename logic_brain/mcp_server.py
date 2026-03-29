@@ -116,7 +116,7 @@ _POSTCONDITION_SCHEMA: dict[str, object] = {
 }
 _CERT_STORE_ACTION_SCHEMA: dict[str, object] = {
     "type": "string",
-    "enum": ["store", "get", "query", "invalidate", "stats"],
+    "enum": ["store", "get", "query", "invalidate", "stats", "compact", "query_consistent"],
 }
 
 
@@ -158,7 +158,9 @@ _TOOLS: tuple[ToolSpec, ...] = (
     ),
     _tool(
         "certificate_store",
-        "Manage proof memory for stored certificates. Example: {'action': 'stats'}",
+        "Manage proof memory for stored certificates. Actions: store, get, query, invalidate, stats, "
+        "compact (Z3-verified redundancy removal), query_consistent (Z3 consistency-filtered retrieval). "
+        "Example: {'action': 'stats'}",
         {
             "action": _CERT_STORE_ACTION_SCHEMA,
             "certificate": {
@@ -182,6 +184,11 @@ _TOOLS: tuple[ToolSpec, ...] = (
             "since": {"type": "string", "description": "Only return entries stored at or after this ISO timestamp."},
             "limit": {"type": "integer", "description": "Maximum number of query results to return."},
             "reason": {"type": "string", "description": "Invalidation reason for the 'invalidate' action."},
+            "premises": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "Propositional premises for the 'query_consistent' action.",
+            },
         },
         ["action"],
         certificate_store,
