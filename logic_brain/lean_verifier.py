@@ -21,9 +21,10 @@ class LeanVerificationResult:
 class LeanVerifier:
     """Verifies mathematical proofs using the Lean 4 interactive theorem prover."""
 
-    def __init__(self, lean_path: str = "lean"):
+    def __init__(self, lean_path: str = "lean", timeout: int = 60):
         # Allow passing the explicit path to the lean executable if it's not in global PATH
         self.lean_path = lean_path
+        self.timeout = timeout
 
     def verify(self, theorem_header: str, tactic_proof: str) -> LeanVerificationResult:
         """
@@ -61,7 +62,8 @@ class LeanVerifier:
                 [self.lean_path, temp_path],
                 capture_output=True,
                 text=True,
-                encoding="utf-8"
+                encoding="utf-8",
+                timeout=self.timeout,
             )
 
             output = process.stdout + process.stderr
@@ -81,10 +83,16 @@ class LeanVerifier:
                 )
 
         except FileNotFoundError:
-             return LeanVerificationResult(
+            return LeanVerificationResult(
                 valid=False,
                 output="",
                 error=f"Lean executable not found at '{self.lean_path}'. Please ensure Lean 4 (elan) is installed."
+            )
+        except subprocess.TimeoutExpired as e:
+            return LeanVerificationResult(
+                valid=False,
+                output="",
+                error=f"Lean timed out after {self.timeout} seconds: {str(e)}",
             )
         except (OSError, subprocess.SubprocessError) as e:
             return LeanVerificationResult(

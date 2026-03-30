@@ -58,6 +58,10 @@ The tier determines the guarantees you get when upgrading between releases.
 | `SessionError` | `exceptions` | Base for session-management failures |
 | `CertificateError` | `exceptions` | Certificate creation or store failure |
 | `PolicyViolationError` | `exceptions` | Policy evaluation error |
+| `truth_table` | `explain` | Generate a complete truth table for a propositional argument |
+| `render_truth_table` | `explain` | Render a truth table as a human-readable string |
+| `TruthTable` | `explain` | Frozen result dataclass for truth-table explanations |
+| `TruthTableRow` | `explain` | Frozen dataclass representing one truth-table row |
 | `LeanSession` | `lean_session` | Lean 4 interactive proof session |
 | `TacticResult` | `lean_session` | Result of applying a tactic |
 | `is_lean_available` | `lean_session` | Check if Lean 4 is installed |

@@ -36,6 +36,7 @@ from .parser import (
     are_equivalent,
     ParseError,
 )
+from .explain import TruthTable, TruthTableRow, render_truth_table, truth_table
 from .lean_session import LeanSession, TacticResult, is_lean_available
 from .z3_session import Z3Session, CheckResult
 from .diagnostics import (
@@ -162,6 +163,10 @@ __all__ = [
     "is_contradiction",
     "are_equivalent",
     "ParseError",
+    "truth_table",
+    "render_truth_table",
+    "TruthTable",
+    "TruthTableRow",
     # Core classes
     "Proposition",
     "LogicalExpression",

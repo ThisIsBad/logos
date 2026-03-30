@@ -100,7 +100,7 @@ class LeanSession:
     """
 
     lean_path: Optional[str] = None
-    timeout: int = 30
+    timeout: int = 60
 
     # Internal state
     _header: str = field(default="", init=False)

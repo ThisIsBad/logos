@@ -55,7 +55,12 @@ code under `tests/experiments/` — no production code changes.
 
 ## Current WIP
 
-**Wave: Human-Readable Explain (#83–#87)** — GPT-5.4 soll ab #83 starten.
+**#83 - Add explain.py with truth table generator**
+
+- `logic_brain/explain.py` implemented with `TruthTable`, `TruthTableRow`, `truth_table()`, and `render_truth_table()`.
+- Public exports, `STABILITY.md`, `CHANGELOG.md`, and new tests are in place.
+- Full local preflight is now green after clearing local disk pressure and stabilizing Lean timeouts.
+- Remaining local-only pricing tool files were reformatted so the repo-wide Ruff gate passes in this workspace.
 
 ## Issue Queue
 

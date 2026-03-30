@@ -4,6 +4,10 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+### Added
+- `explain.py` module with `truth_table()` and `render_truth_table()` for human-readable proof verification.
+- `TruthTable` and `TruthTableRow` dataclasses for truth table results.
+
 ## [0.9.0] - 2026-03-29
 
 Stage 4 verification substrate hardened with Z3-backed compaction,
