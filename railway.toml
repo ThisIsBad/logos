@@ -1,5 +1,5 @@
 [build]
-builder = "dockerfile"
+builder = "NIXPACKS"
 
 [deploy]
 startCommand = "python -m logic_brain.mcp_server_http"
