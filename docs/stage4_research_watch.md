@@ -1,6 +1,6 @@
 # Stage 4 Research Watch
 
-Last reviewed: 2026-03-29
+Last reviewed: 2026-04-12
 
 ## Purpose
 
@@ -58,12 +58,13 @@ simultaneously (see AGI Roadmap v2, Section 7).
 
 **What to watch:**
 
-| Project / Line of Research | Why it matters | Status (2026-03) |
+| Project / Line of Research | Why it matters | Status (2026-04) |
 |----------------------------|----------------|-------------------|
-| Continual Learning with Elastic Weight Consolidation and successors | Prevents catastrophic forgetting in neural nets by penalizing changes to important weights | Active research; no agent-level solution yet |
-| DPO successors (Rafailov et al., 2023) and reward-model-free alignment | Reduces reward hacking by eliminating explicit reward models | Active; DPO widely adopted but stability at scale unproven |
-| GFlowNets (Bengio et al., 2021) | Diversity-preserving exploration that may resist mode collapse | Active research; not yet integrated into agent learning loops |
-| RLHF stability guarantees (Constitutional AI lineage) | Formal bounds on policy drift during online learning | Open problem |
+| Continual Learning with Elastic Weight Consolidation and successors | Prevents catastrophic forgetting in neural nets by penalizing changes to important weights | Active 2026: "EWC Done Right" (arxiv 2603.18596) fixes Fisher Information estimation; hybrid architecture achieves 0.8% vs EWC's 2.3% degradation per task. No agent-level solution yet. |
+| DPO successors (Rafailov et al., 2023) and reward-model-free alignment | Reduces reward hacking by eliminating explicit reward models | Active 2026: α-DPO (adaptive reward margin), PAR (+5pp win rate vs baselines). Stability at scale still unproven; formal bounds absent. |
+| GFlowNets (Bengio et al., 2021) | Diversity-preserving exploration that may resist mode collapse | Active research; integration in active learning loops exists (biosequence discovery, NeurIPS 2023); not yet in general agent learning loops. |
+| RLHF stability guarantees (Constitutional AI lineage) | Formal bounds on policy drift during online learning | Active 2026: First formal generalization analysis of KL-regularized RLHF (arxiv 2601.16403, Jan 2026). Formal bounds on online policy drift remain open. |
+| LeanAgent (Anandkumar et al. / LeanDojo, 2023–2026) | Lifelong learning system for Lean 4 theorem proving — improves through experience across tasks | Active 2026: LeanDojo-v2 at NeurIPS 2025 workshop; LeanProgress (arxiv 2502.17925, Feb 2026) — proof progress prediction for search guidance. |
 
 **Trigger condition for LogicBrain work:**
 A published method demonstrating stable learning (retention >= 90%,
@@ -93,12 +94,12 @@ recency weighting — none of which are formal verification problems.
 
 **What to watch:**
 
-| Project / Line of Research | Why it matters | Status (2026-03) |
+| Project / Line of Research | Why it matters | Status (2026-04) |
 |----------------------------|----------------|-------------------|
-| Voyager skill library (Wang et al., 2023) | Demonstrates compositional skill storage and retrieval in Minecraft | Published; retrieval is embedding-based, not verified |
-| Generative Agents reflective memory (Park et al., 2023) | Relevance + recency + importance scoring for episodic memory | Published; no formal verification of retrieved memories |
-| RAG with structured knowledge graphs | Combines retrieval with graph-structured knowledge | Active; integration with formal proofs unexplored |
-| Verified retrieval (formal IR) | Retrieval algorithms with provable recall guarantees | Very early stage |
+| Voyager skill library (Wang et al., 2023) | Demonstrates compositional skill storage and retrieval in Minecraft | Published; retrieval is embedding-based, not verified. No new developments. |
+| Generative Agents reflective memory (Park et al., 2023) | Relevance + recency + importance scoring for episodic memory | Published; no formal verification of retrieved memories. No new developments. |
+| RAG with structured knowledge graphs | Combines retrieval with graph-structured knowledge | Active 2026: GraphRAG mainstream; "Hierarchical Planning + KG-RAG + Symbolic Validation" (OpenReview); VeriRAG for Verilog hardware specs. Formal proof store integration still unexplored. |
+| Verified retrieval (formal IR) | Retrieval algorithms with provable recall guarantees | Early stage 2026: Verifiable PIR research active in crypto domain (SNARKs-based); FIRE iterative retrieval for fact-checking. Not yet applicable to general knowledge bases. |
 
 **Trigger condition for LogicBrain work:**
 A retrieval system demonstrating >= 80% relevant-proof-retrieval
@@ -130,11 +131,11 @@ without losing critical knowledge.
 
 **What to watch:**
 
-| Project / Line of Research | Why it matters | Status (2026-03) |
+| Project / Line of Research | Why it matters | Status (2026-04) |
 |----------------------------|----------------|-------------------|
-| Memory consolidation in cognitive architectures (SOAR, ACT-R) | Decades of research on selective forgetting in symbolic systems | Mature theory; limited integration with modern agents |
-| Compression-based forgetting (information-theoretic) | Discard knowledge that is redundant given remaining knowledge | Theoretical; no agent implementation |
-| Schema evolution / knowledge compaction | Merge multiple specific proofs into generalized rules | Active in database community; unexplored for proof stores |
+| Memory consolidation in cognitive architectures (SOAR, ACT-R) | Decades of research on selective forgetting in symbolic systems | Mature theory; limited integration with modern agents. No new 2026 developments. |
+| Compression-based forgetting (information-theoretic) | Discard knowledge that is redundant given remaining knowledge | Theoretical; no agent implementation found in 2026 search. |
+| Schema evolution / knowledge compaction | Merge multiple specific proofs into generalized rules | Active in database community; unexplored for proof stores. No 2026 bridge work found. |
 
 **Trigger condition for LogicBrain work:**
 A demonstrated forgetting policy maintaining >= 95% task performance
@@ -166,12 +167,14 @@ capabilities outside formal verification.
 
 **What to watch:**
 
-| Project / Line of Research | Why it matters | Status (2026-03) |
+| Project / Line of Research | Why it matters | Status (2026-04) |
 |----------------------------|----------------|-------------------|
-| Voyager (Wang et al., 2023) | Skill library with compositional reuse | Published; skills are code snippets, not verified |
-| Program synthesis for strategy abstraction | Abstract specific solutions into reusable templates | Active research (DreamCoder, LAPS) |
-| Analogical reasoning in LLMs | LLMs can draw structural analogies | Capability exists but is unreliable and unverified |
-| Proof-strategy libraries (Isabelle, Lean tactics) | Formal proof assistants already have tactic libraries | Mature; but human-curated, not learned |
+| Voyager (Wang et al., 2023) | Skill library with compositional reuse | Published; skills are code snippets, not verified. No new developments. |
+| Program synthesis for strategy abstraction | Abstract specific solutions into reusable templates | No 2026 developments found; DreamCoder/LAPS last active 2021. Open problem. |
+| Analogical reasoning in LLMs | LLMs can draw structural analogies | Capability exists but is unreliable and unverified. No new 2026 results. |
+| Proof-strategy libraries (Isabelle, Lean tactics) | Formal proof assistants already have tactic libraries | Mature; but human-curated, not learned. |
+| **Leanstral** (Mistral AI, 2026-03) | First open-source LLM agent specifically trained on Lean 4 repositories; 6B params, Apache 2.0, MCP-compatible; learns to apply tactics across real-world Lean codebases | **New (2026-04)** — competitive with Claude Sonnet at fraction of cost; directly relevant to automated tactic selection. MCP support enables integration with LogicBrain toolchain. |
+| LeanCopilot / LeanDojo (Anandkumar Lab, 2023–2026) | Retrieval-augmented LLM proof assistant; LeanDojo provides structured access to Lean repos for training and inference | Active 2026: LeanDojo-v2 at NeurIPS 2025 workshop; LeanProgress (arxiv 2502.17925, Feb 2026) — proof progress prediction improves tactic search efficiency. |
 
 **Trigger condition for LogicBrain work:**
 A system demonstrating verified strategy transfer — where an agent
