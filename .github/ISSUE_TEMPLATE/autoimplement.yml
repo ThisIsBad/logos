@@ -1,0 +1,50 @@
+name: Auto-Implement
+description: Issue for automatic implementation via Aider + GPT
+title: "[AUTO] "
+labels: ["autoimplement"]
+body:
+  - type: textarea
+    id: task
+    attributes:
+      label: Task
+      description: >
+        Vollständige, selbsterklärende Beschreibung was implementiert werden soll.
+        Der Implementer-Agent hat keinen Kontext außer diesem Issue und den Projektdateien.
+      placeholder: |
+        Implementiere ein Modul `logic_brain/foo.py` mit einer Klasse `Foo`
+        die X tut, wenn Y gegeben ist.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: Testbare Kriterien. Jedes Kriterium sollte einem Test entsprechen.
+      placeholder: |
+        - [ ] `Foo.bar(x)` gibt `True` zurück wenn x > 0
+        - [ ] `Foo.bar(x)` wirft `ValueError` wenn x negativ
+        - [ ] `mypy --strict logic_brain` passiert
+        - [ ] Test coverage bleibt >= 85%
+    validations:
+      required: true
+
+  - type: input
+    id: files
+    attributes:
+      label: Files to Touch
+      description: Komma-separierte Liste relevanter Dateien (optional, hilft dem Implementer)
+      placeholder: "logic_brain/foo.py, tests/test_foo.py"
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Architekturhinweise, Constraints, verwandte Module, Hintergrund
+      placeholder: |
+        Baut auf `CertificateStore` auf (logic_brain/certificate_store.py).
+        Muss thread-safe sein.
+    validations:
+      required: false

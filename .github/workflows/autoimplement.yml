@@ -1,0 +1,112 @@
+name: Auto-Implement Issue
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  implement:
+    if: github.event.label.name == 'autoimplement'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install -e ".[dev]"
+          pip install aider-chat
+
+      - name: Configure git
+        run: |
+          git config user.email "autoimplement@users.noreply.github.com"
+          git config user.name "LogicBrain Autoimplement"
+          git checkout -b "autoimplement/issue-${{ github.event.issue.number }}"
+
+      - name: Build prompt
+        run: |
+          {
+            echo "You are implementing a GitHub issue for the LogicBrain project."
+            echo "LogicBrain is a Z3-backed deterministic reasoning toolkit for AI agents."
+            echo ""
+            echo "Project conventions:"
+            echo "- New modules go in logic_brain/"
+            echo "- Tests go in tests/ with pytest"
+            echo "- All public functions need full type hints (mypy --strict must pass)"
+            echo "- Ruff linting must pass (logic_brain/ and tests/)"
+            echo "- Test coverage must stay >= 85%"
+            echo "- One commit per issue, message must reference #${{ github.event.issue.number }}"
+            echo ""
+            echo "Issue #${{ github.event.issue.number }}: ${{ github.event.issue.title }}"
+            echo "---"
+            gh issue view ${{ github.event.issue.number }} --json body -q .body
+          } > /tmp/prompt.txt
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run Aider (GPT implementer)
+        run: |
+          aider \
+            --model "${OPENAI_MODEL:-openai/gpt-4o}" \
+            --message "$(cat /tmp/prompt.txt)" \
+            --yes \
+            --no-suggest-shell-commands \
+            --no-auto-commits \
+            logic_brain/ tests/
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
+
+      - name: Preflight gates
+        run: |
+          python -m pytest -q
+          python -m ruff check logic_brain/ tests/
+          python -m mypy --strict logic_brain
+          python -m pytest --cov=logic_brain --cov-report=term-missing --cov-fail-under=85
+          python -m pytest -q -m metamorphic
+
+      - name: Commit and push
+        run: |
+          git add logic_brain/ tests/
+          if git diff --cached --quiet; then
+            echo "::error::Aider made no changes — prompt may need more detail."
+            exit 1
+          fi
+          git commit -m "feat: implement issue #${{ github.event.issue.number }}" \
+            -m "" \
+            -m "Co-Authored-By: Aider + GPT <noreply@openai.com>"
+          git push origin "autoimplement/issue-${{ github.event.issue.number }}"
+
+      - name: Open PR
+        run: |
+          cat > /tmp/pr_body.txt << 'EOF'
+          Closes #${{ github.event.issue.number }}
+
+          Implemented autonomously by Aider + GPT (${{ vars.OPENAI_MODEL }}).
+          All preflight gates passed (ruff, mypy --strict, pytest, coverage ≥ 85%, metamorphic).
+
+          🤖 LogicBrain Autoimplement
+          EOF
+          gh pr create \
+            --title "Auto: ${{ github.event.issue.title }}" \
+            --body "$(cat /tmp/pr_body.txt)" \
+            --label "auto-pr"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comment on failure
+        if: failure()
+        run: |
+          gh issue comment ${{ github.event.issue.number }} \
+            --body "❌ Auto-implementation failed. Check the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details. You may need to refine the issue prompt."
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
