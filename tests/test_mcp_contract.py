@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import cast
 
-from logic_brain.mcp_tools import check_contract
+from logos.mcp_tools import check_contract
 
 
 def test_check_contract_returns_active_for_entailed_preconditions() -> None:

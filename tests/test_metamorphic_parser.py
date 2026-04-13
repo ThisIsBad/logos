@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from logic_brain import verify
+from logos import verify
 
 
 pytestmark = pytest.mark.metamorphic

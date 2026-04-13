@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from logic_brain.schema_utils import (
+from logos.schema_utils import (
     load_json_object,
     require_bool,
     require_dict,

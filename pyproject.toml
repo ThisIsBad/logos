@@ -3,7 +3,7 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "logic-brain"
+name = "logos"
 version = "0.9.0"
 description = "LLM x Deterministic Logic Verifier — exploiting the P!=NP asymmetry"
 requires-python = ">=3.10"
@@ -33,8 +33,8 @@ http = [
 ]
 
 [project.scripts]
-logic-brain-mcp = "logic_brain.mcp_server:main"
-logic-brain-mcp-http = "logic_brain.mcp_server_http:main"
+logos-mcp = "logos.mcp_server:main"
+logos-mcp-http = "logos.mcp_server_http:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -43,10 +43,10 @@ markers = [
 ]
 
 [tool.coverage.run]
-source = ["logic_brain"]
+source = ["logos"]
 omit = [
-    "logic_brain/lean_session.py",
-    "logic_brain/lean_verifier.py",
+    "logos/lean_session.py",
+    "logos/lean_verifier.py",
 ]
 
 [tool.coverage.report]
@@ -70,4 +70,4 @@ select = ["E", "F", "W"]
 ignore = ["W293", "W291"]
 
 [tool.setuptools.packages.find]
-include = ["logic_brain*", "examples*"]
+include = ["logos*", "examples*"]

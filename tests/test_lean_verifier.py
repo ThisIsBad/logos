@@ -1,4 +1,4 @@
-"""Tests for logic_brain.lean_verifier — non-interactive Lean 4 verification.
+"""Tests for logos.lean_verifier — non-interactive Lean 4 verification.
 
 All tests that require the Lean compiler are skipped when Lean is not installed.
 """
@@ -7,8 +7,8 @@ from __future__ import annotations
 
 import pytest
 
-from logic_brain.lean_verifier import LeanVerificationResult, LeanVerifier
-from logic_brain.lean_session import LeanSession, is_lean_available
+from logos.lean_verifier import LeanVerificationResult, LeanVerifier
+from logos.lean_session import LeanSession, is_lean_available
 
 
 def _lean_path() -> str:

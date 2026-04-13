@@ -10,7 +10,7 @@ Run with:
 
 from __future__ import annotations
 
-from logic_brain import (
+from logos import (
     AssumptionKind,
     AssumptionSet,
     BeliefGraph,
@@ -23,7 +23,7 @@ from logic_brain import (
     verify_certificate,
     verify_contract_preconditions_z3,
 )
-from logic_brain.uncertainty import ConfidenceLevel
+from logos.uncertainty import ConfidenceLevel
 
 
 def main() -> None:

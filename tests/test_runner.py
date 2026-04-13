@@ -1,9 +1,9 @@
-"""Direct tests for logic_brain.runner."""
+"""Direct tests for logos.runner."""
 
 from __future__ import annotations
 
-from logic_brain.models import Argument, Proposition, VerificationResult
-from logic_brain.runner import BenchmarkRunner, ProblemResult, format_report
+from logos.models import Argument, Proposition, VerificationResult
+from logos.runner import BenchmarkRunner, ProblemResult, format_report
 
 
 def test_problem_result_sets_verifier_correct_flag():
@@ -55,7 +55,7 @@ def test_format_report_includes_failure_details():
 
 
 def test_runner_run_all_uses_loader_and_verifier(monkeypatch):
-    import logic_brain.runner as runner_mod
+    import logos.runner as runner_mod
 
     argument = Argument(premises=[Proposition("P")], conclusion=Proposition("P"), natural_language="P therefore P")
     meta = {

@@ -6,13 +6,13 @@ These tests validate every supported inference rule and known fallacy.
 
 import pytest
 
-from logic_brain.models import (
+from logos.models import (
     Argument,
     Connective,
     LogicalExpression,
     Proposition,
 )
-from logic_brain.verifier import PropositionalVerifier
+from logos.verifier import PropositionalVerifier
 
 
 # ---------------------------------------------------------------------------
@@ -315,7 +315,7 @@ class TestBenchmarkSuite:
     """Verify that the verifier agrees with every expected_valid flag."""
 
     def test_all_benchmarks_match(self):
-        from logic_brain.runner import BenchmarkRunner
+        from logos.runner import BenchmarkRunner
 
         runner = BenchmarkRunner()
         results = runner.run_all()

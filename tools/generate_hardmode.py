@@ -1,11 +1,11 @@
-"""Generate harder benchmark exams via logic_brain.generator."""
+"""Generate harder benchmark exams via logos.generator."""
 
 from __future__ import annotations
 
 import argparse
 from pathlib import Path
 
-from logic_brain.generator import GeneratorConfig, ProblemGenerator
+from logos.generator import GeneratorConfig, ProblemGenerator
 
 
 def _parse_args() -> argparse.Namespace:

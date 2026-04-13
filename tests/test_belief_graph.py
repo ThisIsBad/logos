@@ -6,10 +6,10 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from logic_brain import AssumptionKind, AssumptionSet, BeliefEdgeType, BeliefGraph, UncertaintyCalibrator
-from logic_brain.belief_graph import ContradictionStatus
-from logic_brain.z3_session import CheckResult
-from logic_brain.uncertainty import ConfidenceLevel
+from logos import AssumptionKind, AssumptionSet, BeliefEdgeType, BeliefGraph, UncertaintyCalibrator
+from logos.belief_graph import ContradictionStatus
+from logos.z3_session import CheckResult
+from logos.uncertainty import ConfidenceLevel
 
 
 def test_minimal_support_set_traces_to_root_supports() -> None:
@@ -121,7 +121,7 @@ def test_z3_contradiction_detection_surfaces_unknown_status(monkeypatch: pytest.
     def fake_check(self: object) -> CheckResult:
         return CheckResult(status="unknown", satisfiable=None, reason="timeout")
 
-    monkeypatch.setattr("logic_brain.z3_session.Z3Session.check", fake_check)
+    monkeypatch.setattr("logos.z3_session.Z3Session.check", fake_check)
 
     contradictions = graph.detect_contradictions_z3(variables={"x": "Int"})
 

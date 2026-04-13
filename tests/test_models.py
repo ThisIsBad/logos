@@ -1,10 +1,10 @@
-"""Direct tests for logic_brain.models."""
+"""Direct tests for logos.models."""
 
 from __future__ import annotations
 
 import pytest
 
-from logic_brain.models import Argument, Connective, LogicalExpression, Proposition, VerificationResult
+from logos.models import Argument, Connective, LogicalExpression, Proposition, VerificationResult
 
 
 def test_logical_expression_not_requires_no_right_operand():

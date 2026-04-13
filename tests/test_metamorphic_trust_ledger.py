@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from logic_brain import FederatedProofLedger, TrustPolicy, create_proof_bundle, certify
+from logos import FederatedProofLedger, TrustPolicy, create_proof_bundle, certify
 
 
 pytestmark = pytest.mark.metamorphic

@@ -6,7 +6,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from logic_brain import truth_table, verify
+from logos import truth_table, verify
 
 
 pytestmark = pytest.mark.metamorphic

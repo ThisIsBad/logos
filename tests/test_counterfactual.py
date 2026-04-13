@@ -7,8 +7,8 @@ from unittest.mock import patch
 
 import pytest
 
-from logic_brain import CounterfactualPlanner, SafetyBound, UtilityModel
-from logic_brain.z3_session import Z3Session
+from logos import CounterfactualPlanner, SafetyBound, UtilityModel
+from logos.z3_session import Z3Session
 
 
 def _new_planner() -> CounterfactualPlanner:

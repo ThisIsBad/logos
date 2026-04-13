@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from logic_brain import FailureCategory, FailureContext, RecoveryProtocol, choose_recovery
+from logos import FailureCategory, FailureContext, RecoveryProtocol, choose_recovery
 
 
 pytestmark = pytest.mark.metamorphic

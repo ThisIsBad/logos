@@ -1,6 +1,6 @@
 """Minimal quick verification examples for propositional logic."""
 
-from logic_brain import are_equivalent, is_tautology, verify
+from logos import are_equivalent, is_tautology, verify
 
 
 def main() -> None:

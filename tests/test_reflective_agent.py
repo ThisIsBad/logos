@@ -34,7 +34,7 @@ def test_reflective_agent_main_prints_stage3_trace(capsys: pytest.CaptureFixture
     assert "first_pass_consistent=False" in output
     assert "replanned_status=active" in output
     assert "action_status=completed" in output
-    assert "python -m logic_brain.mcp_server" in output
+    assert "python -m logos.mcp_server" in output
 
 
 def test_reflective_agent_stdio_requests_cover_required_tools() -> None:

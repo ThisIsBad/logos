@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from logic_brain import GoalContract, GoalContractStatus, evaluate_goal_contract, verify_contract_preconditions_z3
+from logos import GoalContract, GoalContractStatus, evaluate_goal_contract, verify_contract_preconditions_z3
 
 
 pytestmark = pytest.mark.metamorphic

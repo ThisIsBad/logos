@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from logic_brain import ProofBundle, certify, verify_proof_bundle
-from logic_brain.mcp_tools import proof_carrying_action
+from logos import ProofBundle, certify, verify_proof_bundle
+from logos.mcp_tools import proof_carrying_action
 
 
 def test_proof_carrying_action_rejects_missing_precondition_certificates() -> None:

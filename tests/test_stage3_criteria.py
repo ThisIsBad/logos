@@ -5,7 +5,7 @@ from typing import cast
 import pytest
 
 from examples import reflective_agent
-from logic_brain import (
+from logos import (
     RecoveryProtocol,
     UncertaintyCalibrator,
     certify,
@@ -13,8 +13,8 @@ from logic_brain import (
     classify_goal_contract_failure,
     verify_contract_preconditions_z3,
 )
-from logic_brain.goal_contract import GoalContract
-from logic_brain.mcp_tools import check_assumptions, check_contract
+from logos.goal_contract import GoalContract
+from logos.mcp_tools import check_assumptions, check_contract
 
 
 def _confidence_probability(level: object) -> float:

@@ -1,4 +1,4 @@
-"""Tests for logic_brain.external — external benchmark loaders."""
+"""Tests for logos.external — external benchmark loaders."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import json
 import tempfile
 from pathlib import Path
 
-from logic_brain.external import load_folio, load_satbench
+from logos.external import load_folio, load_satbench
 
 
 def _write_jsonl(lines: list[dict], suffix: str = ".jsonl") -> Path:

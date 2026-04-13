@@ -1,11 +1,11 @@
-"""Direct tests for logic_brain.loader."""
+"""Direct tests for logos.loader."""
 
 from __future__ import annotations
 
 import json
 
-from logic_brain.loader import load_problems, parse_problem
-from logic_brain.models import Proposition
+from logos.loader import load_problems, parse_problem
+from logos.models import Proposition
 
 
 def test_load_problems_reads_json_file(tmp_path):

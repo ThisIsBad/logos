@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from logic_brain import EscalationDecision, RiskLevel, UncertaintyCalibrator
-from logic_brain.uncertainty import ConfidenceLevel, ConfidenceRecord
+from logos import EscalationDecision, RiskLevel, UncertaintyCalibrator
+from logos.uncertainty import ConfidenceLevel, ConfidenceRecord
 
 
 pytestmark = pytest.mark.metamorphic

@@ -4,11 +4,11 @@ WORKDIR /app
 
 # Copy project files
 COPY pyproject.toml .
-COPY logic_brain/ logic_brain/
+COPY logos/ logos/
 
 # Install with HTTP extras (includes mcp, uvicorn, starlette)
 RUN pip install --no-cache-dir -e ".[http]"
 
 EXPOSE 8000
 
-CMD ["python", "-m", "logic_brain.mcp_server_http"]
+CMD ["python", "-m", "logos.mcp_server_http"]

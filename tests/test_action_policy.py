@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import pytest
 
-from logic_brain import (
+from logos import (
     ActionPolicyEngine,
     ActionPolicyRule,
     CheckResult,
     PolicyDecision,
 )
-from logic_brain.action_policy import PolicyCheckStatus
+from logos.action_policy import PolicyCheckStatus
 
 
 def _engine() -> ActionPolicyEngine:
@@ -185,7 +185,7 @@ def test_policy_evaluation_surfaces_unknown_solver_state() -> None:
         return CheckResult(status="unknown", satisfiable=None, reason="timeout")
 
     with pytest.MonkeyPatch.context() as monkeypatch:
-        monkeypatch.setattr("logic_brain.z3_session.Z3Session.check", fake_check)
+        monkeypatch.setattr("logos.z3_session.Z3Session.check", fake_check)
         result = engine.evaluate(
             {
                 "target_is_public_api": False,
@@ -218,7 +218,7 @@ def test_policy_subsumption_surfaces_unknown_result() -> None:
         return CheckResult(status="unknown", satisfiable=None, reason="timeout")
 
     with pytest.MonkeyPatch.context() as monkeypatch:
-        monkeypatch.setattr("logic_brain.z3_session.Z3Session.check", fake_check)
+        monkeypatch.setattr("logos.z3_session.Z3Session.check", fake_check)
         result = engine.check_policy_subsumption_z3(broader_rule, narrower_rule)
 
     assert result.subsumed is None

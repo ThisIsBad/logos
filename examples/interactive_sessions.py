@@ -1,6 +1,6 @@
 """Examples for LeanSession and Z3Session interactive workflows."""
 
-from logic_brain import LeanSession, Z3Session, is_lean_available
+from logos import LeanSession, Z3Session, is_lean_available
 
 
 def run_lean_session() -> None:

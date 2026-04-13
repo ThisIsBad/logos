@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from logic_brain import AssumptionKind, AssumptionSet
+from logos import AssumptionKind, AssumptionSet
 
 
 pytestmark = pytest.mark.metamorphic

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
-from logic_brain import (
+from logos import (
     ActionEnvelope,
     ActionPolicyEngine,
     ActionPolicyRule,
@@ -17,7 +17,7 @@ from logic_brain import (
     certify,
     CounterfactualPlanner,
 )
-from logic_brain.execution_bus import ToolAdapter
+from logos.execution_bus import ToolAdapter
 
 
 def _planner() -> CounterfactualPlanner:

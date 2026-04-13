@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from logic_brain import (
+from logos import (
     ActionPolicyEngine,
     ActionPolicyRule,
     CheckResult,
@@ -191,7 +191,7 @@ def test_z3_precondition_check_surfaces_unknown_result(monkeypatch: pytest.Monke
     def fake_check(self: object) -> CheckResult:
         return CheckResult(status="unknown", satisfiable=None, reason="timeout")
 
-    monkeypatch.setattr("logic_brain.z3_session.Z3Session.check", fake_check)
+    monkeypatch.setattr("logos.z3_session.Z3Session.check", fake_check)
 
     result = verify_contract_preconditions_z3(
         contract,

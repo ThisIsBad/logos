@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from logic_brain import ActionPolicyEngine, ActionPolicyRule, PolicyDecision
+from logos import ActionPolicyEngine, ActionPolicyRule, PolicyDecision
 
 
 pytestmark = pytest.mark.metamorphic

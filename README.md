@@ -22,7 +22,7 @@ pytest -q
 ## Usage
 
 ```python
-from logic_brain import verify, is_tautology, is_contradiction, are_equivalent
+from logos import verify, is_tautology, is_contradiction, are_equivalent
 
 # Verify logical arguments
 result = verify("P -> Q, P |- Q")
@@ -47,9 +47,9 @@ are_equivalent("P -> Q", "~Q -> ~P")   # True (Contraposition)
 ## CLI
 
 ```powershell
-python -m logic_brain "P -> Q, P |- Q"
-python -m logic_brain "P -> Q, Q |- P" --explain
-python -m logic_brain "P -> Q, P |- Q" --json
+python -m logos "P -> Q, P |- Q"
+python -m logos "P -> Q, Q |- P" --explain
+python -m logos "P -> Q, P |- Q" --json
 ```
 
 ## Syntax
@@ -88,7 +88,7 @@ This library is designed to be called directly via Python execution. No MCP serv
 
 ```python
 # Agent writes this code, executes it, reads the result
-from logic_brain import verify
+from logos import verify
 result = verify("P -> Q, P |- Q")
 # Agent sees: valid=True, rule="Modus Ponens"
 # Agent can now use this information to verify its reasoning
@@ -101,7 +101,7 @@ For a complete copy-paste example see [`examples/agent_integration.py`](examples
 You can attach machine-checkable certificates to reasoning outputs:
 
 ```python
-from logic_brain import ProofCertificate, certify, verify_certificate
+from logos import ProofCertificate, certify, verify_certificate
 
 cert = certify("P -> Q, P |- Q")
 assert cert.verified is True
@@ -119,7 +119,7 @@ See [`examples/proof_carrying_actions.py`](examples/proof_carrying_actions.py) f
 For predicate logic with quantifiers, use the `PredicateVerifier`:
 
 ```python
-from logic_brain import (
+from logos import (
     PredicateVerifier, Variable, Constant, Predicate,
     QuantifiedExpression, Quantifier, PredicateExpression,
     PredicateConnective, FOLArgument
@@ -151,7 +151,7 @@ print(result.valid)  # True
 For tactic-by-tactic theorem proving with Lean 4:
 
 ```python
-from logic_brain import LeanSession, is_lean_available
+from logos import LeanSession, is_lean_available
 
 if is_lean_available():
     session = LeanSession()
@@ -181,7 +181,7 @@ Features:
 For incremental constraint solving with backtracking:
 
 ```python
-from logic_brain import Z3Session
+from logos import Z3Session
 
 session = Z3Session()
 session.declare("x", "Int")
@@ -222,9 +222,9 @@ Features:
 ## Project Structure
 
 ```
-logic_brain/
+logos/
 ├── __init__.py             # Public API (see STABILITY.md for tiers)
-├── __main__.py             # Module entrypoint for `python -m logic_brain`
+├── __main__.py             # Module entrypoint for `python -m logos`
 ├── py.typed                # PEP 561 marker
 ├── parser.py               # String-based parser ("P -> Q, P |- Q")
 ├── verifier.py             # Z3-backed propositional logic verifier
@@ -265,7 +265,7 @@ examples/
 ├── agent_integration.py  # Full agent workflow demo (copy-paste ready)
 ├── quick_verify.py       # Minimal verification examples
 ├── interactive_sessions.py # LeanSession + Z3Session demo
-└── logic_brain_demo.ipynb  # Jupyter notebook demo
+└── logos_demo.ipynb  # Jupyter notebook demo
 tools/                  # Benchmark generation & checking
 docs/
 ├── api/                # Generated API reference (pdoc)
@@ -286,7 +286,7 @@ pytest -q -m metamorphic  # Metamorphic regression gate
 ## Running Benchmarks
 
 ```powershell
-python -m logic_brain.runner
+python -m logos.runner
 
 # Generate fresh benchmark files
 python tools/generate_exam.py --count 10
@@ -323,7 +323,7 @@ python examples/proof_carrying_actions.py  # v0.3 proof-carrying demo
 ```
 
 Notebook demo:
-- `examples/logic_brain_demo.ipynb`
+- `examples/logos_demo.ipynb`
 
 ### Agent Integration
 
@@ -349,9 +349,9 @@ Config (`.mcp.json`):
 ```json
 {
   "mcpServers": {
-    "logic-brain": {
+    "logos": {
       "command": "python",
-      "args": ["-m", "logic_brain.mcp_server"],
+      "args": ["-m", "logos.mcp_server"],
       "cwd": "<project-root>"
     }
   }
@@ -378,7 +378,7 @@ What an agent can do:
 For the full setup and troubleshooting guide, see `docs/mcp_setup.md`.
 
 Further documentation:
-- **API reference:** `docs/api/logic_brain.html` (regenerate: `python -m pdoc logic_brain -o docs/api`)
+- **API reference:** `docs/api/logos.html` (regenerate: `python -m pdoc logos -o docs/api`)
 - Metamorphic relation ledger: `docs/metamorphic_ledger.md`
 - Primary AGI roadmap: `docs/agi_roadmap_v2.md`
 - LogicBrain roadmap: `docs/logicbrain_development_roadmap.md`

@@ -1,8 +1,8 @@
-"""Direct tests for logic_brain.predicate_models."""
+"""Direct tests for logos.predicate_models."""
 
 from __future__ import annotations
 
-from logic_brain.predicate_models import (
+from logos.predicate_models import (
     Constant,
     FOLArgument,
     Predicate,

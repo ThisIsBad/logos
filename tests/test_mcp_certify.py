@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from logic_brain import ProofCertificate, verify_certificate
-from logic_brain.mcp_tools import certify_claim
+from logos import ProofCertificate, verify_certificate
+from logos.mcp_tools import certify_claim
 
 
 def test_certify_claim_returns_verified_certificate_for_valid_argument() -> None:

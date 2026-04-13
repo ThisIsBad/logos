@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from logic_brain import BeliefEdgeType, BeliefGraph
+from logos import BeliefEdgeType, BeliefGraph
 
 
 pytestmark = pytest.mark.metamorphic

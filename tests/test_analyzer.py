@@ -1,8 +1,8 @@
-"""Tests for logic_brain.analyzer — error pattern analysis."""
+"""Tests for logos.analyzer — error pattern analysis."""
 
 from __future__ import annotations
 
-from logic_brain.analyzer import AnalysisReport, ErrorAnalyzer
+from logos.analyzer import AnalysisReport, ErrorAnalyzer
 
 
 def _make_result(expected: bool, said: bool, category: str = "misc", level: str = "1") -> dict:

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from logic_brain import ParseError, render_truth_table, truth_table
+from logos import ParseError, render_truth_table, truth_table
 
 
 def test_truth_table_modus_ponens() -> None:

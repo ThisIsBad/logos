@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from collections.abc import Mapping
 
-from logic_brain import (
+from logos import (
     ActionEnvelope,
     FederatedProofLedger,
     PostconditionCheck,
@@ -18,7 +18,7 @@ from logic_brain import (
     execute_action_envelope,
     verify_proof_bundle,
 )
-from logic_brain.proof_exchange import create_proof_bundle
+from logos.proof_exchange import create_proof_bundle
 
 
 def _certify_claim_adapter(payload: Mapping[str, object]) -> dict[str, object]:

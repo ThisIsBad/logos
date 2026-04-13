@@ -2,8 +2,8 @@
 
 import pytest
 
-from logic_brain.diagnostics import ErrorType
-from logic_brain.z3_session import Z3Session, CheckResult
+from logos.diagnostics import ErrorType
+from logos.z3_session import Z3Session, CheckResult
 
 
 class TestZ3SessionBasic:

@@ -4,12 +4,12 @@ Direct Python path:
     python examples/reflective_agent.py
 
 MCP stdio path:
-    1. Start the server with `python -m logic_brain.mcp_server`
+    1. Start the server with `python -m logos.mcp_server`
     2. Send the tool payloads returned by `build_stdio_requests()` over the
        stdio JSON-RPC transport used by your MCP client.
 
 The direct run below uses the same payload shapes as the MCP tool surface;
-it just calls the handlers from `logic_brain.mcp_tools` directly so the demo
+it just calls the handlers from `logos.mcp_tools` directly so the demo
 works without a running MCP server.
 """
 
@@ -18,8 +18,8 @@ from __future__ import annotations
 import json
 from typing import cast
 
-from logic_brain import certify
-from logic_brain.mcp_tools import (
+from logos import certify
+from logos.mcp_tools import (
     check_assumptions,
     check_contract,
     proof_carrying_action,
@@ -190,7 +190,7 @@ def main() -> None:
     print(f"  proof_bundle_present={action_step['proof_bundle_json'] is not None}")
 
     print("\n-- MCP stdio parity --")
-    print("  Start server: python -m logic_brain.mcp_server")
+    print("  Start server: python -m logos.mcp_server")
     print("  Send these tool payloads over stdio JSON-RPC:")
     print(json.dumps(build_stdio_requests(), indent=2, sort_keys=True))
 

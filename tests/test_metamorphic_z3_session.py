@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from logic_brain.z3_session import Z3Session
+from logos.z3_session import Z3Session
 
 
 pytestmark = pytest.mark.metamorphic

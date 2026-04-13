@@ -1,9 +1,9 @@
 import pytest
-from logic_brain.predicate_models import (
+from logos.predicate_models import (
     Variable, Constant, Predicate, PredicateConnective,
     PredicateExpression, QuantifiedExpression, Quantifier, FOLArgument
 )
-from logic_brain.predicate import PredicateVerifier
+from logos.predicate import PredicateVerifier
 
 @pytest.fixture
 def verifier():

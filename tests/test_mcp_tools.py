@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import pytest
 
-import logic_brain.mcp_tools as mcp_tools
-from logic_brain.mcp_session_store import Z3SessionStore
+import logos.mcp_tools as mcp_tools
+from logos.mcp_session_store import Z3SessionStore
 
-from logic_brain import CheckResult
-from logic_brain.mcp_tools import (
+from logos import CheckResult
+from logos.mcp_tools import (
     check_assumptions,
     check_policy,
     counterfactual_branch,
@@ -439,7 +439,7 @@ def test_check_policy_surfaces_unknown_solver_state() -> None:
         return CheckResult(status="unknown", satisfiable=None, reason="timeout")
 
     with pytest.MonkeyPatch.context() as monkeypatch:
-        monkeypatch.setattr("logic_brain.z3_session.Z3Session.check", fake_check)
+        monkeypatch.setattr("logos.z3_session.Z3Session.check", fake_check)
         result = check_policy(
             {
                 "rules": [

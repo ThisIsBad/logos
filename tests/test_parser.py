@@ -2,7 +2,7 @@
 
 import pytest
 
-from logic_brain.parser import (
+from logos.parser import (
     verify,
     parse_argument,
     parse_expression,
@@ -11,7 +11,7 @@ from logic_brain.parser import (
     are_equivalent,
     ParseError,
 )
-from logic_brain.models import Proposition, LogicalExpression, Connective
+from logos.models import Proposition, LogicalExpression, Connective
 
 
 class TestParseExpression:

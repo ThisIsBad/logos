@@ -13,7 +13,7 @@ import mcp.types as mcp_types
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
-from logic_brain.mcp_server import create_server
+from logos.mcp_server import create_server
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -56,7 +56,7 @@ def test_module_import_fails_cleanly_without_mcp_dependency() -> None:
             return real_import(name, globals, locals, fromlist, level)
 
         builtins.__import__ = fake_import
-        runpy.run_path(r"{ROOT / 'logic_brain' / 'mcp_server.py'}", run_name="logic_brain.mcp_server")
+        runpy.run_path(r"{ROOT / 'logos' / 'mcp_server.py'}", run_name="logos.mcp_server")
         """
     )
     result = subprocess.run(
@@ -75,7 +75,7 @@ def test_stdio_server_lists_tools_and_handles_calls() -> None:
     async def run() -> None:
         params = StdioServerParameters(
             command=sys.executable,
-            args=["-m", "logic_brain.mcp_server"],
+            args=["-m", "logos.mcp_server"],
             cwd=ROOT,
         )
         async with stdio_client(params) as (read_stream, write_stream):

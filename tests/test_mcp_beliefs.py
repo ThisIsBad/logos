@@ -6,7 +6,7 @@ from typing import cast
 
 import pytest
 
-from logic_brain.mcp_tools import check_beliefs
+from logos.mcp_tools import check_beliefs
 
 
 def test_check_beliefs_returns_consistent_for_compatible_beliefs() -> None:
@@ -77,12 +77,12 @@ def test_check_beliefs_returns_explanations_with_correct_ids() -> None:
 
 
 def test_check_beliefs_surfaces_unknown_status(monkeypatch: pytest.MonkeyPatch) -> None:
-    from logic_brain.z3_session import CheckResult
+    from logos.z3_session import CheckResult
 
     def fake_check(self: object) -> CheckResult:
         return CheckResult(status="unknown", satisfiable=None, reason="timeout")
 
-    monkeypatch.setattr("logic_brain.z3_session.Z3Session.check", fake_check)
+    monkeypatch.setattr("logos.z3_session.Z3Session.check", fake_check)
 
     result = check_beliefs(
         {

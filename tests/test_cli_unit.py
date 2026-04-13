@@ -1,10 +1,10 @@
-"""In-process unit tests for logic_brain.cli (coverage for cli.py)."""
+"""In-process unit tests for logos.cli (coverage for cli.py)."""
 
 from __future__ import annotations
 
 import json
 
-from logic_brain import cli
+from logos import cli
 
 
 def test_cli_main_plain_output(capsys):

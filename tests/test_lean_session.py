@@ -2,8 +2,8 @@
 
 import pytest
 
-from logic_brain.diagnostics import ErrorType
-from logic_brain.lean_session import LeanSession, TacticResult, is_lean_available
+from logos.diagnostics import ErrorType
+from logos.lean_session import LeanSession, TacticResult, is_lean_available
 
 
 # Skip all tests if Lean is not available

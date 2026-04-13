@@ -1,4 +1,4 @@
-"""Tests for the module CLI (`python -m logic_brain`)."""
+"""Tests for the module CLI (`python -m logos`)."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ import sys
 
 def _run_cli(*args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
-        [sys.executable, "-m", "logic_brain", *args],
+        [sys.executable, "-m", "logos", *args],
         capture_output=True,
         text=True,
     )

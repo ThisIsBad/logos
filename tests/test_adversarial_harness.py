@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from logic_brain import AdversarialSelfPlayHarness, AttackTemplate
+from logos import AdversarialSelfPlayHarness, AttackTemplate
 
 
 def test_same_seed_produces_same_episode() -> None:

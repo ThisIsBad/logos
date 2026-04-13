@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from logic_brain import (
+from logos import (
     ActionEnvelope,
     FailureCategory,
     FailureContext,
@@ -20,7 +20,7 @@ from logic_brain import (
     failure_context_from_dict,
     verify_recovery_certificate,
 )
-from logic_brain.action_policy import ActionPolicyEngine, ActionPolicyRule
+from logos.action_policy import ActionPolicyEngine, ActionPolicyRule
 
 
 def test_all_failure_categories_have_default_protocol_mapping() -> None:
@@ -95,7 +95,7 @@ def test_classify_claim_failure_distinguishes_proof_and_composition_failures() -
 
 
 def test_classify_plan_failure_maps_unsat_branch_to_replan() -> None:
-    from logic_brain import CounterfactualPlanner
+    from logos import CounterfactualPlanner
 
     planner = CounterfactualPlanner()
     planner.declare("x", "Int")

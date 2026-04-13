@@ -6,7 +6,7 @@ Run with:
 
 from __future__ import annotations
 
-from logic_brain import ProofCertificate, certify, verify_certificate
+from logos import ProofCertificate, certify, verify_certificate
 
 
 def main() -> None:

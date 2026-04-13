@@ -1,10 +1,10 @@
-"""Direct tests for logic_brain.evaluate."""
+"""Direct tests for logos.evaluate."""
 
 from __future__ import annotations
 
 import json
 
-from logic_brain.evaluate import evaluate
+from logos.evaluate import evaluate
 
 
 def _make_problem(expected_valid: bool) -> dict[str, object]:
@@ -21,7 +21,7 @@ def _make_problem(expected_valid: bool) -> dict[str, object]:
 
 
 def test_evaluate_reports_perfect_accuracy(monkeypatch, tmp_path):
-    monkeypatch.setattr("logic_brain.evaluate.load_problems", lambda: [_make_problem(True)])
+    monkeypatch.setattr("logos.evaluate.load_problems", lambda: [_make_problem(True)])
 
     answers_path = tmp_path / "answers.json"
     answers_path.write_text(
@@ -37,7 +37,7 @@ def test_evaluate_reports_perfect_accuracy(monkeypatch, tmp_path):
 
 
 def test_evaluate_includes_error_analysis_when_wrong(monkeypatch, tmp_path):
-    monkeypatch.setattr("logic_brain.evaluate.load_problems", lambda: [_make_problem(True)])
+    monkeypatch.setattr("logos.evaluate.load_problems", lambda: [_make_problem(True)])
 
     answers_path = tmp_path / "answers.json"
     answers_path.write_text(

@@ -6,7 +6,7 @@ import argparse
 import json
 from pathlib import Path
 
-from logic_brain.lean_verifier import LeanVerifier
+from logos.lean_verifier import LeanVerifier
 
 
 def _load_json(path: Path) -> dict:

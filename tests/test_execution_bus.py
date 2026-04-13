@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from logic_brain import ActionEnvelope, PostconditionCheck, certify, execute_action_envelope, verify_proof_bundle
+from logos import ActionEnvelope, PostconditionCheck, certify, execute_action_envelope, verify_proof_bundle
 
 
 def test_execute_action_envelope_rejects_missing_precondition_certificate() -> None:

@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-import logic_brain.mcp_tools as mcp_tools
-from logic_brain import ProofCertificate, certify
-from logic_brain.mcp_tools import certificate_store
+import logos.mcp_tools as mcp_tools
+from logos import ProofCertificate, certify
+from logos.mcp_tools import certificate_store
 
 
 def setup_function() -> None:

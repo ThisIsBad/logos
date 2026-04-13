@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from logic_brain import FederatedProofLedger, TrustPolicy, create_proof_bundle, certify
+from logos import FederatedProofLedger, TrustPolicy, create_proof_bundle, certify
 
 
 def test_acceptance_requires_explicit_trust_policy() -> None:

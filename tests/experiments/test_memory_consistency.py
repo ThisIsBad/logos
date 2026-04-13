@@ -6,8 +6,8 @@ import json
 from pathlib import Path
 from time import perf_counter
 
-from logic_brain import BeliefEdgeType, BeliefGraph, CertificateStore, certify, verify
-from logic_brain.generator import MEDIUM, GeneratorConfig, ProblemGenerator
+from logos import BeliefEdgeType, BeliefGraph, CertificateStore, certify, verify
+from logos.generator import MEDIUM, GeneratorConfig, ProblemGenerator
 
 
 RESULTS_DIR = Path("results")

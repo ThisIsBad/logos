@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from logic_brain import CounterfactualPlanner, UtilityModel
+from logos import CounterfactualPlanner, UtilityModel
 
 
 pytestmark = pytest.mark.metamorphic

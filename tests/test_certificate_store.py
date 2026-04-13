@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from logic_brain import (
+from logos import (
     CertificateStore,
     CompactionResult,
     ConsistencyFilterResult,
@@ -46,8 +46,8 @@ def _store_from_entries(*entries: StoredCertificate) -> CertificateStore:
 
 
 def _conclusion(claim: str) -> str:
-    from logic_brain.parser import parse_argument
-    from logic_brain.models import Connective, LogicalExpression, Proposition
+    from logos.parser import parse_argument
+    from logos.models import Connective, LogicalExpression, Proposition
 
     def expression_to_ascii(expr: Proposition | LogicalExpression) -> str:
         if isinstance(expr, Proposition):
@@ -74,8 +74,8 @@ def _conclusion(claim: str) -> str:
 def _entailed(remaining: list[str], target: str) -> bool:
     import z3
 
-    from logic_brain.parser import parse_argument
-    from logic_brain.verifier import PropositionalVerifier
+    from logos.parser import parse_argument
+    from logos.verifier import PropositionalVerifier
 
     if not remaining:
         return False

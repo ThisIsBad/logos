@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from logic_brain import CertificateStore, certify
-from logic_brain.models import LogicalExpression, Proposition
+from logos import CertificateStore, certify
+from logos.models import LogicalExpression, Proposition
 
 
 pytestmark = pytest.mark.metamorphic
@@ -57,8 +57,8 @@ def test_compact_never_loses_conclusions() -> None:
     """Compaction preserves entailment of all original propositional conclusions."""
     import z3
 
-    from logic_brain.parser import parse_argument
-    from logic_brain.verifier import PropositionalVerifier
+    from logos.parser import parse_argument
+    from logos.verifier import PropositionalVerifier
 
     def conclusion(claim: str) -> Proposition | LogicalExpression:
         return parse_argument(claim).conclusion

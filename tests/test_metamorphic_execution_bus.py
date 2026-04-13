@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from logic_brain import ActionEnvelope, PostconditionCheck, certify, execute_action_envelope
+from logos import ActionEnvelope, PostconditionCheck, certify, execute_action_envelope
 
 
 pytestmark = pytest.mark.metamorphic

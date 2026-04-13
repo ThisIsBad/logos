@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from logic_brain import (
+from logos import (
     ProofBundle,
     ProofCertificate,
     create_proof_bundle,

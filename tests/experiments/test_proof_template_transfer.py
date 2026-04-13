@@ -17,7 +17,7 @@ from __future__ import annotations
 import json
 import re
 
-from logic_brain import CertificateStore, certify, verify
+from logos import CertificateStore, certify, verify
 
 
 # ---------------------------------------------------------------------------

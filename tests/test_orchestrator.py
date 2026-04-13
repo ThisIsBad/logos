@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from logic_brain import ProofOrchestrator, certify, verify_certificate
-from logic_brain.orchestrator import ClaimStatus
+from logos import ProofOrchestrator, certify, verify_certificate
+from logos.orchestrator import ClaimStatus
 
 
 def _basic_tree() -> ProofOrchestrator:

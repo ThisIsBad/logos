@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from logic_brain import AssumptionKind, AssumptionSet, AssumptionStatus, CheckResult
+from logos import AssumptionKind, AssumptionSet, AssumptionStatus, CheckResult
 
 
 def test_add_assumption_creates_active_entry() -> None:
@@ -200,7 +200,7 @@ def test_z3_consistency_surfaces_unknown_results(monkeypatch: pytest.MonkeyPatch
     def fake_check(self: object) -> CheckResult:
         return CheckResult(status="unknown", satisfiable=None, reason="timeout")
 
-    monkeypatch.setattr("logic_brain.z3_session.Z3Session.check", fake_check)
+    monkeypatch.setattr("logos.z3_session.Z3Session.check", fake_check)
 
     result = assumptions.check_consistency_z3(variables={"x": "Int"})
 

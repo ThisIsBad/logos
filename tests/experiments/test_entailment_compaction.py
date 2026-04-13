@@ -8,11 +8,11 @@ from time import perf_counter
 
 import z3
 
-from logic_brain import CertificateStore, certify
-from logic_brain.generator import EASY, GeneratorConfig, ProblemGenerator
-from logic_brain.models import Argument, Connective, LogicalExpression, Proposition
-from logic_brain.parser import parse_argument, parse_expression
-from logic_brain.verifier import PropositionalVerifier
+from logos import CertificateStore, certify
+from logos.generator import EASY, GeneratorConfig, ProblemGenerator
+from logos.models import Argument, Connective, LogicalExpression, Proposition
+from logos.parser import parse_argument, parse_expression
+from logos.verifier import PropositionalVerifier
 
 
 RESULTS_DIR = Path("results")

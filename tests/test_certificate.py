@@ -6,8 +6,8 @@ from dataclasses import replace
 
 import pytest
 
-from logic_brain import ProofCertificate, certify, certify_z3_session, verify_certificate
-from logic_brain.predicate_models import (
+from logos import ProofCertificate, certify, certify_z3_session, verify_certificate
+from logos.predicate_models import (
     Constant,
     FOLArgument,
     Predicate,
@@ -17,7 +17,7 @@ from logic_brain.predicate_models import (
     Quantifier,
     Variable,
 )
-from logic_brain.z3_session import Z3Session
+from logos.z3_session import Z3Session
 
 
 def _valid_fol_argument() -> FOLArgument:

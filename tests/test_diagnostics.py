@@ -1,6 +1,6 @@
 """Tests for structured diagnostics parsing and formatting."""
 
-from logic_brain.diagnostics import (
+from logos.diagnostics import (
     Diagnostic,
     ErrorType,
     LeanDiagnosticParser,

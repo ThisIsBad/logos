@@ -6,7 +6,7 @@ Version: 1.2 | Effective from: v0.8.0
 
 ## Stability Tiers
 
-Every symbol exported from `logic_brain` is assigned to one of three tiers.
+Every symbol exported from `logos` is assigned to one of three tiers.
 The tier determines the guarantees you get when upgrading between releases.
 
 ### Tier 1 — Stable
@@ -228,15 +228,15 @@ Example timeline:
 
 If you integrate LogicBrain into an agent or tool:
 
-1. **Import only from `logic_brain`** — e.g., `from logic_brain import verify`. Do not import from submodules directly (e.g., `from logic_brain.parser import Lexer`).
+1. **Import only from `logos`** — e.g., `from logos import verify`. Do not import from submodules directly (e.g., `from logos.parser import Lexer`).
 2. **Check the tier** of each symbol you use. Tier 1 is safe for production. Tier 2 may change.
-3. **Pin your version** in `requirements.txt` or `pyproject.toml` (e.g., `logic-brain>=0.1.3,<0.2`).
+3. **Pin your version** in `requirements.txt` or `pyproject.toml` (e.g., `logos>=0.1.3,<0.2`).
 4. **Read `CHANGELOG.md`** before upgrading.
 
 ---
 
 ## References
 
-- Public API: `logic_brain/__init__.py`
+- Public API: `logos/__init__.py`
 - Changelog: `CHANGELOG.md`
 - Roadmaps: `docs/agi_roadmap_v2.md`, `docs/logicbrain_development_roadmap.md`, `docs/roadmap_v013_v020.md`, `docs/roadmap_v030_v070.md`, `docs/roadmap_v080_v120.md`

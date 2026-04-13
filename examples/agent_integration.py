@@ -18,7 +18,7 @@ Requirements:
 
 from __future__ import annotations
 
-from logic_brain import (
+from logos import (
     Diagnostic,
     ErrorType,
     LeanSession,
@@ -26,7 +26,7 @@ from logic_brain import (
     is_lean_available,
     verify,
 )
-from logic_brain.generator import ProblemGenerator, EASY
+from logos.generator import ProblemGenerator, EASY
 
 
 # ---------------------------------------------------------------------------

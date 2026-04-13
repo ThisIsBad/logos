@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from logic_brain import ProofOrchestrator, certify
-from logic_brain.orchestrator import ClaimStatus
+from logos import ProofOrchestrator, certify
+from logos.orchestrator import ClaimStatus
 
 
 pytestmark = pytest.mark.metamorphic

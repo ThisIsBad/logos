@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import pytest
 
-from logic_brain import certify
-from logic_brain.mcp_session_store import ORCHESTRATOR_STORE
-from logic_brain.mcp_tools import orchestrate_proof
+from logos import certify
+from logos.mcp_session_store import ORCHESTRATOR_STORE
+from logos.mcp_tools import orchestrate_proof
 
 
 @pytest.fixture(autouse=True)

@@ -1,11 +1,11 @@
-"""Generate escalation-round exams via logic_brain.generator presets."""
+"""Generate escalation-round exams via logos.generator presets."""
 
 from __future__ import annotations
 
 import argparse
 from pathlib import Path
 
-from logic_brain.generator import GeneratorConfig, ProblemGenerator
+from logos.generator import GeneratorConfig, ProblemGenerator
 
 
 LEVELS: dict[str, GeneratorConfig] = {

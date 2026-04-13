@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import cast
 
-from logic_brain import (
+from logos import (
     ActionEnvelope,
     CertificateStore,
     GoalContract,
@@ -18,7 +18,7 @@ from logic_brain import (
     VerifiedAgentRuntime,
     certify,
 )
-from logic_brain.counterfactual import CounterfactualPlanner
+from logos.counterfactual import CounterfactualPlanner
 
 
 def _make_planner() -> CounterfactualPlanner:

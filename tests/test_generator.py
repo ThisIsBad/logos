@@ -1,4 +1,4 @@
-"""Tests for logic_brain.generator — problem generation with verified ground truth."""
+"""Tests for logos.generator — problem generation with verified ground truth."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ import tempfile
 from pathlib import Path
 
 
-from logic_brain.generator import (
+from logos.generator import (
     EASY,
     EXTREME,
     HARD,
@@ -15,7 +15,7 @@ from logic_brain.generator import (
     GeneratorConfig,
     ProblemGenerator,
 )
-from logic_brain.models import Argument
+from logos.models import Argument
 
 
 class TestGeneratorConfig:

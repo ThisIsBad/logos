@@ -7,7 +7,7 @@ import string
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from logic_brain.parser import (
+from logos.parser import (
     ParseError,
     are_equivalent,
     is_contradiction,

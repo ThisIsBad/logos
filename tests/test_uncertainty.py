@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from logic_brain import (
+from logos import (
     EscalationDecision,
     RiskLevel,
     UncertaintyCalibrator,
@@ -10,7 +10,7 @@ from logic_brain import (
     certify,
     resolve_certificate_reference,
 )
-from logic_brain.uncertainty import ConfidenceLevel, ConfidenceRecord
+from logos.uncertainty import ConfidenceLevel, ConfidenceRecord
 
 
 def test_confidence_record_json_roundtrip() -> None:
