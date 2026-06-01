@@ -1,6 +1,6 @@
 # Stage 4 Research Watch
 
-Last reviewed: 2026-04-12
+Last reviewed: 2026-06-01
 
 ## Purpose
 
@@ -30,7 +30,7 @@ Z3-backed verifier can and cannot check. This boundary defines where
 LogicBrain should contribute and where it must defer to external systems.
 
 | Z3 can check | Z3 cannot check |
-|--------------|-----------------|
+|--------------|------------------|
 | Logical consistency of learned rules ("does rule R contradict knowledge base K?") | Empirical correctness of heuristics ("does strategy S actually work?") |
 | Policy conformance ("does behavior B violate safety policy P?") | Generalization quality ("will this transfer to unseen domains?") |
 | Constraint satisfaction ("does the plan meet formal preconditions?") | Statistical calibration ("is the confidence score reliable?") |
@@ -58,13 +58,14 @@ simultaneously (see AGI Roadmap v2, Section 7).
 
 **What to watch:**
 
-| Project / Line of Research | Why it matters | Status (2026-04) |
+| Project / Line of Research | Why it matters | Status (2026-06) |
 |----------------------------|----------------|-------------------|
-| Continual Learning with Elastic Weight Consolidation and successors | Prevents catastrophic forgetting in neural nets by penalizing changes to important weights | Active 2026: "EWC Done Right" (arxiv 2603.18596) fixes Fisher Information estimation; hybrid architecture achieves 0.8% vs EWC's 2.3% degradation per task. No agent-level solution yet. |
-| DPO successors (Rafailov et al., 2023) and reward-model-free alignment | Reduces reward hacking by eliminating explicit reward models | Active 2026: α-DPO (adaptive reward margin), PAR (+5pp win rate vs baselines). Stability at scale still unproven; formal bounds absent. |
-| GFlowNets (Bengio et al., 2021) | Diversity-preserving exploration that may resist mode collapse | Active research; integration in active learning loops exists (biosequence discovery, NeurIPS 2023); not yet in general agent learning loops. |
-| RLHF stability guarantees (Constitutional AI lineage) | Formal bounds on policy drift during online learning | Active 2026: First formal generalization analysis of KL-regularized RLHF (arxiv 2601.16403, Jan 2026). Formal bounds on online policy drift remain open. |
-| LeanAgent (Anandkumar et al. / LeanDojo, 2023–2026) | Lifelong learning system for Lean 4 theorem proving — improves through experience across tasks | Active 2026: LeanDojo-v2 at NeurIPS 2025 workshop; LeanProgress (arxiv 2502.17925, Feb 2026) — proof progress prediction for search guidance. |
+| Continual Learning with Elastic Weight Consolidation and successors | Prevents catastrophic forgetting in neural nets by penalizing changes to important weights | Active 2026: "EWC Done Right" (arxiv 2603.18596) **accepted to CVPR 2026** (Mar 2026); introduces Logits Reversal (LR) operation to fix Fisher Information estimation (gradient vanishing + inaccurate importance); significantly outperforms EWC variants. Hybrid architecture achieves 0.8% vs EWC's 2.3% degradation per task. No agent-level solution yet demonstrating >=100 diverse tasks. |
+| DPO successors (Rafailov et al., 2023) and reward-model-free alignment | Reduces reward hacking by eliminating explicit reward models | Active 2026: **Gate-DPO** (arxiv 2605.02626, May 2026) addresses DPO's probability-collapse "squeezing effect" by gating rejected gradients based on the model's probability geometry; smaller gated models outperform larger ungated ones, suggesting gradient control > scale for stability. α-DPO, PAR remain active. Formal bounds on policy drift still absent. |
+| GFlowNets (Bengio et al., 2021) | Diversity-preserving exploration that may resist mode collapse | Active 2026: **Goal2FlowNet** (OpenReview) uses GFlowNets to learn exploratory goal-conditioned policy covers, improving sample complexity and zero-shot generalisation for goal-conditioned RL. Integration in general agent learning loops still limited. |
+| RLHF stability guarantees (Constitutional AI lineage) | Formal bounds on policy drift during online learning | Active 2026: arxiv 2601.16403 (Jan 2026) — first formal analysis of KL-regularized RLHF. **"A Tighter Bound for Reward Learning in RLHF"** (ICLR 2026, OpenReview forum EyMoFzI3Oz) and **"Provably Efficient Online RLHF with One-Pass Reward Modeling"** (arxiv 2502.07193) published. Formal bounds on online policy *drift* remain open; bounds address reward learning and convergence, not drift across deployment. |
+| LeanAgent (Anandkumar et al. / LeanDojo, 2023–2026) | Lifelong learning system for Lean 4 theorem proving — improves through experience across tasks | Active 2026: ICLR 2025 paper; **LeanProgress v3** (arxiv 2502.17925v3) code merged into LeanDojo-v2 (confirmed May 2026); 75.8% proof progress prediction accuracy (MAE 3.15 steps with history), +3.8pp on Mathlib4 proof search vs baseline of 41.4%. |
+| **ProgAgent** (arxiv 2603.07784, Mar 2026) | Continual RL agent deriving dense shaped rewards from unlabeled expert videos; directly addresses catastrophic forgetting + reward specification cost | **New (2026-06)** — outperforms key baselines on ContinualBench and Meta-World; real-robot trials validate complex manipulation skill learning. Robotic domain only; no extension to general agent reasoning loops yet. |
 
 **Trigger condition for LogicBrain work:**
 A published method demonstrating stable learning (retention >= 90%,
@@ -94,12 +95,13 @@ recency weighting — none of which are formal verification problems.
 
 **What to watch:**
 
-| Project / Line of Research | Why it matters | Status (2026-04) |
+| Project / Line of Research | Why it matters | Status (2026-06) |
 |----------------------------|----------------|-------------------|
 | Voyager skill library (Wang et al., 2023) | Demonstrates compositional skill storage and retrieval in Minecraft | Published; retrieval is embedding-based, not verified. No new developments. |
 | Generative Agents reflective memory (Park et al., 2023) | Relevance + recency + importance scoring for episodic memory | Published; no formal verification of retrieved memories. No new developments. |
-| RAG with structured knowledge graphs | Combines retrieval with graph-structured knowledge | Active 2026: GraphRAG mainstream; "Hierarchical Planning + KG-RAG + Symbolic Validation" (OpenReview); VeriRAG for Verilog hardware specs. Formal proof store integration still unexplored. |
+| RAG with structured knowledge graphs | Combines retrieval with graph-structured knowledge | Active 2026: GraphRAG mainstream; "Hierarchical Planning + KG-RAG + Symbolic Validation" (OpenReview); **CRAMF** (arxiv 2508.06931, concept-driven retrieval-augmented mathematical formalization) enhances LLM autoformalization by retrieving formal definitions of core mathematical concepts. Formal proof store integration still unexplored. |
 | Verified retrieval (formal IR) | Retrieval algorithms with provable recall guarantees | Early stage 2026: Verifiable PIR research active in crypto domain (SNARKs-based); FIRE iterative retrieval for fact-checking. Not yet applicable to general knowledge bases. |
+| **REAL-Prover** (arxiv 2505.20613, Leansearch-PS) | Retrieval-augmented open-source Lean 4 prover; combines fine-tuned LM with Leansearch-PS retrieval component for college-level math | **New (2026-06)** — 23.7% on ProofNet (Pass@64); **56.7% on FATE-M algebraic benchmark (new SOTA)**. Retrieval is for premise/lemma lookup, not verified retrieval. Precision on structured proof stores not yet reported. |
 
 **Trigger condition for LogicBrain work:**
 A retrieval system demonstrating >= 80% relevant-proof-retrieval
@@ -131,11 +133,12 @@ without losing critical knowledge.
 
 **What to watch:**
 
-| Project / Line of Research | Why it matters | Status (2026-04) |
+| Project / Line of Research | Why it matters | Status (2026-06) |
 |----------------------------|----------------|-------------------|
 | Memory consolidation in cognitive architectures (SOAR, ACT-R) | Decades of research on selective forgetting in symbolic systems | Mature theory; limited integration with modern agents. No new 2026 developments. |
-| Compression-based forgetting (information-theoretic) | Discard knowledge that is redundant given remaining knowledge | Theoretical; no agent implementation found in 2026 search. |
+| Compression-based forgetting (information-theoretic) | Discard knowledge that is redundant given remaining knowledge | **Active 2026**: **Memanto** (arxiv 2604.22085, Apr 2026) — typed semantic memory with 13-category schema, automated conflict resolution, temporal versioning, information-theoretic search (no indexing); 89.8% on LongMemEval, 87.1% on LoCoMo, new SOTA. **Temporal Memory for Resource-Constrained Agents** (arxiv 2604.00067, Apr 2026) — stochastic compress-add-smooth framework for continual learning under memory budget. **Memory Bank Compression for CL in LLMs** (arxiv 2601.00756, Jan 2026) — codebook-based compression of memory banks. First concrete agent implementations with IT compression now published. |
 | Schema evolution / knowledge compaction | Merge multiple specific proofs into generalized rules | Active in database community; unexplored for proof stores. No 2026 bridge work found. |
+| **Memanto** (arxiv 2604.22085, Apr 2026) | Universal typed semantic memory for long-horizon agents; automated conflict resolution + temporal versioning + information-theoretic retrieval (no separate vector index required) | **New (2026-06)** — SOTA on LongMemEval (89.8%) and LoCoMo (87.1%), surpassing graph+vector hybrids with a single retrieval query and zero ingestion cost. Architecture is analogous to what a LogicBrain-backed store would need for agent-facing retrieval; conflict resolution maps directly to Z3 consistency checking. |
 
 **Trigger condition for LogicBrain work:**
 A demonstrated forgetting policy maintaining >= 95% task performance
@@ -167,14 +170,15 @@ capabilities outside formal verification.
 
 **What to watch:**
 
-| Project / Line of Research | Why it matters | Status (2026-04) |
+| Project / Line of Research | Why it matters | Status (2026-06) |
 |----------------------------|----------------|-------------------|
 | Voyager (Wang et al., 2023) | Skill library with compositional reuse | Published; skills are code snippets, not verified. No new developments. |
-| Program synthesis for strategy abstraction | Abstract specific solutions into reusable templates | No 2026 developments found; DreamCoder/LAPS last active 2021. Open problem. |
+| Program synthesis for strategy abstraction | Abstract specific solutions into reusable templates | No 2026 DreamCoder/LAPS successors found. LILO (ICLR 2024) — library learning via compression + LLM documentation — remains most recent practical successor; no 2026 update. Open problem. |
 | Analogical reasoning in LLMs | LLMs can draw structural analogies | Capability exists but is unreliable and unverified. No new 2026 results. |
 | Proof-strategy libraries (Isabelle, Lean tactics) | Formal proof assistants already have tactic libraries | Mature; but human-curated, not learned. |
-| **Leanstral** (Mistral AI, 2026-03) | First open-source LLM agent specifically trained on Lean 4 repositories; 6B params, Apache 2.0, MCP-compatible; learns to apply tactics across real-world Lean codebases | **New (2026-04)** — competitive with Claude Sonnet at fraction of cost; directly relevant to automated tactic selection. MCP support enables integration with LogicBrain toolchain. |
-| LeanCopilot / LeanDojo (Anandkumar Lab, 2023–2026) | Retrieval-augmented LLM proof assistant; LeanDojo provides structured access to Lean repos for training and inference | Active 2026: LeanDojo-v2 at NeurIPS 2025 workshop; LeanProgress (arxiv 2502.17925, Feb 2026) — proof progress prediction improves tactic search efficiency. |
+| **Leanstral** (Mistral AI, 2026-03) | First open-source LLM agent specifically trained on Lean 4 repositories; 6B params (119B total, MoE), Apache 2.0, MCP-compatible; learns to apply tactics across real-world Lean codebases | Active 2026 (no new updates since March 2026): pass@2 = 26.3, beats Claude Sonnet 3.7 by 2.6 points at ~1/15 the cost ($36 vs $549). MCP support enables integration with LogicBrain toolchain. Still no verified strategy-transfer guarantee. |
+| LeanCopilot / LeanDojo (Anandkumar Lab, 2023–2026) | Retrieval-augmented LLM proof assistant; LeanDojo provides structured access to Lean repos for training and inference | Active 2026: LeanDojo-v2 in production; **LeanProgress v3** (arxiv 2502.17925v3) code **merged into LeanDojo-v2** (confirmed May 2026); 75.8% proof progress prediction accuracy, +3.8pp on Mathlib4 search (from 41.4% baseline). |
+| **MA-LoT** (arxiv 2503.03205, Mar 2025 / v3 May 2025) | Multi-agent Lean 4 prover using long chain-of-thought; separates proof generation from error-analysis via multi-LLM collaboration; LoT-Transfer Learning avoids need for annotated data | **New (2026-06)** — 61.07% on MiniF2F-Test (Lean 4), outperforming DeepSeek-V3 (33.61%), InternLM-Step-Prover (50.70%), and Godel-Prover (55.33%). Strategies are LLM-generated, not verified. Relevant as a benchmark baseline for Leanstral / LeanCopilot comparisons. |
 
 **Trigger condition for LogicBrain work:**
 A system demonstrating verified strategy transfer — where an agent
@@ -234,12 +238,12 @@ conditions. Results inform which production modules are worth building.
 
 ### Impact on Research Gaps
 
-| Gap | Before Experiments | After Experiments |
-|-----|-------------------|-------------------|
-| Gap 1 (Stable Learning) | Trigger: external breakthrough needed | Unchanged — still requires external breakthrough |
-| Gap 2 (Retrieval) | Trigger: >= 80% precision on structured KB | **Partially met** — Z3 consistency filter achieves this for propositional logic; needs testing on diverse/multi-domain KBs |
-| Gap 3 (Forgetting) | Trigger: >= 95% performance at >= 50% reduction | **Met** — Z3 compaction achieves 96–98% reduction with 100% conclusion preservation |
-| Gap 4 (Strategy Transfer) | Trigger: verified transfer with formal guarantee | **Experimentally validated** — uniform substitution achieves 100% transfer rate (21/21 valid, 6/6 invalid preserved). See `tests/experiments/test_proof_template_transfer.py` |
+| Gap | Before Experiments | After Experiments | 2026-06 Update |
+|-----|-------------------|-------------------|----------------|
+| Gap 1 (Stable Learning) | Trigger: external breakthrough needed | Unchanged — still requires external breakthrough | Gate-DPO (May 2026) improves DPO stability; EWC Done Right accepted to CVPR 2026; ProgAgent shows continual RL progress. Trigger (>=100 diverse tasks, no reward hacking) still not met externally. |
+| Gap 2 (Retrieval) | Trigger: >= 80% precision on structured KB | **Partially met** — Z3 consistency filter achieves this for propositional logic; needs testing on diverse/multi-domain KBs | REAL-Prover and CRAMF advance retrieval-augmented Lean proving; precision on structured proof stores not yet reported. Status unchanged. |
+| Gap 3 (Forgetting) | Trigger: >= 95% performance at >= 50% reduction | **Met** — Z3 compaction achieves 96–98% reduction with 100% conclusion preservation | Memanto (Apr 2026) and Temporal Memory paper (Apr 2026) show external field catching up to information-theoretic agent memory. LogicBrain trigger already met; dependency-aware pruning remains open. |
+| Gap 4 (Strategy Transfer) | Trigger: verified transfer with formal guarantee | **Experimentally validated** — uniform substitution achieves 100% transfer rate (21/21 valid, 6/6 invalid preserved). See `tests/experiments/test_proof_template_transfer.py` | MA-LoT and REAL-Prover set new Lean4 benchmarks; no external system yet provides *formal guarantees* on strategy applicability. LogicBrain ProofTemplate experiment still the only verified-transfer result. |
 
 ### Recommended Next Steps (Production Modules)
 
